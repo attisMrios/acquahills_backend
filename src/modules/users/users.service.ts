@@ -5,10 +5,15 @@ import { User, CreateUserResponse, UpdateUserResponse, DeleteUserResponse, Users
 import * as bcrypt from 'bcryptjs';
 import { FirebaseService } from 'src/common/services/firebase.service';
 import { UserRole } from 'src/common/enums/user.enums';
+import { UpdatesService } from '../updates/updates.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService, private readonly firebaseService: FirebaseService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly firebaseService: FirebaseService,
+    private readonly updatesService: UpdatesService
+  ) {}
 
   /**
    * Crea un nuevo usuario
@@ -87,6 +92,9 @@ export class UsersService {
       };
       await this.firebaseService.getFirebaseAuth().setCustomUserClaims(firebaseUser.uid, customClaims);
       
+      // Emitir evento SSE
+      this.updatesService.emitUserEvent('created', user);
+
       return {
         userId: user.id,
         message: 'Usuario creado exitosamente'
@@ -340,6 +348,9 @@ export class UsersService {
         }
       });
 
+      // Emitir evento SSE
+      this.updatesService.emitUserEvent('updated', user);
+
       return {
         user: user as User,
         message: 'Usuario actualizado exitosamente'
@@ -370,6 +381,9 @@ export class UsersService {
       await this.prisma.user.delete({
         where: { id }
       });
+
+      // Emitir evento SSE
+      this.updatesService.emitUserEvent('deleted', { id });
 
       return {
         userId: id,
