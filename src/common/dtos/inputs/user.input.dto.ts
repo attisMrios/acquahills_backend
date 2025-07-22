@@ -49,7 +49,7 @@ export const UserQuerySchema = z.object({
 
 // Schema para ID de usuario
 export const UserIdSchema = z.object({
-  id: z.string().cuid('El ID del usuario no es válido')
+  id: z.string().min(1, 'El ID del usuario no es válido')
 });
 
 // Schema para DNI

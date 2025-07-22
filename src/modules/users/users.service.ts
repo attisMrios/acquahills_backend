@@ -3,17 +3,22 @@ import { PrismaService } from '../../common/services/prisma.service';
 import { CreateUserDto, UpdateUserDto, UserQueryDto } from '../../common/dtos/inputs/user.input.dto';
 import { User, CreateUserResponse, UpdateUserResponse, DeleteUserResponse, UsersResponse } from '../../common/types/user.types';
 import * as bcrypt from 'bcryptjs';
+import { FirebaseService } from 'src/common/services/firebase.service';
+import { UserRole } from 'src/common/enums/user.enums';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly firebaseService: FirebaseService) { }
 
   /**
    * Crea un nuevo usuario
    */
   async createUser(createUserDto: CreateUserDto): Promise<CreateUserResponse> {
     try {
-      // Verificar si el email ya existe
+
+      /**
+       * Verificar si el email ya existe
+       */
       const existingEmail = await this.prisma.user.findUnique({
         where: { email: createUserDto.email }
       });
@@ -21,8 +26,11 @@ export class UsersService {
       if (existingEmail) {
         throw new ConflictException('El correo electrónico ya está registrado');
       }
+      //--------------------------------
 
-      // Verificar si el userName ya existe
+      /**
+       * Verificar si el userName ya existe
+       */
       const existingUserName = await this.prisma.user.findUnique({
         where: { userName: createUserDto.userName }
       });
@@ -30,8 +38,11 @@ export class UsersService {
       if (existingUserName) {
         throw new ConflictException('El nombre de usuario ya está en uso');
       }
+      //--------------------------------
 
-      // Verificar si el DNI ya existe
+      /**
+       * Verificar si el DNI ya existe
+       */
       const existingDni = await this.prisma.user.findUnique({
         where: { dni: createUserDto.dni }
       });
@@ -40,10 +51,14 @@ export class UsersService {
         throw new ConflictException('El DNI ya está registrado');
       }
 
-      // Encriptar la contraseña
+      /**
+       * Encriptar la contraseña
+       */
       const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
-      // Crear el usuario
+      /**
+       * Crear el usuario
+       */
       const user = await this.prisma.user.create({
         data: {
           ...createUserDto,
@@ -53,10 +68,30 @@ export class UsersService {
         }
       });
 
+      /**
+       * Crear el usuario en Firebase Auth
+       */
+      const firebaseUser = await this.firebaseService.getFirebaseAuth().createUser({
+        email: createUserDto.email,
+        password: createUserDto.password
+      });
+
+      
+      /**
+       * Asigna los climbs en Firebase Auth
+      */
+     const customClaims = {
+       role: createUserDto.role,
+       canSendNotifications: createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
+       createdAt: user.createdAt,
+      };
+      await this.firebaseService.getFirebaseAuth().setCustomUserClaims(firebaseUser.uid, customClaims);
+      
       return {
         userId: user.id,
         message: 'Usuario creado exitosamente'
       };
+
     } catch (error) {
       if (error instanceof ConflictException || error instanceof BadRequestException) {
         throw error;
@@ -74,7 +109,7 @@ export class UsersService {
 
     // Construir filtros
     const where: any = {};
-    
+
     if (search) {
       where.OR = [
         { userName: { contains: search, mode: 'insensitive' } },
@@ -273,7 +308,7 @@ export class UsersService {
 
       // Preparar datos para actualización
       const updateData: any = { ...updateUserDto };
-      
+
       if (updateUserDto.birthDate) {
         updateData.birthDate = new Date(updateUserDto.birthDate);
       }

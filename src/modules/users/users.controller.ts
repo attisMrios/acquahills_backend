@@ -1,13 +1,15 @@
 import {
   Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, UseInterceptors, ClassSerializerInterceptor,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiProperty, ApiBearerAuth } from '@nestjs/swagger';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'zod';
 
 import { UsersService } from './users.service';
 import { CreateUserSchema, UpdateUserSchema, UserQuerySchema, UserIdSchema } from '../../common/dtos/inputs/user.input.dto';
 import { CreateUserSwaggerDto } from '../../common/dtos/swagger/create-user.swagger.dto';
+import { FirebaseAuthGuard } from '../../Auth/firebase-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
@@ -23,6 +25,8 @@ export class UsersController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Crear un nuevo usuario', description: 'Crea un usuario con los datos proporcionados.' })
   @ApiBody({ type: CreateUserSwaggerDto, description: 'Datos para crear el usuario', examples: {
     ejemplo: {
@@ -58,6 +62,8 @@ export class UsersController {
    * @param query Parámetros de consulta para paginación, búsqueda y filtrado
    */
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Obtener todos los usuarios', description: 'Obtiene una lista paginada de usuarios con filtros opcionales.' })
   @ApiQuery({ name: 'page', required: false, description: 'Número de página', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: 'Cantidad de usuarios por página', example: 10 })
@@ -78,6 +84,8 @@ export class UsersController {
    * @param params Objeto con el ID del usuario
    */
   @Get(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Obtener un usuario por ID', description: 'Obtiene los datos de un usuario específico por su ID.' })
   @ApiParam({ name: 'id', description: 'ID del usuario', example: 'ckl1q2w3e0000a1b2c3d4e5f6' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado', type: CreateUserSwaggerDto })
@@ -96,12 +104,15 @@ export class UsersController {
    * @param updateUserDto Datos a actualizar
    */
   @Patch(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Actualizar un usuario', description: 'Actualiza los datos de un usuario existente.' })
   @ApiParam({ name: 'id', description: 'ID del usuario', example: 'ckl1q2w3e0000a1b2c3d4e5f6' })
   @ApiBody({ type: CreateUserSwaggerDto, description: 'Datos a actualizar (parcial o total)' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado', type: CreateUserSwaggerDto })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiProperty({ name: 'id', description: 'ID del usuario', example: 'ckl1q2w3e0000a1b2c3d4e5f6' })
   async update(
     @Param(new ZodValidationPipe(UserIdSchema)) params: z.infer<typeof UserIdSchema>,
     @Body(new ZodValidationPipe(UpdateUserSchema)) updateUserDto: z.infer<typeof UpdateUserSchema>
@@ -116,6 +127,8 @@ export class UsersController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Eliminar un usuario', description: 'Elimina un usuario por su ID.' })
   @ApiParam({ name: 'id', description: 'ID del usuario', example: 'ckl1q2w3e0000a1b2c3d4e5f6' })
   @ApiResponse({ status: 204, description: 'Usuario eliminado' })
@@ -126,4 +139,6 @@ export class UsersController {
     // Llama al servicio para eliminar el usuario
     return this.usersService.remove(params.id);
   }
+
+  
 }
