@@ -13,7 +13,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly firebaseService: FirebaseService,
     private readonly updatesService: UpdatesService
-  ) {}
+  ) { }
 
   /**
    * Crea un nuevo usuario
@@ -81,17 +81,17 @@ export class UsersService {
         password: createUserDto.password
       });
 
-      
+
       /**
        * Asigna los climbs en Firebase Auth
       */
-     const customClaims = {
-       role: createUserDto.role,
-       canSendNotifications: createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
-       createdAt: user.createdAt,
+      const customClaims = {
+        role: createUserDto.role,
+        canSendNotifications: createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
+        createdAt: user.createdAt,
       };
       await this.firebaseService.getFirebaseAuth().setCustomUserClaims(firebaseUser.uid, customClaims);
-      
+
       // Emitir evento SSE
       this.updatesService.emitUserEvent('created', user);
 
@@ -152,12 +152,6 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
         }
       }),
       this.prisma.user.count({ where })
@@ -191,12 +185,6 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
       }
     });
 
@@ -227,12 +215,6 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
       }
     });
 
@@ -263,12 +245,6 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
       }
     });
 
@@ -339,12 +315,6 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
         }
       });
 

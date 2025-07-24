@@ -6,25 +6,34 @@ import { PrismaService } from 'src/common/services/prisma.service';
 @Injectable()
 export class VehiclesService {
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   create(createVehicleDto: CreateVehicleDto) {
-    return 'This action adds a new vehicle';
+    return this.prisma.vehicle.create({ data: createVehicleDto });
   }
 
   findAll() {
-    return this.prisma.vehicles.findMany();
+    return this.prisma.vehicle.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vehicle`;
+  findOne(code: string) {
+    return this.prisma.vehicle.findUnique({
+      where: {
+        code,
+      }
+    });
   }
 
-  update(id: number, updateVehicleDto: UpdateVehicleDto) {
-    return `This action updates a #${id} vehicle`;
+  update(code: string, updateVehicleDto: UpdateVehicleDto) {
+    return this.prisma.vehicle.update({
+      where: { code },
+      data: updateVehicleDto
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vehicle`;
+  remove(code: string) {
+    return this.prisma.vehicle.delete({
+      where: { code }
+    });
   }
 }
