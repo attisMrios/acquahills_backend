@@ -13,7 +13,9 @@ export const CreateUserSchema = z.object({
   role: z.nativeEnum(UserRole, {
     message: 'El rol debe ser admin, manager o user'
   }),
-  phone: z.string().optional(),
+  countryCode: z.string().min(2, 'El código de país es requerido').max(3, 'El código de país no puede exceder 3 caracteres'),
+  phone: z.string().min(5, 'El número local es requerido').max(20, 'El número local no puede exceder 20 dígitos').regex(/^\d+$/, 'El número local solo debe contener dígitos'),
+  fullPhone: z.string().min(8, 'El número internacional es requerido').max(20, 'El número internacional no puede exceder 20 dígitos').regex(/^\d+$/, 'El número internacional solo debe contener dígitos (sin +)'),
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres').max(20, 'El DNI no puede exceder 20 caracteres'),
@@ -30,7 +32,9 @@ export const UpdateUserSchema = z.object({
   role: z.nativeEnum(UserRole, {
     message: 'El rol debe ser admin, manager o user'
   }).optional(),
-  phone: z.string().optional(),
+  countryCode: z.string().min(2).max(3).optional(),
+  phone: z.string().min(5).max(20).regex(/^\d+$/, 'El número local solo debe contener dígitos').optional(),
+  fullPhone: z.string().min(8).max(20).regex(/^\d+$/, 'El número internacional solo debe contener dígitos (sin +)').optional(),
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres').max(20, 'El DNI no puede exceder 20 caracteres').optional(),

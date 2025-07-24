@@ -39,7 +39,9 @@ export class UsersController {
         address: 'Calle Falsa 123',
         birthDate: '1990-01-01',
         dni: '12345678',
-        password: 'Password123!'
+        password: 'Password123!',
+        countryCode: 'CO',
+        fullPhone: '571234567890'
       }
     }
   }})

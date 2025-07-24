@@ -62,15 +62,21 @@ export class UsersService {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
       /**
+       * Preparar datos para guardar, asegurando que fullPhone no tenga +
+       */
+      const userData = {
+        ...createUserDto,
+        password: hashedPassword,
+        birthDate: createUserDto.birthDate ? new Date(createUserDto.birthDate) : null,
+        isEmailVerified: false,
+        fullPhone: createUserDto.fullPhone.replace(/^\+/, ''),
+      };
+
+      /**
        * Crear el usuario
        */
       const user = await this.prisma.user.create({
-        data: {
-          ...createUserDto,
-          password: hashedPassword,
-          birthDate: createUserDto.birthDate ? new Date(createUserDto.birthDate) : null,
-          isEmailVerified: false
-        }
+        data: userData
       });
 
       /**
@@ -151,13 +157,7 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
+          isEmailVerified: true
         }
       }),
       this.prisma.user.count({ where })
@@ -190,13 +190,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        isEmailVerified: true
       }
     });
 
@@ -226,13 +220,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        isEmailVerified: true
       }
     });
 
@@ -262,13 +250,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        isEmailVerified: true
       }
     });
 
@@ -320,6 +302,9 @@ export class UsersService {
       if (updateUserDto.birthDate) {
         updateData.birthDate = new Date(updateUserDto.birthDate);
       }
+      if (updateUserDto.fullPhone) {
+        updateData.fullPhone = updateUserDto.fullPhone.replace(/^\+/, '');
+      }
 
       // Actualizar usuario
       const user = await this.prisma.user.update({
@@ -338,13 +323,7 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
+          isEmailVerified: true
         }
       });
 
