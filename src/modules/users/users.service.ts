@@ -13,86 +13,65 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly firebaseService: FirebaseService,
     private readonly updatesService: UpdatesService
-  ) { }
+  ) {}
 
   /**
    * Crea un nuevo usuario
    */
   async createUser(createUserDto: CreateUserDto): Promise<CreateUserResponse> {
+    let firebaseUser;
     try {
+      // Validaciones previas en la base de datos
+      const existingEmail = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
+      if (existingEmail) throw new ConflictException('El correo electrónico ya está registrado');
+      const existingUserName = await this.prisma.user.findUnique({ where: { userName: createUserDto.userName } });
+      if (existingUserName) throw new ConflictException('El nombre de usuario ya está en uso');
+      const existingDni = await this.prisma.user.findUnique({ where: { dni: createUserDto.dni } });
+      if (existingDni) throw new ConflictException('El DNI ya está registrado');
 
-      /**
-       * Verificar si el email ya existe
-       */
-      const existingEmail = await this.prisma.user.findUnique({
-        where: { email: createUserDto.email }
-      });
-
-      if (existingEmail) {
-        throw new ConflictException('El correo electrónico ya está registrado');
-      }
-      //--------------------------------
-
-      /**
-       * Verificar si el userName ya existe
-       */
-      const existingUserName = await this.prisma.user.findUnique({
-        where: { userName: createUserDto.userName }
-      });
-
-      if (existingUserName) {
-        throw new ConflictException('El nombre de usuario ya está en uso');
-      }
-      //--------------------------------
-
-      /**
-       * Verificar si el DNI ya existe
-       */
-      const existingDni = await this.prisma.user.findUnique({
-        where: { dni: createUserDto.dni }
-      });
-
-      if (existingDni) {
-        throw new ConflictException('El DNI ya está registrado');
+      // 1. Crear en Firebase Auth primero
+      try {
+        firebaseUser = await this.firebaseService.getFirebaseAuth().createUser({
+          email: createUserDto.email,
+          password: createUserDto.password
+        });
+      } catch (firebaseError) {
+        throw new ConflictException('El correo electrónico ya está registrado.');
       }
 
-      /**
-       * Encriptar la contraseña
-       */
+      // 2. Crear en la base de datos
       const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-
-      /**
-       * Crear el usuario
-       */
-      const user = await this.prisma.user.create({
-        data: {
-          ...createUserDto,
-          password: hashedPassword,
-          birthDate: createUserDto.birthDate ? new Date(createUserDto.birthDate) : null,
-          isEmailVerified: false
+      const userData = {
+        ...createUserDto,
+        password: hashedPassword,
+        birthDate: createUserDto.birthDate ? new Date(createUserDto.birthDate) : null,
+        isEmailVerified: false,
+        fullPhone: createUserDto.fullPhone.replace(/^\+/, ''),
+      };
+      let user;
+      try {
+        user = await this.prisma.user.create({ data: userData });
+      } catch (dbError) {
+        // Si falla en la base de datos, elimina el usuario de Firebase Auth
+        if (firebaseUser && firebaseUser.uid) {
+          try {
+            await this.firebaseService.getFirebaseAuth().deleteUser(firebaseUser.uid);
+          } catch (cleanupError) {
+            console.error('Error limpiando usuario huérfano en Firebase:', cleanupError);
+          }
         }
-      });
+        throw dbError;
+      }
 
-      /**
-       * Crear el usuario en Firebase Auth
-       */
-      const firebaseUser = await this.firebaseService.getFirebaseAuth().createUser({
-        email: createUserDto.email,
-        password: createUserDto.password
-      });
-
-
-      /**
-       * Asigna los climbs en Firebase Auth
-      */
+      // Claims, eventos, etc
       const customClaims = {
         role: createUserDto.role,
         canSendNotifications: createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
         createdAt: user.createdAt,
       };
       await this.firebaseService.getFirebaseAuth().setCustomUserClaims(firebaseUser.uid, customClaims);
-
-      // Emitir evento SSE
+      await this.firebaseService.getFirebaseAuth().generateEmailVerificationLink(createUserDto.email);
+      await this.firebaseService.getFirebaseAuth().generatePasswordResetLink(createUserDto.email);
       this.updatesService.emitUserEvent('created', user);
 
       return {
@@ -151,7 +130,7 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true,
+          isEmailVerified: true
         }
       }),
       this.prisma.user.count({ where })
@@ -184,7 +163,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
+        isEmailVerified: true
       }
     });
 
@@ -214,7 +193,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
+        isEmailVerified: true
       }
     });
 
@@ -244,7 +223,7 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true,
+        isEmailVerified: true
       }
     });
 
@@ -296,6 +275,9 @@ export class UsersService {
       if (updateUserDto.birthDate) {
         updateData.birthDate = new Date(updateUserDto.birthDate);
       }
+      if (updateUserDto.fullPhone) {
+        updateData.fullPhone = updateUserDto.fullPhone.replace(/^\+/, '');
+      }
 
       // Actualizar usuario
       const user = await this.prisma.user.update({
@@ -314,7 +296,7 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true,
+          isEmailVerified: true
         }
       });
 

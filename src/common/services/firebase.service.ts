@@ -8,9 +8,13 @@ export class FirebaseService {
   private firebaseApp: admin.app.App;
 
   constructor() {
-    this.firebaseApp = admin.initializeApp({
-      credential:admin.credential.applicationDefault(),
-    });
+    if (admin.apps.length === 0) {
+      this.firebaseApp = admin.initializeApp({
+        credential:admin.credential.applicationDefault(),
+      });
+    } else {
+      this.firebaseApp = admin.app();
+    }
   }
 
   getFirebaseAuth(): admin.auth.Auth {
