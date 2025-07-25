@@ -62,10 +62,34 @@ export const UserEmailSchema = z.object({
   email: z.string().email('El correo electrónico no es válido')
 });
 
+// Schema para filtrar usuarios (propietarios de apartamentos)
+export const FilterUsersSchema = z.object({
+  apartmentId: z.coerce.number().min(1, 'El ID del apartamento debe ser un número válido mayor a 0'),
+  fullName: z.string().optional().nullable(),
+  dni: z.string().optional().nullable(),
+  email: z.string().email('El correo electrónico no es válido').optional().nullable()
+});
+
+// Schema para filtrar usuarios (miembros de grupos)
+export const FilterUsersForGroupSchema = z.object({
+  userGroupId: z.string().min(1, 'El ID del grupo debe ser válido'),
+  fullName: z.string().optional().nullable(),
+  dni: z.string().optional().nullable(),
+  email: z.string().email('El correo electrónico no es válido').optional().nullable(),
+  // Filtros de apartamento
+  apartment: z.string().optional().nullable(),
+  tower: z.string().optional().nullable(),
+  floor: z.string().optional().nullable(),
+  block: z.string().optional().nullable(),
+  house: z.string().optional().nullable()
+});
+
 // Tipos inferidos de los schemas
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
 export type UserQueryDto = z.infer<typeof UserQuerySchema>;
 export type UserIdDto = z.infer<typeof UserIdSchema>;
 export type UserDniDto = z.infer<typeof UserDniSchema>;
-export type UserEmailDto = z.infer<typeof UserEmailSchema>; 
+export type UserEmailDto = z.infer<typeof UserEmailSchema>;
+export type FilterUsersDto = z.infer<typeof FilterUsersSchema>;
+export type FilterUsersForGroupDto = z.infer<typeof FilterUsersForGroupSchema>; 

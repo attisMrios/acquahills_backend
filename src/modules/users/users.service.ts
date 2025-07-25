@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
-import { CreateUserDto, UpdateUserDto, UserQueryDto } from '../../common/dtos/inputs/user.input.dto';
+import { CreateUserDto, UpdateUserDto, UserQueryDto, FilterUsersDto, FilterUsersForGroupDto } from '../../common/dtos/inputs/user.input.dto';
 import { User, CreateUserResponse, UpdateUserResponse, DeleteUserResponse, UsersResponse } from '../../common/types/user.types';
 import * as bcrypt from 'bcryptjs';
 import { FirebaseService } from 'src/common/services/firebase.service';
@@ -152,12 +152,12 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
+          // fcmTokens: {
+          //   select: {
+          //     token: true,
+          //     lastTokenUpdate: true
+          //   }
+          // }
         }
       }),
       this.prisma.user.count({ where })
@@ -191,12 +191,12 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        // fcmTokens: {
+        //   select: {
+        //     token: true,
+        //     lastTokenUpdate: true
+        //   }
+        // }
       }
     });
 
@@ -227,12 +227,12 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        // fcmTokens: {
+        //   select: {
+        //     token: true,
+        //     lastTokenUpdate: true
+        //   }
+        // }
       }
     });
 
@@ -263,12 +263,12 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        fcmTokens: {
-          select: {
-            token: true,
-            lastTokenUpdate: true
-          }
-        }
+        // fcmTokens: {
+        //   select: {
+        //     token: true,
+        //     lastTokenUpdate: true
+        //   }
+        // }
       }
     });
 
@@ -339,12 +339,12 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          fcmTokens: {
-            select: {
-              token: true,
-              lastTokenUpdate: true
-            }
-          }
+          // fcmTokens: {
+          //   select: {
+          //     token: true,
+          //     lastTokenUpdate: true
+          //   }
+          // }
         }
       });
 
@@ -438,5 +438,263 @@ export class UsersService {
       select: { id: true }
     });
     return !!user;
+  }
+
+  /**
+   * Autor: dCardenas - Filtra usuarios por criterios específicos excluyendo los que ya están asignados al apartamento
+   */
+  async filterUsers(filterDto: FilterUsersDto): Promise<User[]> {
+    try {
+      console.log('FilterUsers - Input:', filterDto);
+      
+      // Validar que apartmentId existe
+      if (!filterDto.apartmentId) {
+        throw new BadRequestException('apartmentId es requerido');
+      }
+      
+      // Obtener los IDs de usuarios que ya están asignados al apartamento
+      const assignedUserIds = await this.prisma.propertyOwner.findMany({
+        where: { apartmentId: filterDto.apartmentId },
+        select: { userId: true }
+      });
+
+      console.log('Assigned user IDs:', assignedUserIds);
+
+      const assignedIds = assignedUserIds.map(po => po.userId);
+
+      // Construir filtros para la búsqueda
+      const where: any = {};
+
+      // Solo agregar notIn si hay usuarios asignados
+      if (assignedIds.length > 0) {
+        where.id = {
+          notIn: assignedIds
+        };
+      }
+
+      // Agregar filtros opcionales solo si tienen valor y no son null
+      if (filterDto.fullName && filterDto.fullName.trim() !== '') {
+        where.fullName = {
+          contains: filterDto.fullName,
+          mode: 'insensitive'
+        };
+      }
+
+      if (filterDto.dni && filterDto.dni.trim() !== '') {
+        where.dni = {
+          contains: filterDto.dni,
+          mode: 'insensitive'
+        };
+      }
+
+      if (filterDto.email && filterDto.email.trim() !== '') {
+        where.email = {
+          contains: filterDto.email,
+          mode: 'insensitive'
+        };
+      }
+
+      console.log('Where clause:', JSON.stringify(where, null, 2));
+
+      // Buscar usuarios que cumplan con los criterios
+      const users = await this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          userName: true,
+          fullName: true,
+          email: true,
+          role: true,
+          phone: true,
+          address: true,
+          birthDate: true,
+          dni: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+          isEmailVerified: true,
+        },
+        orderBy: {
+          fullName: 'asc'
+        }
+      });
+
+      console.log('Found users:', users.length);
+      
+      // Transformar los usuarios para que el campo id se devuelva como uid
+      const transformedUsers = users.map(user => ({
+        ...user,
+        uid: user.id // Agregar el campo uid que el frontend espera
+      }));
+
+      return transformedUsers as User[];
+    } catch (error) {
+      console.error('Error en filterUsers:', error);
+      console.error('Error stack:', error.stack);
+      throw new BadRequestException(`Error al filtrar usuarios: ${error.message}`);
+    }
+  }
+
+  /**
+   * Autor: dCardenas - Filtra usuarios por criterios específicos para grupos, excluyendo los que ya están en el grupo
+   * Incluye filtros por datos de usuario y datos de apartamento
+   */
+  async filterUsersForGroup(filterDto: FilterUsersForGroupDto): Promise<User[]> {
+    try {
+      console.log('FilterUsersForGroup - Input:', filterDto);
+      
+      // Validar que userGroupId existe
+      if (!filterDto.userGroupId) {
+        throw new BadRequestException('userGroupId es requerido');
+      }
+      
+      // Obtener los IDs de usuarios que ya están en el grupo
+      const existingMemberIds = await this.prisma.userGroupMember.findMany({
+        where: { userGroupId: filterDto.userGroupId },
+        select: { userId: true }
+      });
+
+      console.log('Existing member IDs:', existingMemberIds);
+
+      const existingIds = existingMemberIds.map(member => member.userId);
+
+      // Construir filtros para la búsqueda de usuarios
+      const where: any = {};
+
+      // Solo agregar notIn si hay usuarios en el grupo
+      if (existingIds.length > 0) {
+        where.id = {
+          notIn: existingIds
+        };
+      }
+
+      // Agregar filtros de usuario
+      if (filterDto.fullName && filterDto.fullName.trim() !== '') {
+        where.fullName = {
+          contains: filterDto.fullName,
+          mode: 'insensitive'
+        };
+      }
+
+      if (filterDto.dni && filterDto.dni.trim() !== '') {
+        where.dni = {
+          contains: filterDto.dni,
+          mode: 'insensitive'
+        };
+      }
+
+      if (filterDto.email && filterDto.email.trim() !== '') {
+        where.email = {
+          contains: filterDto.email,
+          mode: 'insensitive'
+        };
+      }
+
+      // Si hay filtros de apartamento, necesitamos hacer un join
+      const hasApartmentFilters = filterDto.apartment || filterDto.tower || filterDto.floor || filterDto.block || filterDto.house;
+
+      if (hasApartmentFilters) {
+        // Buscar usuarios que sean propietarios de apartamentos que cumplan los criterios
+        const apartmentWhere: any = {};
+        
+        if (filterDto.apartment) {
+          apartmentWhere.apartment = {
+            contains: filterDto.apartment,
+            mode: 'insensitive'
+          };
+        }
+        
+        if (filterDto.tower) {
+          apartmentWhere.tower = {
+            contains: filterDto.tower,
+            mode: 'insensitive'
+          };
+        }
+        
+        if (filterDto.floor) {
+          apartmentWhere.floor = {
+            contains: filterDto.floor,
+            mode: 'insensitive'
+          };
+        }
+        
+        if (filterDto.block) {
+          apartmentWhere.block = {
+            contains: filterDto.block,
+            mode: 'insensitive'
+          };
+        }
+        
+        if (filterDto.house) {
+          apartmentWhere.house = {
+            contains: filterDto.house,
+            mode: 'insensitive'
+          };
+        }
+
+        // Buscar usuarios que sean propietarios de apartamentos que cumplan los criterios
+        const usersWithApartments = await this.prisma.propertyOwner.findMany({
+          where: {
+            apartment: apartmentWhere
+          },
+          select: {
+            userId: true
+          },
+          distinct: ['userId'] // Evitar duplicados
+        });
+
+        const userIdsFromApartments = usersWithApartments.map(po => po.userId);
+        
+        // Agregar el filtro de usuarios que sean propietarios de estos apartamentos
+        if (userIdsFromApartments.length > 0) {
+          where.id = {
+            ...where.id,
+            in: userIdsFromApartments
+          };
+        } else {
+          // Si no hay apartamentos que cumplan los criterios, no hay usuarios
+          return [];
+        }
+      }
+
+      console.log('Where clause:', JSON.stringify(where, null, 2));
+
+      // Buscar usuarios que cumplan con los criterios
+      const users = await this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          userName: true,
+          fullName: true,
+          email: true,
+          role: true,
+          phone: true,
+          address: true,
+          birthDate: true,
+          dni: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+          isEmailVerified: true,
+        },
+        orderBy: {
+          fullName: 'asc'
+        }
+      });
+
+      console.log('Found users:', users.length);
+      
+      // Transformar los usuarios para que el campo id se devuelva como uid
+      const transformedUsers = users.map(user => ({
+        ...user,
+        uid: user.id // Agregar el campo uid que el frontend espera
+      }));
+
+      return transformedUsers as User[];
+    } catch (error) {
+      console.error('Error en filterUsersForGroup:', error);
+      console.error('Error stack:', error.stack);
+      throw new BadRequestException(`Error al filtrar usuarios para grupo: ${error.message}`);
+    }
   }
 } 

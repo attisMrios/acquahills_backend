@@ -7,7 +7,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'zod';
 
 import { UsersService } from './users.service';
-import { CreateUserSchema, UpdateUserSchema, UserQuerySchema, UserIdSchema } from '../../common/dtos/inputs/user.input.dto';
+import { CreateUserSchema, UpdateUserSchema, UserQuerySchema, UserIdSchema, FilterUsersSchema, FilterUsersForGroupSchema } from '../../common/dtos/inputs/user.input.dto';
 import { CreateUserSwaggerDto } from '../../common/dtos/swagger/create-user.swagger.dto';
 import { FirebaseAuthGuard } from '../../Auth/firebase-auth.guard';
 
@@ -138,6 +138,86 @@ export class UsersController {
   ) {
     // Llama al servicio para eliminar el usuario
     return this.usersService.remove(params.id);
+  }
+
+  /**
+   * Filtra usuarios por criterios específicos excluyendo los que ya están asignados al apartamento
+   * @param filterDto Criterios de filtrado para los usuarios
+   */
+  @Post('filter')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
+  @ApiOperation({ 
+    summary: 'Filtrar usuarios', 
+    description: 'Filtra usuarios por criterios específicos excluyendo los que ya están asignados al apartamento especificado.' 
+  })
+  @ApiBody({ 
+    description: 'Criterios de filtrado para usuarios',
+    examples: {
+      ejemplo: {
+        value: {
+          apartmentId: 123,
+          fullName: "Juan Pérez",
+          dni: "12345678",
+          email: "juan@email.com"
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de usuarios filtrados',
+    type: [CreateUserSwaggerDto]
+  })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async filterUsers(
+    @Body(new ZodValidationPipe(FilterUsersSchema)) filterDto: z.infer<typeof FilterUsersSchema>
+  ) {
+    // Llama al servicio para filtrar usuarios
+    return this.usersService.filterUsers(filterDto);
+  }
+
+  /**
+   * Filtra usuarios por criterios específicos para grupos, excluyendo los que ya están en el grupo
+   * Incluye filtros por datos de usuario y datos de apartamento
+   * @param filterDto Criterios de filtrado para los usuarios
+   */
+  @Post('filter-for-group')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth('firebase-auth')
+  @ApiOperation({ 
+    summary: 'Filtrar usuarios para grupos', 
+    description: 'Filtra usuarios por criterios específicos excluyendo los que ya están en el grupo. Incluye filtros por datos de usuario y datos de apartamento.' 
+  })
+  @ApiBody({ 
+    description: 'Criterios de filtrado para usuarios en grupos',
+    examples: {
+      ejemplo: {
+        value: {
+          userGroupId: "group123",
+          fullName: "Juan Pérez",
+          dni: "12345678",
+          email: "juan@email.com",
+          apartment: "Apto 101",
+          tower: "Torre A",
+          floor: "Piso 1",
+          block: "Bloque 1",
+          house: "Casa 1"
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de usuarios filtrados para grupos',
+    type: [CreateUserSwaggerDto]
+  })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async filterUsersForGroup(
+    @Body(new ZodValidationPipe(FilterUsersForGroupSchema)) filterDto: z.infer<typeof FilterUsersForGroupSchema>
+  ) {
+    // Llama al servicio para filtrar usuarios para grupos
+    return this.usersService.filterUsersForGroup(filterDto);
   }
 
   
