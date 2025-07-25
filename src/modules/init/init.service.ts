@@ -14,6 +14,9 @@ export class InitService {
     userName: string;
     fullName: string;
     dni: string;
+    phone: string;
+    fullPhone: string;
+    countryCode: string;
   }) {
     // 1. Crear usuario en Firebase Auth
     let firebaseUser;
@@ -47,6 +50,9 @@ export class InitService {
         dni: data.dni,
         password: hashedPassword,
         isEmailVerified: true,
+        phone: data.phone,
+        fullPhone: data.fullPhone,
+        countryCode: data.countryCode,
       },
     });
 

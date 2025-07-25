@@ -46,6 +46,11 @@ model User {
   email           String           @unique
   role            String           @default("user")
   phone           String?
+  email           String    @unique
+  role            String    @default("user")
+  countryCode     String?   @default("CO")
+  phone           String
+  fullPhone       String?   @default("") // Número internacional sin el signo +
   address         String?
   birthDate       DateTime?
   dni             String           @unique
@@ -87,6 +92,21 @@ model PropertyOwner {
 
   @@unique([userId, apartmentId])
   @@map("property_owners")
+}
+
+
+enum SettingCategory {
+  WHATSAPP
+}
+
+model Setting {
+  id           String          @id @default(cuid())
+  category     SettingCategory
+  jsonSettings String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("settings")
 }
 
 
