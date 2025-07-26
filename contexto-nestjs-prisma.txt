@@ -1,0 +1,112 @@
+# CONTEXTO PARA DESARROLLO NESTJS + PRISMA + ZOD + SWAGGER
+
+Este contexto establece el estándar de desarrollo para proyectos con NestJS usando Prisma como ORM, Zod para validaciones y Swagger para documentación. Se sigue una estructura de módulos clara, sin capa de repositorio explícita: el acceso a base de datos ocurre directamente desde el `Service`.
+
+---
+
+# TECNOLOGÍAS INVOLUCRADAS
+
+- *Framework principal*: NestJS (v10 o superior)
+- *Base de datos*: PostgreSQL (usando Prisma como ORM)
+- *Validación*: Zod, utilizando `@anatine/zod-nestjs`
+- *Documentación*: Swagger (`@nestjs/swagger`)
+- *Lenguaje*: TypeScript con tipado estricto
+
+---
+
+# ESTRUCTURA DE CARPETAS POR MÓDULO
+
+Cada recurso (por ejemplo: users) debe tener su propio módulo bajo `src/`, con la siguiente estructura exacta:
+
+users/
+├── dto/
+│   ├── create-user.dto.ts
+│   └── update-user.dto.ts
+├── entities/
+│   └── user.entity.ts
+├── users.controller.ts
+├── users.controller.spec.ts
+├── users.module.ts
+├── users.service.ts
+├── users.service.spec.ts
+
+- No se utiliza capa `repository`.
+- Prisma se usa directamente dentro de `users.service.ts`.
+
+---
+
+# VALIDACIÓN DE DATOS CON ZOD
+
+- Todos los DTOs deben crearse a partir de esquemas Zod usando `createZodDto()`.
+- No se debe usar `class-validator` ni `class-transformer`.
+- Todos los DTOs deben vivir en la carpeta `dto/`.
+
+---
+
+# CONTROLADORES
+
+- Cada archivo `*.controller.ts` debe exponer los endpoints con decoradores de Swagger:
+  - `@ApiTags()`
+  - `@ApiOperation()`
+- La lógica debe ser mínima y delegar todo al servicio.
+- Las rutas deben estar claramente definidas y seguir RESTful naming.
+
+---
+
+# SERVICIOS
+
+- Toda lógica de negocio y acceso a base de datos se ubica en el `*.service.ts`.
+- Prisma se importa directamente (desde `@prisma/client`) en el servicio.
+- El servicio debe estar inyectado por el módulo del recurso.
+- Evitar lógica innecesaria o cálculos complejos en controladores.
+
+---
+
+# PRISMA
+
+- El archivo `schema.prisma` se debe ubicar en `/prisma/`.
+- El cliente Prisma se instancia globalmente en `prisma.service.ts` o dentro de cada servicio.
+- El modelo de Prisma debe reflejar fielmente los datos definidos en `entities/`.
+
+---
+
+# DOCUMENTACIÓN SWAGGER
+
+- Swagger debe habilitarse en `main.ts` y estar disponible en `/api`.
+- Todos los endpoints deben tener `@ApiTags`, `@ApiOperation`, y DTOs bien documentados con `@ApiProperty` si aplica.
+
+---
+
+# ESTILO Y BUENAS PRÁCTICAS
+
+- Tipado explícito en todo: argumentos, retornos, propiedades.
+- Nunca usar `any`, `unknown`, `!`, ni castings inseguros.
+- Métodos deben tener comentarios con el formato:
+  /** Autor: dCardenas - Descripción del método */
+- Separar lógica de negocio en métodos reutilizables dentro del servicio.
+- Nunca colocar lógica de base de datos en controladores.
+
+---
+
+# TESTING
+
+- Los archivos `.spec.ts` deben existir para cada controller y service.
+- No incluir código de prueba en los archivos funcionales.
+
+---
+
+# INSTRUCCIONES PARA GPT O CURSOR
+
+- Si se solicita crear un nuevo módulo, generar:
+  - DTOs (`create`, `update`) usando Zod.
+  - `controller.ts` con endpoints REST y Swagger.
+  - `service.ts` con lógica Prisma directamente.
+  - `module.ts` que importe/injecte el servicio.
+- Si se solicita un endpoint:
+  - Preguntar: método HTTP, estructura del DTO, y operación deseada (CRUD).
+- No crear `repository.ts` a menos que se solicite explícitamente.
+- No usar `class-validator` o decoradores de validación clásicos.
+- No generar mocks ni pruebas a menos que se pida.
+- No incluir lógica fuera de la estructura indicada arriba.
+
+---

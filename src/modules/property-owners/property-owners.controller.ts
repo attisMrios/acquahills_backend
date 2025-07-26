@@ -1,0 +1,67 @@
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PropertyOwnersService } from './property-owners.service';
+import { CreatePropertyOwnerDto, CreatePropertyOwnersBulkDto } from './dto/create-property-owner.dto';
+import { UpdatePropertyOwnerDto } from './dto/update-property-owner.dto';
+
+@ApiTags('Propietarios de Apartamentos')
+@Controller('property-owners')
+export class PropertyOwnersController {
+  constructor(private readonly propertyOwnersService: PropertyOwnersService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Crear una nueva relación de propietario de apartamento' })
+  @ApiResponse({ status: 201, description: 'Propietario creado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 409, description: 'La relación de propietario ya existe' })
+  create(@Body() createPropertyOwnerDto: CreatePropertyOwnerDto) {
+    return this.propertyOwnersService.create(createPropertyOwnerDto);
+  }
+
+  @Post('bulk')
+  @ApiOperation({ summary: 'Crear múltiples relaciones de propietarios de apartamento' })
+  @ApiResponse({ status: 201, description: 'Propietarios creados exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 409, description: 'Algunas relaciones de propietario ya existen' })
+  createMany(@Body() createPropertyOwnersListDto: CreatePropertyOwnersBulkDto) {
+    return this.propertyOwnersService.createMany(createPropertyOwnersListDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar una relación de propietario' })
+  @ApiResponse({ status: 200, description: 'Propietario actualizado exitosamente' })
+  @ApiResponse({ status: 404, description: 'Propietario no encontrado' })
+  @ApiResponse({ status: 409, description: 'La relación de propietario ya existe' })
+  update(
+    @Param('id') id: string,
+    @Body() updatePropertyOwnerDto: UpdatePropertyOwnerDto,
+  ) {
+    return this.propertyOwnersService.update(id, updatePropertyOwnerDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar una relación de propietario por ID' })
+  @ApiResponse({ status: 200, description: 'Propietario eliminado exitosamente' })
+  @ApiResponse({ status: 404, description: 'Propietario no encontrado' })
+  remove(@Param('id') id: string) {
+    return this.propertyOwnersService.remove(id);
+  }
+
+  @Delete('apartment/:apartmentId/user/:userId')
+  @ApiOperation({ summary: 'Eliminar una relación de propietario por apartmentId y userId' })
+  @ApiResponse({ status: 200, description: 'Propietario eliminado exitosamente' })
+  @ApiResponse({ status: 404, description: 'Propietario no encontrado' })
+  removeByApartmentAndUser(
+    @Param('apartmentId') apartmentId: string,
+    @Param('userId') userId: string
+  ) {
+    return this.propertyOwnersService.removeByApartmentAndUser(parseInt(apartmentId), userId);
+  }
+} 

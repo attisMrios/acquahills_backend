@@ -13,10 +13,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserGroup {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  members     UserGroupMember[]
+
+  @@map("user_groups")
+}
+
+model UserGroupMember {
+  id          String    @id @default(cuid())
+  userId      String
+  userGroupId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGroup UserGroup @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, userGroupId])
+  @@map("user_group_members")
+}
+
 model User {
-  id              String    @id @default(cuid())
-  userName        String    @unique
+  id              String           @id @default(cuid())
+  uid             String?          @unique // Firebase UID
+  userName        String           @unique
   fullName        String
+  email           String           @unique
+  role            String           @default("user")
+  phone           String?
   email           String    @unique
   role            String    @default("user")
   countryCode     String?   @default("CO")
@@ -24,17 +53,48 @@ model User {
   fullPhone       String?   @default("") // Número internacional sin el signo +
   address         String?
   birthDate       DateTime?
-  dni             String    @unique
+  dni             String           @unique
   lastLogin       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  isEmailVerified Boolean   @default(false)
-  password        String // Hashed password
-
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  isEmailVerified Boolean          @default(false)
+  password        String           // Hashed password
+  propertyOwners  PropertyOwner[]
+  userGroupMembers UserGroupMember[]
   Vehicle        Vehicle[]
 
   @@map("users")
 }
+
+model Apartment {
+  id             Int              @id @default(autoincrement())
+  apartment      String           @db.VarChar(10)
+  house          String           @db.VarChar(50)
+  fullAddress    String           @db.VarChar(150)
+  block          String           @db.VarChar(10)
+  floor          String           @db.VarChar(10)
+  tower          String           @db.VarChar(10)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  propertyOwners PropertyOwner[]
+
+  @@map("apartments")
+}
+
+model PropertyOwner {
+  id          String    @id @default(cuid())
+  userId      String
+  apartmentId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apartment Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, apartmentId])
+  @@map("property_owners")
+}
+
 
 enum SettingCategory {
   WHATSAPP
@@ -49,8 +109,6 @@ model Setting {
 
   @@map("settings")
 }
-
-
 
 model Vehicle {
   code      String   @id
@@ -71,3 +129,4 @@ enum VehiculeType {
   MOTO
   CAMIONETA
 }
+
