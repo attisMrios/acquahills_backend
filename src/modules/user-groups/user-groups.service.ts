@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
-import { CreateUserGroupDto, CreateUserGroupMembersBulkDto } from './dto/create-user-group.dto';
-import { UpdateUserGroupDto } from './dto/update-user-group.dto';
+import { CreateUserGroupDto } from '../../common/dtos/inputs/create-user-group.input.dto';
+import { CreateUserGroupMembersBulkDto } from '../../common/dtos/inputs/create-user-group.input.dto';
+import { UpdateUserGroupDto } from 'src/common/dtos/inputs/update-user-group.input.dto';
 
 @Injectable()
 export class UserGroupsService {
@@ -37,7 +38,7 @@ export class UserGroupsService {
                 id: true,
                 fullName: true,
                 email: true,
-                phone: true,
+                fullPhone: true,
                 dni: true,
               },
             },
