@@ -1,4 +1,4 @@
-import { createZodDto } from '@anatine/zod-nestjs';
+
 import { z } from 'zod';
 
 export const updateUserGroupSchema = z.object({
@@ -6,4 +6,4 @@ export const updateUserGroupSchema = z.object({
   description: z.string().optional(),
 });
 
-export class UpdateUserGroupDto extends createZodDto(updateUserGroupSchema) {} 
+export type UpdateUserGroupDto = z.infer<typeof updateUserGroupSchema>;

@@ -9,8 +9,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserGroupsService } from './user-groups.service';
-import { CreateUserGroupDto, CreateUserGroupMembersBulkDto } from './dto/create-user-group.dto';
-import { UpdateUserGroupDto } from './dto/update-user-group.dto';
+import { CreateUserGroupDto } from '../../common/dtos/inputs/create-user-group.input.dto';
+import { UpdateUserGroupDto } from '../../common/dtos/inputs/update-user-group.input.dto';
+import { CreateUserGroupMembersBulkDto } from '../../common/dtos/inputs/create-user-group.input.dto';
 
 @ApiTags('Grupos de Usuarios')
 @Controller('user-groups')
