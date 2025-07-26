@@ -1,5 +1,16 @@
+/*
+  Warnings:
+
+  - Made the column `phone` on table `users` required. This step will fail if there are existing NULL values in that column.
+
+*/
 -- CreateEnum
 CREATE TYPE "SettingCategory" AS ENUM ('WHATSAPP');
+
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN     "countryCode" TEXT DEFAULT 'CO',
+ADD COLUMN     "fullPhone" TEXT DEFAULT '',
+ALTER COLUMN "phone" SET NOT NULL;
 
 -- CreateTable
 CREATE TABLE "settings" (
