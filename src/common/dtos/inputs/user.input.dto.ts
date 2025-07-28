@@ -92,4 +92,22 @@ export type UserIdDto = z.infer<typeof UserIdSchema>;
 export type UserDniDto = z.infer<typeof UserDniSchema>;
 export type UserEmailDto = z.infer<typeof UserEmailSchema>;
 export type FilterUsersDto = z.infer<typeof FilterUsersSchema>;
-export type FilterUsersForGroupDto = z.infer<typeof FilterUsersForGroupSchema>; 
+export type FilterUsersForGroupDto = z.infer<typeof FilterUsersForGroupSchema>;
+
+// Schema para importación de usuarios
+export const UserImportSchema = z.object({
+  userName: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres').max(50, 'El nombre de usuario no puede exceder 50 caracteres'),
+  fullName: z.string().min(2, 'El nombre completo debe tener al menos 2 caracteres').max(100, 'El nombre completo no puede exceder 100 caracteres'),
+  email: z.string().email('El correo electrónico no es válido'),
+  role: z.string().default('user'),
+  fullPhone: z.string().optional(),
+  address: z.string().optional(),
+  birthDate: z.string().optional(),
+  dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres').max(20, 'El DNI no puede exceder 20 caracteres'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
+  )
+});
+
+export type UserImportDto = z.infer<typeof UserImportSchema>; 

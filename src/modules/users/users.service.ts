@@ -518,16 +518,7 @@ export class UsersService {
           fullName: 'asc'
         }
       });
-
-      console.log('Found users:', users.length);
-      
-      // Transformar los usuarios para que el campo id se devuelva como uid
-      const transformedUsers = users.map(user => ({
-        ...user,
-        uid: user.id // Agregar el campo uid que el frontend espera
-      }));
-
-      return transformedUsers as User[];
+      return users as User[];
     } catch (error) {
       console.error('Error en filterUsers:', error);
       console.error('Error stack:', error.stack);
@@ -681,16 +672,7 @@ export class UsersService {
           fullName: 'asc'
         }
       });
-
-      console.log('Found users:', users.length);
-      
-      // Transformar los usuarios para que el campo id se devuelva como uid
-      const transformedUsers = users.map(user => ({
-        ...user,
-        uid: user.id // Agregar el campo uid que el frontend espera
-      }));
-
-      return transformedUsers as User[];
+      return users as User[];
     } catch (error) {
       console.error('Error en filterUsersForGroup:', error);
       console.error('Error stack:', error.stack);

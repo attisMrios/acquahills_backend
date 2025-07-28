@@ -4,7 +4,6 @@ import { UserRole } from "../enums/user.enums";
 
 export interface User {
   id: string;
-  uid?: string; // Firebase UID (opcional para compatibilidad)
   userName: string;
   fullName: string;
   email: string;

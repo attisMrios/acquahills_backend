@@ -7,10 +7,13 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UserGroupsService } from './user-groups.service';
 import { CreateUserGroupDto, CreateUserGroupMembersBulkDto } from './dto/create-user-group.dto';
 import { UpdateUserGroupDto } from './dto/update-user-group.dto';
+import { CreateUserGroupSwaggerDto } from '../../common/dtos/swagger/create-user-group.swagger.dto';
+import { UpdateUserGroupSwaggerDto } from '../../common/dtos/swagger/update-user-group.swagger.dto';
+import { CreateUserGroupMembersBulkSwaggerDto } from '../../common/dtos/swagger/create-user-group-members-bulk.swagger.dto';
 
 @ApiTags('Grupos de Usuarios')
 @Controller('user-groups')
@@ -19,6 +22,7 @@ export class UserGroupsController {
 
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo grupo de usuarios' })
+  @ApiBody({ type: CreateUserGroupSwaggerDto, description: 'Datos para crear el grupo de usuarios' })
   @ApiResponse({ status: 201, description: 'Grupo creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Ya existe un grupo con este nombre' })
@@ -43,6 +47,7 @@ export class UserGroupsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un grupo de usuarios' })
+  @ApiBody({ type: UpdateUserGroupSwaggerDto, description: 'Datos para actualizar el grupo de usuarios' })
   @ApiResponse({ status: 200, description: 'Grupo actualizado exitosamente' })
   @ApiResponse({ status: 404, description: 'Grupo no encontrado' })
   @ApiResponse({ status: 409, description: 'Ya existe un grupo con este nombre' })
@@ -63,6 +68,7 @@ export class UserGroupsController {
 
   @Post('members/bulk')
   @ApiOperation({ summary: 'Agregar múltiples usuarios a un grupo' })
+  @ApiBody({ type: CreateUserGroupMembersBulkSwaggerDto, description: 'Datos para agregar usuarios al grupo' })
   @ApiResponse({ status: 201, description: 'Usuarios agregados exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 404, description: 'Grupo o usuario no encontrado' })

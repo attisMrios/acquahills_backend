@@ -6,10 +6,13 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { PropertyOwnersService } from './property-owners.service';
 import { CreatePropertyOwnerDto, CreatePropertyOwnersBulkDto } from './dto/create-property-owner.dto';
 import { UpdatePropertyOwnerDto } from './dto/update-property-owner.dto';
+import { CreatePropertyOwnerSwaggerDto } from '../../common/dtos/swagger/create-property-owner.swagger.dto';
+import { CreatePropertyOwnersBulkSwaggerDto } from '../../common/dtos/swagger/create-property-owners-bulk.swagger.dto';
+import { UpdatePropertyOwnerSwaggerDto } from '../../common/dtos/swagger/update-property-owner.swagger.dto';
 
 @ApiTags('Propietarios de Apartamentos')
 @Controller('property-owners')
@@ -18,6 +21,7 @@ export class PropertyOwnersController {
 
   @Post()
   @ApiOperation({ summary: 'Crear una nueva relación de propietario de apartamento' })
+  @ApiBody({ type: CreatePropertyOwnerSwaggerDto, description: 'Datos para crear la relación de propietario' })
   @ApiResponse({ status: 201, description: 'Propietario creado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'La relación de propietario ya existe' })
@@ -27,6 +31,7 @@ export class PropertyOwnersController {
 
   @Post('bulk')
   @ApiOperation({ summary: 'Crear múltiples relaciones de propietarios de apartamento' })
+  @ApiBody({ type: CreatePropertyOwnersBulkSwaggerDto, description: 'Datos para crear múltiples relaciones de propietarios' })
   @ApiResponse({ status: 201, description: 'Propietarios creados exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Algunas relaciones de propietario ya existen' })
@@ -36,6 +41,7 @@ export class PropertyOwnersController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar una relación de propietario' })
+  @ApiBody({ type: UpdatePropertyOwnerSwaggerDto, description: 'Datos para actualizar la relación de propietario' })
   @ApiResponse({ status: 200, description: 'Propietario actualizado exitosamente' })
   @ApiResponse({ status: 404, description: 'Propietario no encontrado' })
   @ApiResponse({ status: 409, description: 'La relación de propietario ya existe' })
