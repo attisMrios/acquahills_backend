@@ -38,7 +38,7 @@ export class UserGroupsService {
                 id: true,
                 fullName: true,
                 email: true,
-                phone: true,
+                fullPhone: true,
                 dni: true,
               },
             },
