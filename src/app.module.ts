@@ -5,8 +5,18 @@ import { ApartmentsModule } from './modules/apartments/apartments.module';
 import { PropertyOwnersModule } from './modules/property-owners/property-owners.module';
 import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { ImportModule } from './modules/import/import.module';
-
+import { UpdatesModule } from './modules/updates/updates.module';
+import { SettingsModule } from './modules/settings/settings.module';
 @Module({
-  imports: [UsersModule, InitModule, ApartmentsModule, PropertyOwnersModule, UserGroupsModule, ImportModule],
+  imports: [
+    UsersModule,
+    InitModule,
+    UpdatesModule,
+    SettingsModule,
+    ApartmentsModule, 
+    PropertyOwnersModule, 
+    UserGroupsModule,
+    ImportModule
+  ],
 })
 export class AppModule {}

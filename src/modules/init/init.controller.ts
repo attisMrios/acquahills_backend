@@ -9,13 +9,16 @@ export class InitController {
 
   @Post('admin')
   @HttpCode(HttpStatus.CREATED)
-  @ApiBody({ type: CreateUserSwaggerDto, description: 'Datos a actualizar (parcial o total)' })
+  @ApiBody({ type: CreateUserSwaggerDto, description: 'Datos para la inicialización del administrador' })
   async initializeAdmin(@Body() body: {
     email: string;
     password: string;
     userName: string;
     fullName: string;
     dni: string;
+    countryCode: string;
+    phone: string;
+    fullPhone: string;
     secret: string;
   }) {
     // Protege el endpoint con una clave secreta simple
