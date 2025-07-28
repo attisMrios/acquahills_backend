@@ -11,7 +11,7 @@ export const CreateUserSchema = z.object({
   userName: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres').max(50, 'El nombre de usuario no puede exceder 50 caracteres'),
   fullName: z.string().min(2, 'El nombre completo debe tener al menos 2 caracteres').max(100, 'El nombre completo no puede exceder 100 caracteres'),
   role: z.nativeEnum(UserRole, {
-    error: 'El rol debe ser admin, manager o user'
+    invalid_type_error: 'El rol debe ser admin, manager o user'
   }),
   countryCode: z.string().min(2, 'El código de país es requerido').max(3, 'El código de país no puede exceder 3 caracteres'),
   phone: z.string().min(5, 'El número local es requerido').max(20, 'El número local no puede exceder 20 dígitos').regex(/^\d+$/, 'El número local solo debe contener dígitos'),
@@ -30,7 +30,7 @@ export const UpdateUserSchema = z.object({
   userName: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres').max(50, 'El nombre de usuario no puede exceder 50 caracteres').optional(),
   fullName: z.string().min(2, 'El nombre completo debe tener al menos 2 caracteres').max(100, 'El nombre completo no puede exceder 100 caracteres').optional(),
   role: z.nativeEnum(UserRole, {
-    error: 'El rol debe ser admin, manager o user'
+    invalid_type_error: 'El rol debe ser admin, manager o user'
   }).optional(),
   countryCode: z.string().min(2).max(3).optional(),
   phone: z.string().min(5).max(20).regex(/^\d+$/, 'El número local solo debe contener dígitos').optional(),
