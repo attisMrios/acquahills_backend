@@ -2,12 +2,16 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../../common/services/prisma.service';
 import { CreateApartmentDto } from './dto/create-apartment.dto';
 import { UpdateApartmentDto } from './dto/update-apartment.dto';
+import {
+  CreateApartmentDto as CreateApartmentInputDto,
+  UpdateApartmentDto as UpdateApartmentInputDto,
+} from '../../common/dtos/inputs/apartment.input.dto';
 
 @Injectable()
 export class ApartmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createApartmentDto: CreateApartmentDto) {
+  async create(createApartmentDto: CreateApartmentDto | CreateApartmentInputDto) {
     try {
       const apartment = await this.prisma.apartment.create({
         data: createApartmentDto,
@@ -40,7 +44,7 @@ export class ApartmentsService {
                 id: true,
                 fullName: true,
                 email: true,
-                phone: true,
+                fullPhone: true,
                 dni: true,
               },
             },
@@ -56,7 +60,7 @@ export class ApartmentsService {
     return apartment;
   }
 
-  async update(id: number, updateApartmentDto: UpdateApartmentDto) {
+  async update(id: number, updateApartmentDto: UpdateApartmentDto | UpdateApartmentInputDto) {
     try {
       const apartment = await this.prisma.apartment.update({
         where: { id },
@@ -92,6 +96,8 @@ export class ApartmentsService {
     return this.prisma.apartment.count();
   }
 
+
+
   async search(query: string) {
     return this.prisma.apartment.findMany({
       where: {
@@ -109,4 +115,10 @@ export class ApartmentsService {
       },
     });
   }
+
+
+
+
+
+
 } 

@@ -40,16 +40,11 @@ model UserGroupMember {
 
 model User {
   id              String           @id @default(cuid())
-  uid             String?          @unique // Firebase UID
   userName        String           @unique
   fullName        String
   email           String           @unique
   role            String           @default("user")
-  phone           String?
-  email           String    @unique
-  role            String    @default("user")
   countryCode     String?   @default("CO")
-  phone           String
   fullPhone       String?   @default("") // Número internacional sin el signo +
   address         String?
   birthDate       DateTime?

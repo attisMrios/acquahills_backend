@@ -9,7 +9,7 @@ export class SettingsService {
   async create(createSettingDto: CreateSettingDto) {
     const parsed = CreateSettingSchema.safeParse(createSettingDto);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.errors);
+      throw new BadRequestException(parsed.error.issues);
     }
     // Verificar si ya existe un registro para la categoría
     const existing = await this.prisma.setting.findFirst({ where: { category: parsed.data.category } });
@@ -33,7 +33,7 @@ export class SettingsService {
   async updateByCategory(category: SettingCategory, updateSettingDto: UpdateSettingDto) {
     const parsed = UpdateSettingSchema.safeParse(updateSettingDto);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.errors);
+      throw new BadRequestException(parsed.error.issues);
     }
     const setting = await this.prisma.setting.findFirst({ where: { category } });
     if (!setting) throw new NotFoundException('Setting not found');

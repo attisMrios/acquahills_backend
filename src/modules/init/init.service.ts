@@ -50,7 +50,6 @@ export class InitService {
         dni: data.dni,
         password: hashedPassword,
         isEmailVerified: true,
-        phone: data.phone,
         fullPhone: data.fullPhone,
         countryCode: data.countryCode,
       },
