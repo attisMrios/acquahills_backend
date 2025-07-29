@@ -114,4 +114,18 @@ export type ApartmentQueryDto = z.infer<typeof ApartmentQuerySchema>;
 export type ApartmentIdDto = z.infer<typeof ApartmentIdSchema>;
 export type FilterApartmentsDto = z.infer<typeof FilterApartmentsSchema>;
 export type ApartmentByOwnerDto = z.infer<typeof ApartmentByOwnerSchema>;
-export type UniqueApartmentDto = z.infer<typeof UniqueApartmentSchema>; 
+export type UniqueApartmentDto = z.infer<typeof UniqueApartmentSchema>;
+
+/**
+ * Schema para importación de apartamentos
+ */
+export const ApartmentImportSchema = z.object({
+  apartment: z.string().min(1, 'El número de apartamento es requerido').max(10, 'El número de apartamento no puede exceder 10 caracteres'),
+  house: z.string().min(1, 'El número de casa es requerido').max(50, 'El número de casa no puede exceder 50 caracteres'),
+  fullAddress: z.string().min(1, 'La dirección completa es requerida').max(150, 'La dirección completa no puede exceder 150 caracteres'),
+  block: z.string().min(1, 'El bloque es requerido').max(10, 'El bloque no puede exceder 10 caracteres'),
+  floor: z.string().min(1, 'El piso es requerido').max(10, 'El piso no puede exceder 10 caracteres'),
+  tower: z.string().min(1, 'La torre es requerida').max(10, 'La torre no puede exceder 10 caracteres')
+});
+
+export type ApartmentImportDto = z.infer<typeof ApartmentImportSchema>; 

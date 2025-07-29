@@ -44,7 +44,7 @@ export class ApartmentsService {
                 id: true,
                 fullName: true,
                 email: true,
-                phone: true,
+                fullPhone: true,
                 dni: true,
               },
             },

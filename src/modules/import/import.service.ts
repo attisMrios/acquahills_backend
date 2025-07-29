@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserImportDto } from '../../common/dtos/inputs/user.input.dto';
+import { ApartmentImportDto } from '../../common/dtos/inputs/apartment.input.dto';
 import { parseXlsx } from '../../common/utils/parse-xlsx.utils';
 import { writeErrorsToXlsx } from '../../common/utils/write-errors-xlsx.utils';
 import { join } from 'path';
@@ -161,6 +162,134 @@ export class ImportService {
         schemaErrors: invalidData.length,
         validationErrors: validationErrors.length,
         successfulImports: createdUsers.length
+      }
+    };
+  }
+
+  async importApartmentsFromBuffer(buffer: Buffer) {
+    console.log('Procesando archivo de apartamentos con tamaño:', buffer.length);
+    const rawData = parseXlsx<ApartmentImportDto>(buffer);
+    console.log('Datos extraídos del Excel:', rawData.length, 'filas');
+
+    const validData: ApartmentImportDto[] = [];
+    const invalidData: { row: any; error: string }[] = [];
+    const validationErrors: { row: any; error: string }[] = [];
+    const createdApartments: any[] = [];
+
+    // Primera pasada: validación manual
+    for (const row of rawData) {
+      const errors: string[] = [];
+      
+      // Validar campos requeridos
+      if (!row.apartment || String(row.apartment).length < 1) {
+        errors.push('apartment: el número de apartamento es requerido');
+      }
+      if (!row.house || String(row.house).length < 1) {
+        errors.push('house: el número de casa es requerido');
+      }
+      if (!row.fullAddress || String(row.fullAddress).length < 1) {
+        errors.push('fullAddress: la dirección completa es requerida');
+      }
+      if (!row.block || String(row.block).length < 1) {
+        errors.push('block: el bloque es requerido');
+      }
+      if (!row.floor || String(row.floor).length < 1) {
+        errors.push('floor: el piso es requerido');
+      }
+      if (!row.tower || String(row.tower).length < 1) {
+        errors.push('tower: la torre es requerida');
+      }
+      
+      if (errors.length > 0) {
+        invalidData.push({ row, error: errors.join('; ') });
+      } else {
+        validData.push(row as ApartmentImportDto);
+      }
+    }
+
+    // Segunda pasada: validaciones de negocio y creación individual
+    for (let i = 0; i < validData.length; i++) {
+      const apartmentData = validData[i];
+      const originalRow = rawData.find(row => 
+        String(row.apartment) === String(apartmentData.apartment) && 
+        String(row.house) === String(apartmentData.house) &&
+        String(row.tower) === String(apartmentData.tower)
+      );
+
+      try {
+        // Verificar si el apartamento ya existe (combinación única de apartment, house, tower)
+        const existingApartment = await this.prisma.apartment.findFirst({
+          where: {
+            apartment: String(apartmentData.apartment),
+            house: String(apartmentData.house),
+            tower: String(apartmentData.tower)
+          }
+        });
+
+        if (existingApartment) {
+          validationErrors.push({ 
+            row: originalRow, 
+            error: 'El apartamento ya existe (misma combinación de apartment, house, tower)' 
+          });
+          continue;
+        }
+
+        // Crear el apartamento individualmente
+        const createdApartment = await this.prisma.apartment.create({
+          data: {
+            apartment: String(apartmentData.apartment),
+            house: String(apartmentData.house),
+            fullAddress: String(apartmentData.fullAddress),
+            block: String(apartmentData.block),
+            floor: String(apartmentData.floor),
+            tower: String(apartmentData.tower)
+          }
+        });
+
+        createdApartments.push(createdApartment);
+
+      } catch (error) {
+        // Capturar cualquier otro error inesperado
+        validationErrors.push({ 
+          row: originalRow, 
+          error: `Error inesperado: ${error.message}` 
+        });
+      }
+    }
+
+    // Combinar todos los errores
+    const allErrors = [...invalidData, ...validationErrors];
+    let errorFileName: string | null = null;
+
+    if (allErrors.length > 0) {
+      const timestamp = Date.now();
+      errorFileName = `errores-importacion-apartamentos-${timestamp}.xlsx`;
+      const outputDir = join(process.cwd(), 'tmp');
+      const outputPath = join(outputDir, errorFileName);
+      
+      console.log('Directorio de salida:', outputDir);
+      console.log('¿Existe el directorio?', existsSync(outputDir));
+      
+      // Crear el directorio si no existe
+      if (!existsSync(outputDir)) {
+        console.log('Creando directorio...');
+        mkdirSync(outputDir, { recursive: true });
+        console.log('Directorio creado exitosamente');
+      }
+      
+      console.log('Escribiendo archivo en:', outputPath);
+      writeErrorsToXlsx(allErrors, outputPath);
+      console.log('Archivo escrito exitosamente');
+    }
+
+    return {
+      inserted: createdApartments.length,
+      errors: allErrors.length,
+      errorFile: errorFileName,
+      details: {
+        schemaErrors: invalidData.length,
+        validationErrors: validationErrors.length,
+        successfulImports: createdApartments.length
       }
     };
   }

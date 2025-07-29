@@ -85,5 +85,78 @@ export class ImportController {
     
     return this.importService.importUsersFromBuffer(file.buffer);
   }
+
+  @Post('apartments')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Importar apartamentos desde archivo Excel',
+    description: 'Importa apartamentos desde un archivo Excel (.xlsx) con validaciones completas'
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Archivo Excel (.xlsx) con datos de apartamentos'
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Apartamentos importados exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        inserted: {
+          type: 'number',
+          description: 'Número de apartamentos insertados exitosamente'
+        },
+        errors: {
+          type: 'number',
+          description: 'Número total de errores encontrados'
+        },
+        errorFile: {
+          type: 'string',
+          nullable: true,
+          description: 'Nombre del archivo de errores generado (si hay errores)'
+        },
+        details: {
+          type: 'object',
+          properties: {
+            schemaErrors: {
+              type: 'number',
+              description: 'Errores de validación de esquema'
+            },
+            validationErrors: {
+              type: 'number',
+              description: 'Errores de validación de negocio (duplicados, etc.)'
+            },
+            successfulImports: {
+              type: 'number',
+              description: 'Importaciones exitosas'
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Error en el formato del archivo o datos inválidos'
+  })
+  async importApartments(@UploadedFile() file: Express.Multer.File) {
+    console.log('Archivo de apartamentos recibido:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      bufferLength: file.buffer?.length
+    });
+    
+    return this.importService.importApartmentsFromBuffer(file.buffer);
+  }
 }
   
