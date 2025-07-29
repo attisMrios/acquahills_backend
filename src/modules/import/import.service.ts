@@ -5,7 +5,6 @@ import { parseXlsx } from '../../common/utils/parse-xlsx.utils';
 import { writeErrorsToXlsx } from '../../common/utils/write-errors-xlsx.utils';
 import { join } from 'path';
 import { PrismaService } from '../../common/services/prisma.service';
-import * as bcrypt from 'bcryptjs';
 import { existsSync, mkdirSync } from 'fs';
 
 @Injectable()
@@ -38,9 +37,6 @@ export class ImportService {
        }
        if (!row.dni || String(row.dni).length < 8) {
          errors.push('dni: debe tener al menos 8 caracteres');
-       }
-       if (!row.password || row.password.length < 8) {
-         errors.push('password: debe tener al menos 8 caracteres');
        }
       
       if (errors.length > 0) {
@@ -99,9 +95,6 @@ export class ImportService {
           continue;
         }
 
-                 // Encriptar la contraseña
-         const hashedPassword = await bcrypt.hash(String(userData.password), 12);
-
                  // Crear el usuario individualmente
          const createdUser = await this.prisma.user.create({
            data: {
@@ -112,9 +105,9 @@ export class ImportService {
              fullPhone: userData.fullPhone ? String(userData.fullPhone) : null,
              address: userData.address ? String(userData.address) : null,
              dni: String(userData.dni),
-             password: hashedPassword,
              birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
-             isEmailVerified: false
+             isEmailVerified: false,
+             password: ''
            }
          });
 
