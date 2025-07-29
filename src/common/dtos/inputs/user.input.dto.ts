@@ -108,10 +108,7 @@ export const UserImportSchema = z.object({
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres').max(20, 'El DNI no puede exceder 20 caracteres'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-    'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
-  )
+  countryCode: z.string().optional()
 });
 
 export type UserImportDto = z.infer<typeof UserImportSchema>; 
