@@ -1,21 +1,21 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
-import { CreateUserGroupDto } from '../../common/dtos/inputs/create-user-group.input.dto';
-import { CreateUserGroupMembersBulkDto } from '../../common/dtos/inputs/create-user-group.input.dto';
-import { UpdateUserGroupDto } from 'src/common/dtos/inputs/update-user-group.input.dto';
+import { 
+  createUserGroupSchema, 
+  createUserGroupMembersBulkSchema
+} from './dto/create-user-group.dto';
+import { updateUserGroupSchema } from './dto/update-user-group.dto';
 
 @Injectable()
 export class UserGroupsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Autor: dCardenas - Crear un nuevo grupo de usuarios */
-  async create(createUserGroupDto: CreateUserGroupDto) {
+  async create(createUserGroupDto: any) {
     try {
+      const validatedData = createUserGroupSchema.parse(createUserGroupDto);
       const userGroup = await this.prisma.userGroup.create({
-        data: {
-          name: createUserGroupDto.name,
-          description: createUserGroupDto.description,
-        },
+        data: validatedData,
       });
 
       return userGroup;
@@ -63,7 +63,7 @@ export class UserGroupsService {
                 id: true,
                 fullName: true,
                 email: true,
-                phone: true,
+                fullPhone: true,
                 dni: true,
               },
             },
@@ -80,14 +80,12 @@ export class UserGroupsService {
   }
 
   /** Autor: dCardenas - Actualizar un grupo */
-  async update(id: string, updateUserGroupDto: UpdateUserGroupDto) {
+  async update(id: string, updateUserGroupDto: any) {
     try {
+      const validatedData = updateUserGroupSchema.parse(updateUserGroupDto);
       const userGroup = await this.prisma.userGroup.update({
         where: { id },
-        data: {
-          name: updateUserGroupDto.name,
-          description: updateUserGroupDto.description,
-        },
+        data: validatedData,
       });
 
       return userGroup;
@@ -118,9 +116,10 @@ export class UserGroupsService {
   }
 
   /** Autor: dCardenas - Agregar múltiples usuarios a un grupo */
-  async addMembers(createUserGroupMembersBulkDto: CreateUserGroupMembersBulkDto) {
+  async addMembers(createUserGroupMembersBulkDto: any) {
     try {
-      const { userGroupId, userIds } = createUserGroupMembersBulkDto;
+      const validatedData = createUserGroupMembersBulkSchema.parse(createUserGroupMembersBulkDto);
+      const { userGroupId, userIds } = validatedData;
       const results: any[] = [];
 
       // Verificar que el grupo existe
@@ -154,7 +153,7 @@ export class UserGroupsService {
                   id: true,
                   fullName: true,
                   email: true,
-                  phone: true,
+                  fullPhone: true,
                   dni: true,
                 },
               },
