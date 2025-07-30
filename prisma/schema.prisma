@@ -46,10 +46,7 @@ model User {
   email           String           @unique
   role            String           @default("user")
   phone           String?
-  email           String    @unique
-  role            String    @default("user")
   countryCode     String?   @default("CO")
-  phone           String
   fullPhone       String?   @default("") // Número internacional sin el signo +
   address         String?
   birthDate       DateTime?
@@ -128,5 +125,8 @@ enum VehiculeType {
   CARRO
   MOTO
   CAMIONETA
+  MOTOCARRO
+  FURGON 
+  CAMION
 }
 
