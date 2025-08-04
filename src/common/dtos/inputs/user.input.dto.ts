@@ -104,11 +104,11 @@ export const UserImportSchema = z.object({
   fullName: z.string().min(2, 'El nombre completo debe tener al menos 2 caracteres').max(100, 'El nombre completo no puede exceder 100 caracteres'),
   email: z.string().email('El correo electrónico no es válido'),
   role: z.string().default('user'),
-  fullPhone: z.string().optional(),
+  phone: z.any().optional().transform(val => val ? String(val) : undefined),
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres').max(20, 'El DNI no puede exceder 20 caracteres'),
-  countryCode: z.string().optional()
+  countryCode: z.any().optional().transform(val => val ? String(val).trim() : undefined)
 });
 
 export type UserImportDto = z.infer<typeof UserImportSchema>; 

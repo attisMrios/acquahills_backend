@@ -6,6 +6,7 @@ import { writeErrorsToXlsx } from '../../common/utils/write-errors-xlsx.utils';
 import { join } from 'path';
 import { PrismaService } from '../../common/services/prisma.service';
 import { existsSync, mkdirSync } from 'fs';
+import { generateFullPhone } from '../../common/utils/country-codes.utils';
 
 @Injectable()
 export class ImportService {
@@ -95,6 +96,11 @@ export class ImportService {
           continue;
         }
 
+                 // Generar el número de teléfono completo
+                 const countryCode = userData.countryCode && userData.countryCode.trim() !== '' ? userData.countryCode : 'CO'; // Por defecto Colombia
+                 console.log(`Usuario: ${userData.userName}, CountryCode original: "${userData.countryCode}", CountryCode final: "${countryCode}"`);
+                 const fullPhone = userData.phone ? generateFullPhone(countryCode, userData.phone) : null;
+
                  // Crear el usuario individualmente
          const createdUser = await this.prisma.user.create({
            data: {
@@ -102,7 +108,9 @@ export class ImportService {
              fullName: String(userData.fullName),
              email: String(userData.email),
              role: String(userData.role),
-             fullPhone: userData.fullPhone ? String(userData.fullPhone) : null,
+             phone: userData.phone ? String(userData.phone) : null, // Guardar el phone original
+             fullPhone: fullPhone,
+             countryCode: countryCode, // Agregar el countryCode a la base de datos
              address: userData.address ? String(userData.address) : null,
              dni: String(userData.dni),
              birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
