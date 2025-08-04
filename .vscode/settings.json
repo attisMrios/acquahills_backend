@@ -1,3 +1,58 @@
 {
+<<<<<<< HEAD
     "postman.settings.dotenv-detection-notification-visibility": false
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": false,
+    "**/.git": true,
+    "**/.DS_Store": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true
+  },
+  "debug.console.fontSize": 12,
+  "debug.console.lineHeight": 18,
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "debug.showBreakpointsInOverviewRuler": true,
+  "debug.showInlineBreakpointCandidates": true,
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.console.closeOnEnd": false,
+  "debug.console.historySuggestions": "all",
+  "debug.console.wordWrap": true,
+  "debug.console.scrollback": 1000,
+  "debug.console.acceptSuggestionOnCommitCharacter": false,
+  "debug.console.acceptSuggestionOnEnter": "on",
+  "debug.console.suggest.insertMode": "insert",
+  "debug.console.suggest.selectionMode": "whenQuickSuggestion",
+  "debug.console.suggest.showKeywords": true,
+  "debug.console.suggest.showSnippets": true,
+  "debug.console.suggest.showUsers": true,
+  "debug.console.suggest.showFunctions": true,
+  "debug.console.suggest.showVariables": true,
+  "debug.console.suggest.showClasses": true,
+  "debug.console.suggest.showInterfaces": true,
+  "debug.console.suggest.showModules": true,
+  "debug.console.suggest.showProperties": true,
+  "debug.console.suggest.showEvents": true,
+  "debug.console.suggest.showOperators": true,
+  "debug.console.suggest.showUnits": true,
+  "debug.console.suggest.showValues": true,
+  "debug.console.suggest.showConstants": true,
+  "debug.console.suggest.showEnums": true,
+  "debug.console.suggest.showEnumMembers": true,
+  "debug.console.suggest.showColors": true,
+  "debug.console.suggest.showFiles": true,
+  "debug.console.suggest.showReferences": true,
+  "debug.console.suggest.showFolders": true,
+  "debug.console.suggest.showTypeParameters": true,
+  "debug.console.suggest.showWords": true
 }

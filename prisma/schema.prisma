@@ -45,6 +45,7 @@ model User {
   email           String           @unique
   role            String           @default("user")
   countryCode     String?   @default("CO")
+  phone           String?   @default("") // Número local
   fullPhone       String?   @default("") // Número internacional sin el signo +
   address         String?
   birthDate       DateTime?
@@ -53,7 +54,7 @@ model User {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   isEmailVerified Boolean          @default(false)
-  password        String           // Hashed password
+  password        String           
   propertyOwners  PropertyOwner[]
   userGroupMembers UserGroupMember[]
   Vehicle        Vehicle[]
@@ -99,6 +100,7 @@ model Setting {
   id           String          @id @default(cuid())
   category     SettingCategory
   jsonSettings String
+  count        Int             @default(0) // Contador de mensajes restantes
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
