@@ -7,6 +7,9 @@ import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { ImportModule } from './modules/import/import.module';
 import { UpdatesModule } from './modules/updates/updates.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
+import { PrismaModule } from './prisma/prisma.module';
+
 @Module({
   imports: [
     UsersModule,
@@ -16,7 +19,10 @@ import { SettingsModule } from './modules/settings/settings.module';
     ApartmentsModule, 
     PropertyOwnersModule, 
     UserGroupsModule,
-    ImportModule
+    ImportModule,
+    VehiclesModule,
+    PrismaModule
   ],
 })
 export class AppModule {}
+
