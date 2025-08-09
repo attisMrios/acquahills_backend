@@ -44,6 +44,7 @@ export class SettingsController {
    * @param createSettingDto Datos para crear o actualizar el setting
    */
   @Post()
+  @UseGuards(FirebaseAuthGuard)
   @ApiBearerAuth('firebase-auth')
   @ApiOperation({ summary: 'Crear o actualizar un setting', description: 'Crea una configuración para una categoría específica. Si ya existe, la actualiza.' })
   @ApiBody({
