@@ -8,6 +8,7 @@ import { UpdatesModule } from './modules/updates/updates.module';
 import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { CommonAreasModule } from './modules/common-areas/common-areas.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UserGroupsModule,
     ImportModule,
     PrismaModule,
+    CommonAreasModule 
   ],
 })
 export class AppModule {}
