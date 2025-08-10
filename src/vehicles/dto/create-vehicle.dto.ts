@@ -1,6 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-// Corregido: VehiculeType no existe, debe ser VehicleType
-import { VehicleType } from "@prisma/client";
+
+export enum VehicleType {
+  CARRO = 'CARRO',
+  MOTO = 'MOTO',
+  CAMIONETA = 'CAMIONETA',
+  MOTOCARRO = 'MOTOCARRO',
+  FURGON = 'FURGON',
+  CAMION = 'CAMION'
+}
 
 export class CreateVehicleDto {
     @ApiProperty({ required: true })
@@ -13,6 +20,6 @@ export class CreateVehicleDto {
     color: string;
     @ApiProperty({ required: true })
     model: string;
-    @ApiProperty({ required: true, default: 'CARRO' })
-    vehicleType: VehiculeType = 'CARRO'
+    @ApiProperty({ required: true, enum: VehicleType, default: VehicleType.CARRO })
+    vehicleType: VehicleType = VehicleType.CARRO
 }
