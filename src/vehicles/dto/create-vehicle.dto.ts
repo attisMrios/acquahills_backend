@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Vehicle, VehiculeType } from "@prisma/client";
-
+// Corregido: VehiculeType no existe, debe ser VehicleType
+import { VehicleType } from "@prisma/client";
 
 export class CreateVehicleDto {
     @ApiProperty({ required: true })
