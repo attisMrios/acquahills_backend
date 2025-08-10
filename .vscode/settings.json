@@ -1,4 +1,6 @@
 {
+<<<<<<< HEAD
+    "postman.settings.dotenv-detection-notification-visibility": false
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "typescript.suggest.autoImports": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
@@ -53,4 +55,4 @@
   "debug.console.suggest.showFolders": true,
   "debug.console.suggest.showTypeParameters": true,
   "debug.console.suggest.showWords": true
-} 
+}

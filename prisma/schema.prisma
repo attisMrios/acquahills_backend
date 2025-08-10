@@ -14,23 +14,23 @@ datasource db {
 }
 
 model UserGroup {
-  id          String            @id @default(cuid())
-  name        String            @unique
+  id          String           @id @default(cuid())
+  name        String           @unique
   description String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   members     UserGroupMember[]
 
   @@map("user_groups")
 }
 
 model UserGroupMember {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   userGroupId String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userGroup UserGroup @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
 
@@ -39,56 +39,58 @@ model UserGroupMember {
 }
 
 model User {
-  id               String            @id @default(cuid())
-  userName         String            @unique
-  fullName         String
-  email            String            @unique
-  role             String            @default("user")
-  countryCode      String?           @default("CO")
-  phone            String?           @default("") // Número local
-  fullPhone        String?           @default("") // Número internacional sin el signo +
-  address          String?
-  birthDate        DateTime?
-  dni              String            @unique
-  lastLogin        DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  isEmailVerified  Boolean           @default(false)
-  password         String
-  propertyOwners   PropertyOwner[]
+  id              String           @id @default(cuid())
+  userName        String           @unique
+  fullName        String
+  email           String           @unique
+  role            String           @default("user")
+  countryCode     String?   @default("CO")
+  phone           String?   @default("") // Número local
+  fullPhone       String?   @default("") // Número internacional sin el signo +
+  address         String?
+  birthDate       DateTime?
+  dni             String           @unique
+  lastLogin       DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  isEmailVerified Boolean          @default(false)
+  password        String           
+  propertyOwners  PropertyOwner[]
   userGroupMembers UserGroupMember[]
+  Vehicle        Vehicle[]
 
   @@map("users")
 }
 
 model Apartment {
-  id             Int             @id @default(autoincrement())
-  apartment      String          @db.VarChar(10)
-  house          String          @db.VarChar(50)
-  fullAddress    String          @db.VarChar(150)
-  block          String          @db.VarChar(10)
-  floor          String          @db.VarChar(10)
-  tower          String          @db.VarChar(10)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id             Int              @id @default(autoincrement())
+  apartment      String           @db.VarChar(10)
+  house          String           @db.VarChar(50)
+  fullAddress    String           @db.VarChar(150)
+  block          String           @db.VarChar(10)
+  floor          String           @db.VarChar(10)
+  tower          String           @db.VarChar(10)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   propertyOwners PropertyOwner[]
 
   @@map("apartments")
 }
 
 model PropertyOwner {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   apartmentId Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   apartment Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, apartmentId])
   @@map("property_owners")
 }
+
 
 enum SettingCategory {
   WHATSAPP
@@ -103,6 +105,31 @@ model Setting {
   updatedAt    DateTime        @updatedAt
 
   @@map("settings")
+}
+
+
+
+model Vehicle {
+  code      String   @id
+  userId    String
+  brand     String
+  color     String
+  model     String
+  vehicleType VehiculeType @default(CARRO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@map("vehicles")
+}
+
+enum VehiculeType {
+  CARRO
+  MOTO
+  CAMIONETA
+  MOTOCARRO
+  FURGON 
+  CAMION
 }
 
 enum WeekDay {
@@ -144,3 +171,6 @@ model CommonAreaTimeSlot {
   endTime      String // Ejemplo: "10:00"
   commonArea   CommonArea @relation(fields: [commonAreaId], references: [id], onDelete: Restrict)
 }
+
+
+
