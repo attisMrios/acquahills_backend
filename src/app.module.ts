@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonAreasModule } from './modules/common-areas/common-areas.module';
+import { TypeCommonAreasModule } from './modules/type-common-areas/type-common-areas.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { CommonAreasModule } from './modules/common-areas/common-areas.module';
     ImportModule,
     PrismaModule,
     CommonAreasModule,
-    VehiclesModule
+    VehiclesModule,
+    TypeCommonAreasModule
   ],
 })
 export class AppModule {}
