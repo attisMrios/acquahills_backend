@@ -45,6 +45,13 @@ export class TimeSlotDto {
 }
 
 export class CreateCommonAreaSwaggerDto {
+
+    @ApiProperty({ 
+        description: 'ID del tipo de área común',
+        example: 1
+    })
+    typeCommonAreaId: number;
+
     @ApiProperty({ 
         description: 'Nombre del área común',
         example: 'Sala de eventos'
