@@ -4,8 +4,7 @@ import {
     CreateTypeCommonAreaDto,
     CreateTypeCommonAreaSchema,
     TypeCommonAreaIdSchema,
-    UpdateTypeCommonAreaDto,
-    UpdateTypeCommonAreaSchema
+    UpdateTypeCommonAreaDto
 } from 'src/common/dtos/inputs/typeCommonArea.input.dto';
 import { CreateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/create-type-common-area.swagger.dto';
 import { UpdateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/update-type-common-areas.swagger.dto';
@@ -83,32 +82,8 @@ export class TypeCommonAreasController {
   @ApiResponse({ status: 404, description: 'Tipo de área común no encontrado' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   @ApiResponse({ status: 409, description: 'El tipo de área común ya existe' })
-  update(@Param() params: any, @Body() updateTypeCommonAreaDto: UpdateTypeCommonAreaDto): Promise<any> {
-    try {
-      // Validar que al menos un campo sea enviado
-      if (!updateTypeCommonAreaDto.name && !updateTypeCommonAreaDto.description) {
-        throw new BadRequestException({
-          message: 'Al menos un campo debe ser enviado para actualizar',
-          errors: [{ message: 'Se requiere name o description' }],
-        });
-      }
-
-      const validatedParams = TypeCommonAreaIdSchema.parse(params);
-      const validatedData = UpdateTypeCommonAreaSchema.parse(updateTypeCommonAreaDto);
-
-      return this.typeCommonAreasService.update(validatedParams.id, validatedData);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      if (error.errors) {
-        throw new BadRequestException({
-          message: 'Datos de entrada inválidos',
-          errors: error.errors,
-        });
-      }
-      throw error;
-    }
+  update(@Param('id') id: string, @Body() updateTypeCommonAreaDto: UpdateTypeCommonAreaDto) {
+    return this.typeCommonAreasService.update(+id, updateTypeCommonAreaDto);
   }
 
   @Delete(':id')

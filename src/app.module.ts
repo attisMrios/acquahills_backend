@@ -7,7 +7,7 @@ import { UpdatesModule } from './modules/updates/updates.module';
 import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { ImportModule } from './modules/import/import.module';
 import { UsersModule } from './modules/users/users.module';
-import { VehiclesModule } from './vehicles/vehicles.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonAreasModule } from './modules/common-areas/common-areas.module';
 import { TypeCommonAreasModule } from './modules/type-common-areas/type-common-areas.module';

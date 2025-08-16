@@ -92,34 +92,12 @@ export class CommonAreasService {
 
   async update(id: number, updateCommonAreaDto: UpdateCommonAreaDto | UpdateCommonAreaInputDto) {
     try {
-      // Adaptar el DTO para cumplir con la estructura esperada por Prisma
-      const { unavailableDays, timeSlots, ...rest } = updateCommonAreaDto;
-
-      const data: Record<string, any> = {
-        ...rest,
-        ...(unavailableDays && Array.isArray(unavailableDays)
-          ? {
-              unavailableDays: {
-                deleteMany: {}, // Elimina todos los días no disponibles actuales
-                create: unavailableDays.map((day) => ({
-                  weekDay: day.weekDay,
-                  isFirstWorkingDay: day.isFirstWorkingDay,
-                })),
-              },
-            }
-          : {}),
-        ...(timeSlots && Array.isArray(timeSlots)
-          ? {
-              timeSlots: {
-                deleteMany: {}, // Elimina todos los horarios actuales
-                create: timeSlots.map((slot) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                })),
-              },
-            }
-          : {}),
-      };
+      // Adaptamos el DTO para cumplir con los tipos esperados por Prisma
+      const { typeCommonAreaId, ...rest } = updateCommonAreaDto as any;
+      const data: any = { ...rest };
+      if (typeof typeCommonAreaId !== 'undefined') {
+        data.typeCommonAreaId = typeCommonAreaId;
+      }
 
       const commonArea = await this.prisma.commonArea.update({
         where: { id },

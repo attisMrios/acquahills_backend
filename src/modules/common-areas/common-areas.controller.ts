@@ -87,43 +87,7 @@ export class CommonAreasController {
   })
   @ApiBody({ 
     type: UpdateCommonAreaDto, 
-    description: 'Datos para actualizar el área común (todos los campos son opcionales)',
-    examples: {
-      'actualizar-nombre-y-capacidad': {
-        summary: 'Actualizar solo nombre y capacidad',
-        description: 'Ejemplo de actualización parcial',
-        value: {
-          name: 'Sala de eventos actualizada',
-          maximunCapacity: 75
-        }
-      },
-      'actualizar-completo': {
-        summary: 'Actualización completa',
-        description: 'Ejemplo con todos los campos',
-        value: {
-          name: 'Sala de conferencias',
-          description: 'Sala moderna para conferencias y eventos corporativos',
-          maximunCapacity: 100,
-          peoplePerReservation: 15,
-          unavailableDays: [
-            {
-              weekDay: 'SUNDAY',
-              isFirstWorkingDay: false
-            }
-          ],
-          timeSlots: [
-            {
-              startTime: '08:00',
-              endTime: '12:00'
-            },
-            {
-              startTime: '13:00',
-              endTime: '17:00'
-            }
-          ]
-        }
-      }
-    }
+    description: 'Datos para actualizar el área común'
   })
   @ApiResponse({ status: 200, description: 'Área común actualizada exitosamente' })
   @ApiResponse({ status: 404, description: 'Área común no encontrada' })
