@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
-  CreateTypeCommonAreaDto as CreateTypeCommonAreaInputDto,
-  TypeCommonAreaQueryDto,
-  UpdateTypeCommonAreaDto as UpdateTypeCommonAreaInputDto
+    CreateTypeCommonAreaDto as CreateTypeCommonAreaInputDto,
+    TypeCommonAreaQueryDto,
+    UpdateTypeCommonAreaDto as UpdateTypeCommonAreaInputDto
 } from 'src/common/dtos/inputs/typeCommonArea.input.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 
@@ -74,13 +74,39 @@ export class TypeCommonAreasService {
 
   async remove(id: number) {
     try {
+      // Verificar si el tipo está siendo usado por áreas comunes
+      const areasUsingType = await this.prisma.commonArea.findMany({
+        where: { typeCommonAreaId: id },
+        select: {
+          id: true,
+          name: true,
+          description: true
+        }
+      });
+
+      if (areasUsingType.length > 0) {
+        const areaNames = areasUsingType.map(area => area.name).join(', ');
+        throw new ConflictException(
+          `No se puede eliminar este tipo de área común porque está siendo utilizado por ${areasUsingType.length} área(s) común(es): ${areaNames}`
+        );
+      }
+
       await this.prisma.typeCommonArea.delete({
         where: { id },
       });
       return { message: 'Tipo de área común eliminado correctamente' };
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error; // Re-lanzar el error de conflicto personalizado
+      }
       if (error.code === 'P2025') {
         throw new NotFoundException(`El tipo de área común con ID ${id} no encontrado`);
+      }
+      if (error.code === 'P2003') {
+        // Fallback para restricción de clave foránea (aunque ya lo manejamos arriba)
+        throw new ConflictException(
+          'No se puede eliminar este tipo de área común porque está siendo utilizado por una o más áreas comunes'
+        );
       }
       throw error;
     }
@@ -98,5 +124,27 @@ export class TypeCommonAreasService {
         createdAt: 'desc',
       },
     });
+  }
+
+  /**
+   * Verifica si un tipo de área común está siendo utilizado por áreas comunes
+   * @param id - ID del tipo de área común
+   * @returns Información sobre el uso del tipo
+   */
+  async checkUsage(id: number) {
+    const areasUsingType = await this.prisma.commonArea.findMany({
+      where: { typeCommonAreaId: id },
+      select: {
+        id: true,
+        name: true,
+        description: true
+      }
+    });
+
+    return {
+      isUsed: areasUsingType.length > 0,
+      usageCount: areasUsingType.length,
+      areas: areasUsingType
+    };
   }
 }

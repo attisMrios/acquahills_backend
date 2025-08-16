@@ -1,11 +1,11 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  CreateTypeCommonAreaDto,
-  CreateTypeCommonAreaSchema,
-  TypeCommonAreaIdSchema,
-  UpdateTypeCommonAreaDto,
-  UpdateTypeCommonAreaSchema
+    CreateTypeCommonAreaDto,
+    CreateTypeCommonAreaSchema,
+    TypeCommonAreaIdSchema,
+    UpdateTypeCommonAreaDto,
+    UpdateTypeCommonAreaSchema
 } from 'src/common/dtos/inputs/typeCommonArea.input.dto';
 import { CreateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/create-type-common-area.swagger.dto';
 import { UpdateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/update-type-common-areas.swagger.dto';
@@ -117,10 +117,32 @@ export class TypeCommonAreasController {
   @ApiResponse({ status: 200, description: 'Tipo de área común eliminado exitosamente' })
   @ApiResponse({ status: 404, description: 'Tipo de área común no encontrado' })
   @ApiResponse({ status: 400, description: 'ID inválido' })
+  @ApiResponse({ status: 409, description: 'No se puede eliminar porque está en uso' })
   remove(@Param() params: any): Promise<any> {
     try {
       const validatedParams = TypeCommonAreaIdSchema.parse(params);
       return this.typeCommonAreasService.remove(validatedParams.id);
+    } catch (error) {
+      if (error.errors) {
+        throw new BadRequestException({
+          message: 'ID inválido',
+          errors: error.errors,
+        });
+      }
+      throw error;
+    }
+  }
+
+  @Get(':id/usage')
+  @ApiOperation({ summary: 'Verificar si un tipo de área común está en uso' })
+  @ApiParam({ name: 'id', description: 'ID del tipo de área común', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Información de uso del tipo' })
+  @ApiResponse({ status: 404, description: 'Tipo de área común no encontrado' })
+  @ApiResponse({ status: 400, description: 'ID inválido' })
+  checkUsage(@Param() params: any): Promise<any> {
+    try {
+      const validatedParams = TypeCommonAreaIdSchema.parse(params);
+      return this.typeCommonAreasService.checkUsage(validatedParams.id);
     } catch (error) {
       if (error.errors) {
         throw new BadRequestException({
