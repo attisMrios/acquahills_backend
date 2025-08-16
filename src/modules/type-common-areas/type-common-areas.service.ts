@@ -56,12 +56,45 @@ export class TypeCommonAreasService {
 
   async update(id: number, updateTypeCommonAreaDto: UpdateTypeCommonAreaInputDto) {
     try {
+      console.log('🔍 [Service] Iniciando actualización:', { id, data: updateTypeCommonAreaDto });
+      
+      // Verificar que el tipo existe antes de actualizarlo
+      const existingType = await this.findOne(id);
+      console.log('✅ [Service] Tipo encontrado:', existingType);
+      
+      // Filtrar solo los campos que están presentes
+      const updateData: any = {};
+      if (updateTypeCommonAreaDto.name !== undefined) {
+        updateData.name = updateTypeCommonAreaDto.name;
+      }
+      if (updateTypeCommonAreaDto.description !== undefined) {
+        updateData.description = updateTypeCommonAreaDto.description;
+      }
+      
+      console.log('📝 [Service] Datos a actualizar:', updateData);
+      
+      // Si no hay datos para actualizar, devolver el tipo actual
+      if (Object.keys(updateData).length === 0) {
+        console.log('ℹ️ [Service] No hay datos para actualizar, devolviendo tipo actual');
+        return existingType;
+      }
+      
+      console.log('🚀 [Service] Ejecutando actualización en Prisma...');
       const typeCommonArea = await this.prisma.typeCommonArea.update({
         where: { id },
-        data: updateTypeCommonAreaDto,
+        data: updateData,
       });
+      
+      console.log('✅ [Service] Actualización exitosa:', typeCommonArea);
       return typeCommonArea;
     } catch (error) {
+      console.error('❌ [Service] Error en actualización:', error);
+      console.error('🔍 [Service] Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        meta: error.meta
+      });
+      
       if (error.code === 'P2025') {
         throw new NotFoundException(`El tipo de área común con ID ${id} no encontrado`);
       }

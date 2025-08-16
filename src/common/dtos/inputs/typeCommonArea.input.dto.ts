@@ -6,8 +6,14 @@ export const CreateTypeCommonAreaSchema = z.object({
 });
 
 export const UpdateTypeCommonAreaSchema = z.object({
-    name: z.string().min(1, 'El nombre es requerido').optional(),
-    description: z.string().min(1, 'La descripción es requerida').optional(),
+    name: z.string().min(1, 'El nombre debe tener al menos 1 carácter').optional(),
+    description: z.string().min(1, 'La descripción debe tener al menos 1 carácter').optional(),
+}).refine((data) => {
+    // Al menos uno de los campos debe estar presente
+    return data.name !== undefined || data.description !== undefined;
+}, {
+    message: 'Al menos uno de los campos (nombre o descripción) debe estar presente',
+    path: ['name', 'description']
 });
 
 export const TypeCommonAreaQuerySchema = z.object({
