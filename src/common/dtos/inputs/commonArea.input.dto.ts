@@ -86,20 +86,20 @@ export const CreateCommonAreaSchema = z.object({
 });
 
 export const UpdateCommonAreaSchema = z.object({
-    typeCommonAreaId: z.number().min(1, 'El tipo de área común es requerido'),
+    typeCommonAreaId: z.number().min(1, 'El tipo de área común es requerido').optional(),
     name: z.string().min(1, 'El nombre es requerido')
-    .max(100, 'El nombre no puede exceder 100 caracteres'),
+    .max(100, 'El nombre no puede exceder 100 caracteres').optional(),
     description: z.string()
-        .max(255, 'La descripción no puede exceder 255 caracteres'),
-    maximunCapacity: z.number().min(1, 'La capacidad máxima es requerida'),
-    peoplePerReservation: z.number().min(1, 'Las personas por reserva son requeridas'),
-    unavailableDays: z.array(UnavailableDaySchema),
+        .max(255, 'La descripción no puede exceder 255 caracteres').optional(),
+    maximunCapacity: z.number().min(1, 'La capacidad máxima es requerida').optional(),
+    peoplePerReservation: z.number().min(1, 'Las personas por reserva son requeridas').optional(),
+    unavailableDays: z.array(UnavailableDaySchema).optional(),
     timeSlots: z.array(TimeSlotSchema)
         .min(1, 'Debe tener al menos un horario disponible')
         .refine(validateNoOverlap, {
             message: 'Los horarios no pueden superponerse. Verifique que no haya conflictos entre los rangos de tiempo.',
             path: ['timeSlots']
-        }),
+        }).optional(),
 });
 
 export const CommonAreaQuerySchema = z.object({

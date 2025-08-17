@@ -92,28 +92,85 @@ export class CommonAreasService {
 
   async update(id: number, updateCommonAreaDto: UpdateCommonAreaDto | UpdateCommonAreaInputDto) {
     try {
-      // Adaptamos el DTO para cumplir con los tipos esperados por Prisma
-      const { typeCommonAreaId, ...rest } = updateCommonAreaDto as any;
+      console.log('🔍 Iniciando actualización de área común...');
+      console.log('DTO recibido:', JSON.stringify(updateCommonAreaDto, null, 2));
+      
+      // Extraer los arrays relacionados del DTO
+      const { unavailableDays, timeSlots, ...rest } = updateCommonAreaDto;
+      console.log('Datos extraídos:', { rest, unavailableDays, timeSlots });
+
+      // Preparar los datos para la actualización
       const data: any = { ...rest };
-      if (typeof typeCommonAreaId !== 'undefined') {
-        data.typeCommonAreaId = typeCommonAreaId;
+      
+      // Manejar el tipo de área común si está presente
+      if (typeof rest.typeCommonAreaId !== 'undefined') {
+        data.typeCommonAreaId = rest.typeCommonAreaId;
       }
 
-      const commonArea = await this.prisma.commonArea.update({
-        where: { id },
-        data,
-        include: {
-          unavailableDays: true,
-          timeSlots: true,
-        },
+      // Usar transacción para manejar la actualización de arrays relacionados
+      const commonArea = await this.prisma.$transaction(async (prisma) => {
+        // Si hay días no disponibles, eliminar los existentes y crear los nuevos
+        if (unavailableDays !== undefined) {
+          await prisma.commonAreaUnavailableDay.deleteMany({
+            where: { commonAreaId: id },
+          });
+          
+          if (unavailableDays && unavailableDays.length > 0) {
+            await prisma.commonAreaUnavailableDay.createMany({
+              data: unavailableDays.map((day) => ({
+                commonAreaId: id,
+                weekDay: day.weekDay,
+                isFirstWorkingDay: day.isFirstWorkingDay,
+              })),
+            });
+          }
+        }
+
+        // Si hay horarios, eliminar los existentes y crear los nuevos
+        if (timeSlots !== undefined) {
+          await prisma.commonAreaTimeSlot.deleteMany({
+            where: { commonAreaId: id },
+          });
+          
+          if (timeSlots && timeSlots.length > 0) {
+            await prisma.commonAreaTimeSlot.createMany({
+              data: timeSlots.map((slot) => ({
+                commonAreaId: id,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+              })),
+            });
+          }
+        }
+
+        // Actualizar el área común principal
+        return await prisma.commonArea.update({
+          where: { id },
+          data,
+          include: {
+            unavailableDays: true,
+            timeSlots: true,
+          },
+        });
       });
+
+      console.log('✅ Área común actualizada exitosamente:', JSON.stringify(commonArea, null, 2));
       return commonArea;
     } catch (error) {
+      console.error('❌ Error updating common area:');
+      console.error('Mensaje:', error.message);
+      console.error('Código:', error.code);
+      console.error('Meta:', error.meta);
+      console.error('Stack:', error.stack);
+      
       if (error.code === 'P2025') {
         throw new NotFoundException(`Área común con ID ${id} no encontrada`);
       }
       if (error.code === 'P2002') {
         throw new ConflictException('El área común ya existe');
+      }
+      if (error.code === 'P2003') {
+        throw new ConflictException('Error de referencia: verifique que el tipo de área común existe');
       }
       throw error;
     }
