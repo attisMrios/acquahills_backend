@@ -1,5 +1,6 @@
 export class CommonArea {
     id: number ;
+    typeCommonAreaId: number;
     name: string ;      
     description: string ;
     createdAt: Date ;

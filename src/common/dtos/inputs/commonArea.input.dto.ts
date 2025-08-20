@@ -69,6 +69,7 @@ function validateNoOverlap(timeSlots: Array<{ startTime: string; endTime: string
 }
 
 export const CreateCommonAreaSchema = z.object({
+    typeCommonAreaId: z.number().min(1, 'El tipo de área común es requerido'),
     name: z.string().min(1, 'El nombre es requerido')
     .max(100, 'El nombre no puede exceder 100 caracteres'),
     description: z.string()
@@ -85,19 +86,20 @@ export const CreateCommonAreaSchema = z.object({
 });
 
 export const UpdateCommonAreaSchema = z.object({
+    typeCommonAreaId: z.number().min(1, 'El tipo de área común es requerido').optional(),
     name: z.string().min(1, 'El nombre es requerido')
-    .max(100, 'El nombre no puede exceder 100 caracteres'),
+    .max(100, 'El nombre no puede exceder 100 caracteres').optional(),
     description: z.string()
-        .max(255, 'La descripción no puede exceder 255 caracteres'),
-    maximunCapacity: z.number().min(1, 'La capacidad máxima es requerida'),
-    peoplePerReservation: z.number().min(1, 'Las personas por reserva son requeridas'),
-    unavailableDays: z.array(UnavailableDaySchema),
+        .max(255, 'La descripción no puede exceder 255 caracteres').optional(),
+    maximunCapacity: z.number().min(1, 'La capacidad máxima es requerida').optional(),
+    peoplePerReservation: z.number().min(1, 'Las personas por reserva son requeridas').optional(),
+    unavailableDays: z.array(UnavailableDaySchema).optional(),
     timeSlots: z.array(TimeSlotSchema)
         .min(1, 'Debe tener al menos un horario disponible')
         .refine(validateNoOverlap, {
             message: 'Los horarios no pueden superponerse. Verifique que no haya conflictos entre los rangos de tiempo.',
             path: ['timeSlots']
-        }),
+        }).optional(),
 });
 
 export const CommonAreaQuerySchema = z.object({
@@ -105,6 +107,7 @@ export const CommonAreaQuerySchema = z.object({
     limit: z.coerce.number().min(1, 'El límite debe ser mayor a 0').max(100, 'El límite no puede exceder 100').default(10),
     search: z.string().optional(),
     name: z.string().optional(),
+    typeCommonAreaId: z.number().optional(),
     description: z.string().optional(),
     maximunCapacity: z.number().optional(),
     peoplePerReservation: z.number().optional(),
@@ -120,7 +123,8 @@ export const UniqueCommonAreaSchema = z.object({
     commonArea: z.string()
     .min(1, 'El nombre del área común es requerido')
     .max(100, 'El nombre del área común no puede exceder 100 caracteres'),
-    description: z.string()
+    typeCommonAreaId: z.number().optional(),
+    description: z.string() 
         .max(255, 'La descripción no puede exceder 255 caracteres'),
     maximunCapacity: z.number().min(1, 'La capacidad máxima es requerida'),
     peoplePerReservation: z.number().min(1, 'Las personas por reserva son requeridas'),
@@ -135,6 +139,7 @@ export const UniqueCommonAreaSchema = z.object({
 
 export const CommonAreaFilterSchema = z.object({
     name: z.string().optional(),
+    typeCommonAreaId: z.number().optional(),
     description: z.string().optional(),
     maximunCapacity: z.number().optional(),
     peoplePerReservation: z.number().optional(),

@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CommonAreaIdSchema, CreateCommonAreaSchema } from 'src/common/dtos/inputs/commonArea.input.dto';
+import { CommonAreaIdSchema, CreateCommonAreaSchema, UpdateCommonAreaSchema } from 'src/common/dtos/inputs/commonArea.input.dto';
 import { CommonAreasService } from './common-areas.service';
 import { CreateCommonAreaDto } from './dto/create-common-area.dto';
 import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
@@ -87,49 +87,24 @@ export class CommonAreasController {
   })
   @ApiBody({ 
     type: UpdateCommonAreaDto, 
-    description: 'Datos para actualizar el área común (todos los campos son opcionales)',
-    examples: {
-      'actualizar-nombre-y-capacidad': {
-        summary: 'Actualizar solo nombre y capacidad',
-        description: 'Ejemplo de actualización parcial',
-        value: {
-          name: 'Sala de eventos actualizada',
-          maximunCapacity: 75
-        }
-      },
-      'actualizar-completo': {
-        summary: 'Actualización completa',
-        description: 'Ejemplo con todos los campos',
-        value: {
-          name: 'Sala de conferencias',
-          description: 'Sala moderna para conferencias y eventos corporativos',
-          maximunCapacity: 100,
-          peoplePerReservation: 15,
-          unavailableDays: [
-            {
-              weekDay: 'SUNDAY',
-              isFirstWorkingDay: false
-            }
-          ],
-          timeSlots: [
-            {
-              startTime: '08:00',
-              endTime: '12:00'
-            },
-            {
-              startTime: '13:00',
-              endTime: '17:00'
-            }
-          ]
-        }
-      }
-    }
+    description: 'Datos para actualizar el área común'
   })
   @ApiResponse({ status: 200, description: 'Área común actualizada exitosamente' })
   @ApiResponse({ status: 404, description: 'Área común no encontrada' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   update(@Param('id') id: string, @Body() updateCommonAreaDto: UpdateCommonAreaDto) {
-    return this.commonAreasService.update(+id, updateCommonAreaDto);
+    try {
+      const validatedData = UpdateCommonAreaSchema.parse(updateCommonAreaDto);
+      return this.commonAreasService.update(+id, validatedData);
+    } catch (error) {
+      if (error.errors) {
+        throw new BadRequestException({
+          message: 'Datos de entrada inválidos',
+          errors: error.errors,
+        });
+      }
+      throw error;
+    }
   }
 
   @Delete(':id')

@@ -11,14 +11,18 @@ export class CommonAreasService {
   
   async create(createCommonAreaDto: CreateCommonAreaDto | CreateCommonAreaInputDto) {
     try {
-      const { unavailableDays, timeSlots, ...rest } = createCommonAreaDto as any;
+      console.log('🔍 Iniciando creación de área común...');
+      console.log('DTO recibido:', JSON.stringify(createCommonAreaDto, null, 2));
+      
+      const { unavailableDays, timeSlots, ...rest } = createCommonAreaDto;
+      console.log('Datos extraídos:', { rest, unavailableDays, timeSlots });
 
       const commonArea = await this.prisma.commonArea.create({
         data: {
           ...rest,
           unavailableDays: unavailableDays && unavailableDays.length > 0
             ? {
-                create: unavailableDays.map((day: any) => ({
+                create: unavailableDays.map((day) => ({
                   weekDay: day.weekDay,
                   isFirstWorkingDay: day.isFirstWorkingDay,
                 })),
@@ -26,7 +30,7 @@ export class CommonAreasService {
             : undefined,
           timeSlots: timeSlots && timeSlots.length > 0
             ? {
-                create: timeSlots.map((slot: any) => ({
+                create: timeSlots.map((slot) => ({
                   startTime: slot.startTime,
                   endTime: slot.endTime,
                 })),
@@ -38,11 +42,21 @@ export class CommonAreasService {
           timeSlots: true,
         },
       });
+      
+      console.log('✅ Área común creada exitosamente:', JSON.stringify(commonArea, null, 2));
       return commonArea;
     } catch (error) {
-      console.error('Error creating common area:', error);
+      console.error('❌ Error creating common area:');
+      console.error('Mensaje:', error.message);
+      console.error('Código:', error.code);
+      console.error('Meta:', error.meta);
+      console.error('Stack:', error.stack);
+      
       if (error.code === 'P2002') {
         throw new ConflictException('El área común ya existe');
+      }
+      if (error.code === 'P2003') {
+        throw new ConflictException('Error de referencia: verifique que el tipo de área común existe');
       }
       throw error;
     }
@@ -78,50 +92,85 @@ export class CommonAreasService {
 
   async update(id: number, updateCommonAreaDto: UpdateCommonAreaDto | UpdateCommonAreaInputDto) {
     try {
-      // Adaptar el DTO para cumplir con la estructura esperada por Prisma
-      const { unavailableDays, timeSlots, ...rest } = updateCommonAreaDto as any;
+      console.log('🔍 Iniciando actualización de área común...');
+      console.log('DTO recibido:', JSON.stringify(updateCommonAreaDto, null, 2));
+      
+      // Extraer los arrays relacionados del DTO
+      const { unavailableDays, timeSlots, ...rest } = updateCommonAreaDto;
+      console.log('Datos extraídos:', { rest, unavailableDays, timeSlots });
 
-      const data: any = {
-        ...rest,
-        ...(unavailableDays && Array.isArray(unavailableDays)
-          ? {
-              unavailableDays: {
-                deleteMany: {}, // Elimina todos los días no disponibles actuales
-                create: unavailableDays.map((day: any) => ({
-                  weekDay: day.weekDay,
-                  isFirstWorkingDay: day.isFirstWorkingDay,
-                })),
-              },
-            }
-          : {}),
-        ...(timeSlots && Array.isArray(timeSlots)
-          ? {
-              timeSlots: {
-                deleteMany: {}, // Elimina todos los horarios actuales
-                create: timeSlots.map((slot: any) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                })),
-              },
-            }
-          : {}),
-      };
+      // Preparar los datos para la actualización
+      const data: any = { ...rest };
+      
+      // Manejar el tipo de área común si está presente
+      if (typeof rest.typeCommonAreaId !== 'undefined') {
+        data.typeCommonAreaId = rest.typeCommonAreaId;
+      }
 
-      const commonArea = await this.prisma.commonArea.update({
-        where: { id },
-        data,
-        include: {
-          unavailableDays: true,
-          timeSlots: true,
-        },
+      // Usar transacción para manejar la actualización de arrays relacionados
+      const commonArea = await this.prisma.$transaction(async (prisma) => {
+        // Si hay días no disponibles, eliminar los existentes y crear los nuevos
+        if (unavailableDays !== undefined) {
+          await prisma.commonAreaUnavailableDay.deleteMany({
+            where: { commonAreaId: id },
+          });
+          
+          if (unavailableDays && unavailableDays.length > 0) {
+            await prisma.commonAreaUnavailableDay.createMany({
+              data: unavailableDays.map((day) => ({
+                commonAreaId: id,
+                weekDay: day.weekDay,
+                isFirstWorkingDay: day.isFirstWorkingDay,
+              })),
+            });
+          }
+        }
+
+        // Si hay horarios, eliminar los existentes y crear los nuevos
+        if (timeSlots !== undefined) {
+          await prisma.commonAreaTimeSlot.deleteMany({
+            where: { commonAreaId: id },
+          });
+          
+          if (timeSlots && timeSlots.length > 0) {
+            await prisma.commonAreaTimeSlot.createMany({
+              data: timeSlots.map((slot) => ({
+                commonAreaId: id,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+              })),
+            });
+          }
+        }
+
+        // Actualizar el área común principal
+        return await prisma.commonArea.update({
+          where: { id },
+          data,
+          include: {
+            unavailableDays: true,
+            timeSlots: true,
+          },
+        });
       });
+
+      console.log('✅ Área común actualizada exitosamente:', JSON.stringify(commonArea, null, 2));
       return commonArea;
     } catch (error) {
+      console.error('❌ Error updating common area:');
+      console.error('Mensaje:', error.message);
+      console.error('Código:', error.code);
+      console.error('Meta:', error.meta);
+      console.error('Stack:', error.stack);
+      
       if (error.code === 'P2025') {
         throw new NotFoundException(`Área común con ID ${id} no encontrada`);
       }
       if (error.code === 'P2002') {
         throw new ConflictException('El área común ya existe');
+      }
+      if (error.code === 'P2003') {
+        throw new ConflictException('Error de referencia: verifique que el tipo de área común existe');
       }
       throw error;
     }
