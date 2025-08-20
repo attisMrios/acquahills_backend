@@ -107,15 +107,13 @@ model Setting {
   @@map("settings")
 }
 
-
-
 model Vehicle {
   code      String   @id
   userId    String
   brand     String
   color     String
   model     String
-  vehicleType VehiculeType @default(CARRO)
+  vehicleType VehicleType @default(CARRO)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -123,7 +121,7 @@ model Vehicle {
   @@map("vehicles")
 }
 
-enum VehiculeType {
+enum VehicleType {
   CARRO
   MOTO
   CAMIONETA
@@ -131,4 +129,46 @@ enum VehiculeType {
   FURGON 
   CAMION
 }
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model CommonArea {
+  id                   Int                        @id @default(autoincrement())
+  name                 String
+  description          String?
+  maximunCapacity      Int
+  peoplePerReservation Int
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  unavailableDays      CommonAreaUnavailableDay[]
+  timeSlots            CommonAreaTimeSlot[]
+
+  @@map("common_areas")
+}
+
+model CommonAreaUnavailableDay {
+  id                Int        @id @default(autoincrement())
+  commonAreaId      Int
+  weekDay           WeekDay? // Día específico de la semana (nullable si es por regla especial)
+  isFirstWorkingDay Boolean    @default(false) // Si bloquea el primer día hábil de la semana
+  commonArea        CommonArea @relation(fields: [commonAreaId], references: [id], onDelete: Restrict)
+}
+
+model CommonAreaTimeSlot {
+  id           Int        @id @default(autoincrement())
+  commonAreaId Int
+  startTime    String // Ejemplo: "08:00"
+  endTime      String // Ejemplo: "10:00"
+  commonArea   CommonArea @relation(fields: [commonAreaId], references: [id], onDelete: Restrict)
+}
+
+
 

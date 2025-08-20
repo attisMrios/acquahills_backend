@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './modules/users/users.module';
-import { InitModule } from './modules/init/init.module';
 import { ApartmentsModule } from './modules/apartments/apartments.module';
+import { InitModule } from './modules/init/init.module';
 import { PropertyOwnersModule } from './modules/property-owners/property-owners.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { UpdatesModule } from './modules/updates/updates.module';
 import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { ImportModule } from './modules/import/import.module';
-import { UpdatesModule } from './modules/updates/updates.module';
-import { SettingsModule } from './modules/settings/settings.module';
+import { UsersModule } from './modules/users/users.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { CommonAreasModule } from './modules/common-areas/common-areas.module';
 
 @Module({
   imports: [
@@ -20,8 +21,9 @@ import { PrismaModule } from './prisma/prisma.module';
     PropertyOwnersModule, 
     UserGroupsModule,
     ImportModule,
-    VehiclesModule,
-    PrismaModule
+    PrismaModule,
+    CommonAreasModule,
+    VehiclesModule
   ],
 })
 export class AppModule {}

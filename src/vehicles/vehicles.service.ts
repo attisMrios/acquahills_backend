@@ -1,18 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/common/services/prisma.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { PrismaService } from 'src/common/services/prisma.service';
-import e from 'express';
-
-
-
-export interface Apartment {
-  code: string;           // Cambiado de uid (string) a id (number)
-  userId: string;
-  address: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 @Injectable()
 export class VehiclesService {
@@ -36,9 +25,10 @@ export class VehiclesService {
   }
 
   update(code: string, updateVehicleDto: UpdateVehicleDto) {
+    const { userId, ...updateData } = updateVehicleDto;
     return this.prisma.vehicle.update({
       where: { code },
-      data: updateVehicleDto
+      data: updateData
     });
   }
 
