@@ -45,6 +45,7 @@ export class WhatsappService {
     // Procesar mensajes recibidos
     if (value.messages && Array.isArray(value.messages)) {
       for (const message of value.messages) {
+        message.from = `${message.from} - ${value.contacts[0].profile.name}`;
         await this.processIncomingMessage(message, value.metadata);
       }
     }

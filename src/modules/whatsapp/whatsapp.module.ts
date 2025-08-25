@@ -6,9 +6,12 @@ import { WhatsappService } from "./whatsapp.service";
 import { WhatsAppSSEController } from "./whatsapp-sse.controller";
 import { WhatsAppEventEmitterService } from "../../common/services/whatsapp-event-emitter.service";
 import { SSEService } from "../../common/services/sse.service";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
-  imports: [],
+  imports: [
+    EventEmitterModule.forRoot(),
+  ],
   controllers: [
     WhatsappController, 
     WhatsAppMessagesController, 

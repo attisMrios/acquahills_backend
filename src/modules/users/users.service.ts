@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../common/services/prisma.service';
-import { CreateUserDto, UpdateUserDto, UserQueryDto, FilterUsersDto, FilterUsersForGroupDto } from '../../common/dtos/inputs/user.input.dto';
-import { User, CreateUserResponse, UpdateUserResponse, DeleteUserResponse, UsersResponse } from '../../common/types/user.types';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { FirebaseService } from 'src/common/services/firebase.service';
 import { UserRole } from 'src/common/enums/user.enums';
+import { FirebaseService } from 'src/common/services/firebase.service';
+import { CreateUserDto, FilterUsersDto, FilterUsersForGroupDto, UpdateUserDto, UserQueryDto } from '../../common/dtos/inputs/user.input.dto';
+import { PrismaService } from '../../common/services/prisma.service';
+import { CreateUserResponse, DeleteUserResponse, UpdateUserResponse, User, UsersResponse } from '../../common/types/user.types';
 import { UpdatesService } from '../updates/updates.service';
 
 @Injectable()
@@ -132,7 +132,8 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true
+          isEmailVerified: true,
+          whatsappEnabled: true
         }
       }),
       this.prisma.user.count({ where })
@@ -167,7 +168,8 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true
+        isEmailVerified: true,
+        whatsappEnabled: true
       }
     });
 
@@ -199,7 +201,8 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true
+        isEmailVerified: true,
+        whatsappEnabled: true
       }
     });
 
@@ -231,7 +234,8 @@ export class UsersService {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
-        isEmailVerified: true
+        isEmailVerified: true,
+        whatsappEnabled: true
       }
     });
 
@@ -306,7 +310,8 @@ export class UsersService {
           lastLogin: true,
           createdAt: true,
           updatedAt: true,
-          isEmailVerified: true
+          isEmailVerified: true,
+          whatsappEnabled: true
         }
       });
 

@@ -11,9 +11,11 @@ import { UsersModule } from './modules/users/users.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ServicesModule, // Servicios globales (Firebase, Prisma)
     UsersModule,
     InitModule,

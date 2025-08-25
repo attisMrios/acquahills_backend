@@ -1,15 +1,26 @@
 import {
-  Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, UseInterceptors, ClassSerializerInterceptor,
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiProperty, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiProperty, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'zod';
 
-import { UsersService } from './users.service';
-import { CreateUserSchema, UpdateUserSchema, UserQuerySchema, UserIdSchema, FilterUsersSchema, FilterUsersForGroupSchema } from '../../common/dtos/inputs/user.input.dto';
-import { CreateUserSwaggerDto } from '../../common/dtos/swagger/create-user.swagger.dto';
 import { FirebaseAuthGuard } from '../../Auth/firebase-auth.guard';
+import { CreateUserSchema, FilterUsersForGroupSchema, FilterUsersSchema, UpdateUserSchema, UserIdSchema, UserQuerySchema } from '../../common/dtos/inputs/user.input.dto';
+import { CreateUserSwaggerDto } from '../../common/dtos/swagger/create-user.swagger.dto';
+import { UsersService } from './users.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -39,6 +50,7 @@ export class UsersController {
         address: 'Calle Falsa 123',
         birthDate: '1990-01-01',
         dni: '12345678',
+        whatsappEnabled: false,
         password: 'Password123!',
         countryCode: 'CO',
         fullPhone: '571234567890'

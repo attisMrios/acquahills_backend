@@ -54,6 +54,7 @@ model User {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   isEmailVerified Boolean          @default(false)
+  whatsappEnabled Boolean          @default(false)
   password        String           
   propertyOwners  PropertyOwner[]
   userGroupMembers UserGroupMember[]

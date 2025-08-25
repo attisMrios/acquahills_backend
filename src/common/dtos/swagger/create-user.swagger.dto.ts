@@ -12,5 +12,6 @@ export class CreateUserSwaggerDto {
   @ApiProperty({ required: false }) address?: string;
   @ApiProperty({ required: false }) birthDate?: string;
   @ApiProperty() dni: string;
+  @ApiProperty({ required: false, default: false, description: 'Indica si el usuario tiene habilitado WhatsApp' }) whatsappEnabled?: boolean;
   @ApiProperty() password: string;
 }

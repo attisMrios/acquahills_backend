@@ -24,6 +24,7 @@ export interface WhatsAppStatusEvent {
 
 @Injectable()
 export class WhatsAppEventEmitterService {
+  
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
   /**

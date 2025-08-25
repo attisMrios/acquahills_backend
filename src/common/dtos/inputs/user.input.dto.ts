@@ -19,6 +19,7 @@ export const CreateUserSchema = z.object({
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(4, 'El DNI debe tener al menos 4 caracteres').max(20, 'El DNI no puede exceder 20 caracteres'),
+  whatsappEnabled: z.boolean().default(false),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').regex(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
     'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
@@ -38,6 +39,7 @@ export const UpdateUserSchema = z.object({
   address: z.string().optional(),
   birthDate: z.string().optional(),
   dni: z.string().min(4, 'El DNI debe tener al menos 4 caracteres').max(20, 'El DNI no puede exceder 20 caracteres').optional(),
+  whatsappEnabled: z.boolean().optional(),
   isEmailVerified: z.boolean().optional()
 });
 
