@@ -1,16 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
-    CreateCommentDto,
-    CreateVehicleIncidentDto,
-    IncidentQueryDto,
-    IncidentStatus,
-    UpdateIncidentDto
+  CreateCommentDto,
+  CreateVehicleIncidentDto,
+  IncidentQueryDto,
+  IncidentStatus,
+  UpdateIncidentDto,
 } from '../../common/dtos/inputs/incident.input.dto';
 import { PrismaService } from '../../common/services/prisma.service';
+import { FcmService } from '../fcm/fcm.service';
 
 @Injectable()
 export class IncidentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fcmService: FcmService,
+  ) {}
 
   /**
    * Crea un nuevo incidente de vehículo
@@ -40,6 +44,33 @@ export class IncidentsService {
         },
       });
 
+      // Enviar notificación FCM al propietario del vehículo
+      try {
+        const vehicleData = createDto.incidentData as any;
+        if (vehicleData && vehicleData.ownerId) {
+          await this.fcmService.SendTopicNotification({
+            title: `Novedad con el vehículo de placas ${vehicleData.vehicleCode}`,
+            body: createDto.description,
+            image:
+              'https://i.blogs.es/e071a9/captura-de-pantalla-2024-07-17-a-la-s-16.46.16/500_333.png',
+            topic: vehicleData.ownerId, // El topic es el ID del propietario
+          });
+
+          console.log(
+            '✅ Notificación FCM enviada exitosamente al propietario:',
+            vehicleData.ownerId,
+          );
+          console.log('📱 Título:', `Novedad con el vehículo de placas ${vehicleData.vehicleCode}`);
+          console.log('📝 Descripción:', createDto.description);
+        } else {
+          console.log(
+            '⚠️ No se pudo enviar notificación FCM: ownerId no encontrado en incidentData',
+          );
+        }
+      } catch (notificationError) {
+        console.error('❌ Error al enviar notificación FCM:', notificationError);
+      }
+
       return {
         success: true,
         message: 'Incidente de vehículo creado exitosamente',
@@ -63,7 +94,7 @@ export class IncidentsService {
 
     // Construir filtros
     const where: any = {};
-    
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },

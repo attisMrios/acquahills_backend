@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '../../prisma/prisma.module';
+import { FcmModule } from '../fcm/fcm.module';
 import { IncidentsController } from './incidents.controller';
 import { IncidentsService } from './incidents.service';
-import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, FcmModule],
   controllers: [IncidentsController],
   providers: [IncidentsService],
   exports: [IncidentsService],
