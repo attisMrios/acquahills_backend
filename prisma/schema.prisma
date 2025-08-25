@@ -123,6 +123,29 @@ model Vehicle {
   @@map("vehicles")
 }
 
+model WhatsappMessage {
+  id               Int      @id @default(autoincrement())
+  messageId        String   @unique                 // ID único del mensaje (wamid)
+  waId             String                            // ID del usuario de WhatsApp
+  contactName      String?                           // Nombre del contacto (opcional)
+  phoneNumberId    String                            // ID del número de negocio
+  direction        Direction                         // 'inbound' | 'outbound'
+  messageType      MessageType                       // 'text', 'image', etc.
+  content          String?                           // Texto o descripción del contenido
+  rawPayload       Json                              // Payload completo del webhook
+  status           MessageStatus @default(sent)      // Estado del mensaje
+  conversationId   String?                           // ID lógico de conversación
+  flowTrigger      String?                           // Flujo MCP activado (si aplica)
+  receivedAt       DateTime                          // Fecha de recepción
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([waId])
+  @@index([conversationId])
+  @@index([flowTrigger])
+  @@index([receivedAt])
+}
+
 enum VehiculeType {
   CARRO
   MOTO
@@ -131,4 +154,28 @@ enum VehiculeType {
   FURGON 
   CAMION
 }
+
+enum Direction {
+  inbound
+  outbound
+}
+
+enum MessageType {
+  text
+  image
+  audio
+  video
+  document
+  button
+  location
+  sticker
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+}
+
 
