@@ -57,7 +57,8 @@ model User {
   password         String
   propertyOwners   PropertyOwner[]
   userGroupMembers UserGroupMember[]
-  Vehicle          Vehicle[]
+  Vehicle        Vehicle[]
+  incidents      Incident[]
 
   @@map("users")
 }
@@ -182,3 +183,49 @@ model TypeCommonArea {
 
   @@map("type_common_areas")
 }
+
+// Enums para incidentes
+enum IncidentType {
+  VEHICLE
+  PET
+  COEXISTENCE
+  DAMAGE
+}
+
+enum IncidentStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Modelo de incidentes simplificado
+model Incident {
+  id          String          @id @default(cuid())
+  type        IncidentType
+  title       String          // Título del incidente
+  description String          // Descripción detallada
+  status      IncidentStatus  @default(PENDING)
+  priority    IncidentPriority @default(MEDIUM)
+  reportedBy  String          // ID del usuario que reporta
+  
+  // Datos específicos del incidente (JSON flexible)
+  incidentData Json?          // Datos específicos según el tipo
+  
+  // Metadatos
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Relaciones
+  user        User            @relation(fields: [reportedBy], references: [id], onDelete: Cascade)
+  
+  @@map("incidents")
+}
+
