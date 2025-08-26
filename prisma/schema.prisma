@@ -59,8 +59,6 @@ model User {
   userGroupMembers UserGroupMember[]
   Vehicle        Vehicle[]
   incidents      Incident[]
-  incidentComments IncidentComment[]
-  incidentNotifications IncidentNotification[]
 
   @@map("users")
 }
@@ -227,43 +225,7 @@ model Incident {
   
   // Relaciones
   user        User            @relation(fields: [reportedBy], references: [id], onDelete: Cascade)
-  comments    IncidentComment[]
-  notifications IncidentNotification[]
   
   @@map("incidents")
-}
-
-// Comentarios de incidentes
-model IncidentComment {
-  id          String   @id @default(cuid())
-  incidentId  String
-  userId      String
-  comment     String
-  createdAt   DateTime @default(now())
-  
-  // Relaciones
-  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@map("incident_comments")
-}
-
-// Notificaciones de incidentes
-model IncidentNotification {
-  id          String   @id @default(cuid())
-  incidentId  String
-  recipientId String
-  title       String
-  body        String
-  type        String
-  read        Boolean  @default(false)
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
-  
-  // Relaciones
-  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-  
-  @@map("incident_notifications")
 }
 
