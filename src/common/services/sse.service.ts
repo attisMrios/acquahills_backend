@@ -74,6 +74,7 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
         'Connection': 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Cache-Control',
+        'X-Accel-Buffering': 'no', // Deshabilitar buffering en nginx
       });
 
       // Enviar mensaje de conexión
@@ -102,6 +103,7 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
 
       // Configurar manejo de desconexión
       response.on('close', () => {
+        console.log(`🔌 Conexión SSE cerrada para admin: ${adminEmail}`);
         this.removeAdminConnection(adminId);
       });
 
@@ -110,8 +112,60 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
         this.removeAdminConnection(adminId);
       });
 
+      // Configurar heartbeat para mantener la conexión viva
+      this.setupHeartbeat(adminId, response);
+
+      // Configurar timeout de inactividad más largo
+      this.setupInactivityTimeout(adminId);
+
     } catch (error) {
       console.error('❌ Error al registrar conexión SSE:', error);
+    }
+  }
+
+  /**
+   * Configura el heartbeat para mantener la conexión viva
+   */
+  private setupHeartbeat(adminId: string, response: any): void {
+    const heartbeatInterval = setInterval(() => {
+      try {
+        const connection = this.adminConnections.get(adminId);
+        if (connection && connection.isActive) {
+          // Enviar comentario de heartbeat (no es un evento, solo mantiene la conexión viva)
+          response.write(': heartbeat\n\n');
+          connection.lastActivity = new Date();
+        } else {
+          clearInterval(heartbeatInterval);
+        }
+      } catch (error) {
+        console.error(`❌ Error en heartbeat para admin ${adminId}:`, error);
+        clearInterval(heartbeatInterval);
+      }
+    }, 25000); // Cada 25 segundos (antes de que expire el timeout del servidor)
+
+    // Guardar el intervalo para poder limpiarlo después
+    const connection = this.adminConnections.get(adminId);
+    if (connection) {
+      (connection as any).heartbeatInterval = heartbeatInterval;
+    }
+  }
+
+  /**
+   * Configura el timeout de inactividad
+   */
+  private setupInactivityTimeout(adminId: string): void {
+    const timeout = setTimeout(() => {
+      const connection = this.adminConnections.get(adminId);
+      if (connection && connection.isActive) {
+        console.log(`⏰ Timeout de inactividad para admin: ${connection.email}`);
+        this.removeAdminConnection(adminId);
+      }
+    }, 10 * 60 * 1000); // 10 minutos de inactividad
+
+    // Guardar el timeout para poder limpiarlo después
+    const connection = this.adminConnections.get(adminId);
+    if (connection) {
+      (connection as any).inactivityTimeout = timeout;
     }
   }
 
@@ -121,6 +175,14 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
   private removeAdminConnection(adminId: string): void {
     const connection = this.adminConnections.get(adminId);
     if (connection) {
+      // Limpiar intervalos y timeouts
+      if ((connection as any).heartbeatInterval) {
+        clearInterval((connection as any).heartbeatInterval);
+      }
+      if ((connection as any).inactivityTimeout) {
+        clearTimeout((connection as any).inactivityTimeout);
+      }
+
       connection.isActive = false;
       this.adminConnections.delete(adminId);
       console.log(`🔌 Conexión SSE removida para admin: ${connection.email}`);
@@ -287,7 +349,7 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
    */
   private cleanupInactiveConnections(): void {
     const now = new Date();
-    const timeout = 5 * 60 * 1000; // 5 minutos
+    const timeout = 10 * 60 * 1000; // 10 minutos (coincide con setupInactivityTimeout)
 
     for (const [adminId, connection] of Array.from(this.adminConnections.entries())) {
       if (now.getTime() - connection.lastActivity.getTime() > timeout) {

@@ -32,7 +32,8 @@ export class FCMTopicsController {
       
       const response = await this.firebaseService.subscribeToTopic(
         subscribeDto.topic,
-        subscribeDto.token
+        subscribeDto.token,
+        req.user.id
       );
 
       if (response.success) {
@@ -67,7 +68,7 @@ export class FCMTopicsController {
   ): Promise<TopicSubscriptionResponse> {
     try {
 
-      const response = await this.firebaseService.unsubscribeFromTopic(topic, req.user.token);
+      const response = await this.firebaseService.unsubscribeFromTopic(topic, req.user.token, req.user.id);
 
       if (response.success) {
         return {

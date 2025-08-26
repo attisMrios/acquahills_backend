@@ -121,6 +121,34 @@ export class WhatsAppSSEController {
     }
   }
 
+  @Get('heartbeat')
+  @ApiOperation({ 
+    summary: 'Verificar latencia de conexión SSE',
+    description: 'Endpoint para verificar que la conexión SSE esté funcionando correctamente'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Heartbeat exitoso' 
+  })
+  async heartbeat() {
+    try {
+      return {
+        success: true,
+        message: 'SSE heartbeat OK',
+        timestamp: new Date(),
+        service: 'WhatsApp SSE Service'
+      };
+    } catch (error) {
+      console.error('❌ Error en heartbeat SSE:', error);
+      return {
+        success: false,
+        message: 'Error en heartbeat',
+        timestamp: new Date(),
+        error: error.message
+      };
+    }
+  }
+
   @Get('health')
   @ApiOperation({ 
     summary: 'Verificar estado del servicio SSE',
