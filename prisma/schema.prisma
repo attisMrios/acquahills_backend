@@ -19,13 +19,14 @@ model UserGroup {
 }
 
 model UserGroupMember {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   userGroupId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  userGroup   UserGroup @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGroup UserGroup @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, userGroupId])
   @@map("user_group_members")
@@ -38,8 +39,8 @@ model User {
   email            String            @unique
   role             String            @default("user")
   countryCode      String?           @default("CO")
-  phone            String?           @default("")
-  fullPhone        String?           @default("")
+  phone            String?           @default("") // Número local
+  fullPhone        String?           @default("") // Número internacional sin el signo +
   address          String?
   birthDate        DateTime?
   dni              String            @unique
@@ -52,7 +53,8 @@ model User {
   fcmSubscriptions FCMSubscription[]
   propertyOwners   PropertyOwner[]
   userGroupMembers UserGroupMember[]
-  Vehicle          Vehicle[]
+  Vehicle        Vehicle[]
+  incidents      Incident[]
 
   @@map("users")
 }
@@ -73,16 +75,21 @@ model Apartment {
 }
 
 model PropertyOwner {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   apartmentId Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apartment Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, apartmentId])
   @@map("property_owners")
+}
+
+enum SettingCategory {
+  WHATSAPP
 }
 
 model Setting {
@@ -114,15 +121,16 @@ model FCMSubscription {
 }
 
 model Vehicle {
-  code        String       @id
+  code        String      @id
   userId      String
   brand       String
   color       String
   model       String
-  vehicleType VehiculeType @default(CARRO)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  user        User         @relation(fields: [userId], references: [id])
+  vehicleType VehicleType @default(CARRO)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("vehicles")
 }
@@ -185,3 +193,92 @@ enum MessageStatus {
   read
   failed
 }
+
+model CommonArea {
+  id                   Int                        @id @default(autoincrement())
+  name                 String
+  description          String?
+  maximunCapacity      Int
+  peoplePerReservation Int
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  unavailableDays      CommonAreaUnavailableDay[]
+  timeSlots            CommonAreaTimeSlot[]
+  typeCommonAreaId     Int
+  typeCommonArea       TypeCommonArea             @relation(fields: [typeCommonAreaId], references: [id], onDelete: Restrict)
+
+  @@map("common_areas")
+}
+
+model CommonAreaUnavailableDay {
+  id                Int        @id @default(autoincrement())
+  commonAreaId      Int
+  weekDay           WeekDay? // Día específico de la semana (nullable si es por regla especial)
+  isFirstWorkingDay Boolean    @default(false) // Si bloquea el primer día hábil de la semana
+  commonArea        CommonArea @relation(fields: [commonAreaId], references: [id], onDelete: Restrict)
+}
+
+model CommonAreaTimeSlot {
+  id           Int        @id @default(autoincrement())
+  commonAreaId Int
+  startTime    String // Ejemplo: "08:00"
+  endTime      String // Ejemplo: "10:00"
+  commonArea   CommonArea @relation(fields: [commonAreaId], references: [id], onDelete: Restrict)
+}
+
+model TypeCommonArea {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique // Agregado unique para evitar duplicados
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  commonAreas CommonArea[]
+
+  @@map("type_common_areas")
+}
+
+// Enums para incidentes
+enum IncidentType {
+  VEHICLE
+  PET
+  COEXISTENCE
+  DAMAGE
+}
+
+enum IncidentStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Modelo de incidentes simplificado
+model Incident {
+  id          String          @id @default(cuid())
+  type        IncidentType
+  title       String          // Título del incidente
+  description String          // Descripción detallada
+  status      IncidentStatus  @default(PENDING)
+  priority    IncidentPriority @default(MEDIUM)
+  reportedBy  String          // ID del usuario que reporta
+  
+  // Datos específicos del incidente (JSON flexible)
+  incidentData Json?          // Datos específicos según el tipo
+  
+  // Metadatos
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Relaciones
+  user        User            @relation(fields: [reportedBy], references: [id], onDelete: Cascade)
+  
+  @@map("incidents")
+}
+
