@@ -12,9 +12,8 @@ import { TypeCommonAreasModule } from './modules/type-common-areas/type-common-a
 import { UpdatesModule } from './modules/updates/updates.module';
 import { UserGroupsModule } from './modules/user-groups/user-groups.module';
 import { UsersModule } from './modules/users/users.module';
-import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { VehiclesModule } from './vehicles/vehicles.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 

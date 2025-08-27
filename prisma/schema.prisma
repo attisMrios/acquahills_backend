@@ -88,9 +88,7 @@ model PropertyOwner {
   @@map("property_owners")
 }
 
-enum SettingCategory {
-  WHATSAPP
-}
+
 
 model Setting {
   id           String          @id @default(cuid())
@@ -158,41 +156,6 @@ model WhatsappMessage {
   @@index([receivedAt])
 }
 
-enum SettingCategory {
-  WHATSAPP
-}
-
-enum VehiculeType {
-  CARRO
-  MOTO
-  CAMIONETA
-  MOTOCARRO
-  FURGON
-  CAMION
-}
-
-enum Direction {
-  inbound
-  outbound
-}
-
-enum MessageType {
-  text
-  image
-  audio
-  video
-  document
-  button
-  location
-  sticker
-}
-
-enum MessageStatus {
-  sent
-  delivered
-  read
-  failed
-}
 
 model CommonArea {
   id                   Int                        @id @default(autoincrement())
@@ -237,28 +200,6 @@ model TypeCommonArea {
   @@map("type_common_areas")
 }
 
-// Enums para incidentes
-enum IncidentType {
-  VEHICLE
-  PET
-  COEXISTENCE
-  DAMAGE
-}
-
-enum IncidentStatus {
-  PENDING
-  IN_PROGRESS
-  RESOLVED
-  CANCELLED
-}
-
-enum IncidentPriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
 // Modelo de incidentes simplificado
 model Incident {
   id          String          @id @default(cuid())
@@ -281,4 +222,81 @@ model Incident {
   
   @@map("incidents")
 }
+
+
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+/////     ENUMERACIONES //////////
+
+
+enum VehicleType {
+  CARRO
+  MOTO
+  CAMIONETA
+  MOTOCARRO
+  FURGON
+  CAMION
+}
+
+enum Direction {
+  inbound
+  outbound
+}
+
+enum MessageType {
+  text
+  image
+  audio
+  video
+  document
+  button
+  location
+  sticker
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+}
+
+// Enums para incidentes
+enum IncidentType {
+  VEHICLE
+  PET
+  COEXISTENCE
+  DAMAGE
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum IncidentStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SettingCategory {
+  WHATSAPP
+}
+
+
 

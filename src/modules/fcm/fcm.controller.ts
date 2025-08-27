@@ -2,9 +2,12 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,6 +15,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 import { ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'zod';
 
+import { FirebaseService } from 'src/common/services/firebase.service';
 import { FirebaseAuthGuard } from '../../Auth/firebase-auth.guard';
 import { FcmNotificationSchema, FcmTopicSchema } from '../../common/dtos/inputs/fcm.input.dto';
 import {
@@ -19,7 +23,6 @@ import {
   FcmResponseSwaggerDto,
   FcmTopicSwaggerDto,
 } from '../../common/dtos/swagger/fcm-topic.swagger.dto';
-import { FcmService } from './fcm.service';
 
 @ApiTags('fcm')
 @Controller('fcm')
@@ -27,7 +30,7 @@ import { FcmService } from './fcm.service';
 @UseGuards(FirebaseAuthGuard)
 @ApiBearerAuth('firebase-auth')
 export class FcmController {
-  constructor(private readonly fcmService: FcmService) {}
+  constructor(private readonly firebaseService: FirebaseService) {}
 
   /**
    * Suscribe tokens FCM a un topic específico.
@@ -62,12 +65,13 @@ export class FcmController {
   async subscribeToTopic(
     @Body(new ZodValidationPipe(FcmTopicSchema)) body: z.infer<typeof FcmTopicSchema>,
   ) {
-    const { topic, tokens } = body;
+    const { topic, tokens, userId } = body;
     // Procesar cada token individualmente ya que el servicio espera un token por vez
     const results: Array<{ token: string; success: boolean; error?: string }> = [];
+
     for (const token of tokens) {
       try {
-        await this.fcmService['subscribeToTopics'](token, topic);
+        await this.firebaseService.subscribeToTopic(topic, token, userId, undefined);
         results.push({ token, success: true });
       } catch (error) {
         results.push({ token, success: false, error: (error as Error).message });
@@ -124,7 +128,41 @@ export class FcmController {
       topic: body.topic,
       image: body.image || '', // Proporcionar valor por defecto si image es undefined
     };
-    const result = await this.fcmService.SendTopicNotification(notificationData);
+    const result = await this.firebaseService.sendFCMTopic(notificationData.title, notificationData.body, notificationData.topic, notificationData.image);
     return result;
+  }
+
+  @Delete('unsubscribe/:topic')
+  @ApiOperation({ summary: 'Desuscribir usuario de un tópico' })
+  @ApiResponse({ status: 200, description: 'Usuario desuscrito exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async unsubscribeFromTopic(
+    @Param('topic') topic: string,
+    @Request() req: any
+  ) {
+    try {
+
+      const response = await this.firebaseService.unsubscribeFromTopic(topic, req.user.token, req.user.id);
+
+      if (response.success) {
+        return {
+          success: true,
+          message: 'Usuario desuscrito exitosamente del tópico',
+          topic: topic,
+          isSubscribed: false
+        };
+      } else {
+        return {
+          success: false,
+          message: response.message
+        };
+      }
+    } catch (error) {
+      console.error('Error al desuscribir usuario del tópico:', error);
+      return {
+        success: false,
+        message: 'Error interno del servidor: ' + error.message
+      };
+    }
   }
 }

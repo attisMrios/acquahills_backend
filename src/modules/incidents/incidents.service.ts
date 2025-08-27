@@ -155,19 +155,7 @@ export class IncidentsService {
             email: true,
           },
         },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                userName: true,
-                fullName: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
+      }
     });
 
     if (!incident) {
@@ -246,44 +234,6 @@ export class IncidentsService {
       success: true,
       message: 'Estado del incidente actualizado exitosamente',
       data: updatedIncident,
-    };
-  }
-
-  /**
-   * Agrega un comentario a un incidente
-   */
-  async addComment(incidentId: string, userId: string, commentDto: CreateCommentDto) {
-    // Verificar que el incidente existe
-    const existingIncident = await this.prisma.incident.findUnique({
-      where: { id: incidentId },
-    });
-
-    if (!existingIncident) {
-      throw new NotFoundException('Incidente no encontrado');
-    }
-
-    // Crear el comentario
-    const newComment = await this.prisma.incidentComment.create({
-      data: {
-        incidentId,
-        userId,
-        comment: commentDto.comment,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            userName: true,
-            fullName: true,
-          },
-        },
-      },
-    });
-
-    return {
-      success: true,
-      message: 'Comentario agregado exitosamente',
-      data: newComment,
     };
   }
 
