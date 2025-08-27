@@ -13,6 +13,7 @@ export interface WhatsAppMessageData {
   conversationId?: string;
   flowTrigger?: string;
   receivedAt: Date;
+  status: 'sent' | 'delivered' | 'read' | 'failed';
 }
 
 @Injectable()
@@ -37,6 +38,7 @@ export class WhatsAppMessageService {
           conversationId: messageData.conversationId,
           flowTrigger: messageData.flowTrigger,
           receivedAt: messageData.receivedAt,
+          status: messageData.status
         },
       });
 

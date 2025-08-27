@@ -7,8 +7,9 @@ import { WhatsAppMessageData, WhatsAppMessageService } from "./whatsapp-message.
 
 @Injectable()
 export class WhatsappService {
+
   constructor(
-    private readonly prisma: PrismaService, 
+    private readonly prisma: PrismaService,
     private firebase: FirebaseService,
     private readonly messageService: WhatsAppMessageService,
     private readonly eventEmitter: WhatsAppEventEmitterService
@@ -41,23 +42,6 @@ export class WhatsappService {
     }
   }
 
-  private async processMessages(value: any) {
-    // Procesar mensajes recibidos
-    if (value.messages && Array.isArray(value.messages)) {
-      for (const message of value.messages) {
-        message.from = `${message.from} - ${value.contacts[0].profile.name}`;
-        await this.processIncomingMessage(message, value.metadata);
-      }
-    }
-
-    // Procesar estados de mensajes enviados
-    if (value.statuses && Array.isArray(value.statuses)) {
-      for (const status of value.statuses) {
-        await this.processMessageStatus(status);
-      }
-    }
-  }
-
   private async processIncomingMessage(message: any, metadata: any) {
     try {
       console.log('📨 Mensaje entrante procesado:', {
@@ -82,6 +66,7 @@ export class WhatsappService {
         rawPayload: message,
         conversationId: this.generateConversationId(message.from),
         receivedAt: new Date(parseInt(message.timestamp) * 1000),
+        status: 'sent'
       };
 
       // Almacenar mensaje en la base de datos
@@ -171,6 +156,131 @@ export class WhatsappService {
     }
   }
 
+  private async processMessages(value: any) {
+    // Procesar mensajes recibidos
+    if (value.messages && Array.isArray(value.messages)) {
+      for (const message of value.messages) {
+        message.from = `${message.from} - ${value.contacts[0].profile.name}`;
+        await this.processIncomingMessage(message, value.metadata);
+      }
+    }
+
+    // Procesar estados de mensajes enviados
+    if (value.statuses && Array.isArray(value.statuses)) {
+      for (const status of value.statuses) {
+        await this.processMessageStatus(status);
+      }
+    }
+  }
+
+  async sendTextMessage(message: string, phoneNumber: string) {
+    try {
+      console.log('📤 Enviando mensaje de WhatsApp:', {
+        to: phoneNumber,
+        content: message,
+        timestamp: new Date().toISOString()
+      });
+  
+      // 1. Obtener configuración de WhatsApp
+      const config = await this.prisma.setting.findFirst({
+        where: {
+          category: 'WHATSAPP'
+        }
+      });
+  
+      if (!config) {
+        throw new Error('Configuración de WhatsApp no encontrada');
+      }
+  
+      const whatsappConfig = JSON.parse(config.jsonSettings);
+      
+      // 2. Enviar mensaje a WhatsApp API
+      const url = `https://graph.facebook.com/${whatsappConfig.apiVersion}/${whatsappConfig.cellphoneNumberId}/messages`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${whatsappConfig.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: phoneNumber,
+          type: 'text',
+          text: {
+            body: message
+          }
+        })
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error de WhatsApp API: ${errorData.error?.message || 'Error desconocido'}`);
+      }
+  
+      const responseData = await response.json();
+      console.log('✅ Mensaje enviado exitosamente:', responseData);
+  
+      // 3. Almacenar mensaje en la base de datos
+      const messageData: WhatsAppMessageData = {
+        messageId: responseData.messages?.[0]?.id || `msg_${Date.now()}`,
+        waId: phoneNumber,
+        contactName: `Usuario ${phoneNumber}`, // Se puede mejorar obteniendo el nombre real
+        phoneNumberId: whatsappConfig.cellphoneNumberId,
+        direction: 'outbound',
+        messageType: 'text',
+        content: message,
+        rawPayload: responseData,
+        conversationId: this.generateConversationId(phoneNumber),
+        receivedAt: new Date(),
+        status: 'sent' // Estado inicial del mensaje
+      };
+  
+      // Guardar en BD usando el servicio de mensajes
+      await this.messageService.storeMessage(messageData);
+  
+      // 4. Emitir evento para SSE (tiempo real)
+      const messageEvent: WhatsAppMessageEvent = {
+        messageId: messageData.messageId,
+        waId: messageData.waId,
+        contactName: messageData.contactName,
+        phoneNumberId: messageData.phoneNumberId,
+        direction: messageData.direction,
+        messageType: messageData.messageType,
+        content: messageData.content,
+        conversationId: messageData.conversationId,
+        flowTrigger: messageData.flowTrigger,
+        receivedAt: messageData.receivedAt,
+        rawPayload: messageData.rawPayload,
+      };
+  
+      this.eventEmitter.emitNewMessage(messageEvent);
+
+      
+  
+      // 5. Retornar respuesta exitosa
+      return {
+        success: true,
+        messageId: messageData.messageId,
+        whatsappResponse: responseData,
+        storedMessage: messageData
+      };
+  
+    } catch (error) {
+      console.error('❌ Error al enviar mensaje de WhatsApp:', error);
+      
+      // Emitir error para SSE
+      this.eventEmitter.emitProcessingError(error, 'sendTextMessage');
+      
+      // Retornar error estructurado
+      return {
+        success: false,
+        error: error.message || 'Error desconocido al enviar mensaje',
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
   private extractContactName(message: any, metadata: any): string {
     // Intentar obtener el nombre del contacto
     if (metadata.contacts && Array.isArray(metadata.contacts)) {
@@ -179,7 +289,7 @@ export class WhatsappService {
         return contact.profile.name;
       }
     }
-    
+
     // Si no hay nombre, usar el número de teléfono
     return `+${message.from}`;
   }
@@ -223,11 +333,11 @@ export class WhatsappService {
       const title = `Nuevo mensaje de ${contactName}`;
       const body = messageContent;
       const topic = 'whatsapp_messages'; // Tópico para notificaciones de WhatsApp
-      
+
       console.log('🔔 Enviando notificación FCM:', { title, body, topic });
 
       const result = await this.firebase.sendFCMTopic(title, body, topic, '');
-      
+
       if (result.success) {
         console.log('✅ Notificación FCM enviada exitosamente');
       } else {

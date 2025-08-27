@@ -64,4 +64,22 @@ export class WhatsappController {
             return res.status(500).send('Internal Server Error');
         }
     }
+
+    @Post('send-text-message')
+    @ApiBody({ description: 'Payload from WhatsApp', type: Object })
+    @ApiResponse({ status: 200, description: 'OK' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    async sendTextMessage(
+        @Body() body: {message: string, phoneNumber: string},
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        try {
+            const { message, phoneNumber } = body;
+            const response = await this.whatsappService.sendTextMessage(message, phoneNumber);
+            return res.status(200).send(response);
+        } catch (error) {
+            console.error('❌ Error en webhook de WhatsApp:', error);
+            return res.status(500).send('Internal Server Error');
+        }
+    }
 }
