@@ -10,7 +10,7 @@ export class FcmService {
    * Suscribe un token a múltiples topics usando FCM nativo
    * FCM maneja internamente la suscripción, no necesitamos almacenar nada
    */
-  private async subscribeToTopics(token: string, topic: string): Promise<void> {
+  async subscribeToTopics(token: string, topic: string): Promise<void> {
     try {
       // Validar datos
       if (!topic || !token) {
@@ -18,13 +18,8 @@ export class FcmService {
       }
 
       // Suscribir tokens al topic
-      const response = await admin.messaging().subscribeToTopic([token], topic);
+      await admin.messaging().subscribeToTopic([token], topic);
 
-      // return {
-      //   success: true,
-      //   successCount: response.successCount,
-      //   failureCount: response.failureCount,
-      // };
     } catch (error) {
       console.error('Error al suscribir al topic:', error);
       throw new InternalServerErrorException(

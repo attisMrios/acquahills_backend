@@ -206,39 +206,6 @@ export class IncidentsController {
   }
 
   /**
-   * Agrega un comentario a un incidente
-   */
-  @Post(':id/comments')
-  @UseGuards(FirebaseAuthGuard)
-  @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Agregar comentario', 
-    description: 'Agrega un comentario a un incidente existente.' 
-  })
-  @ApiParam({ name: 'id', description: 'ID del incidente', example: 'ckl1q2w3e0000a1b2c3d4e5f6' })
-  @ApiBody({ 
-    schema: {
-      type: 'object',
-      properties: {
-        comment: { type: 'string', example: 'Este es un comentario sobre el incidente' },
-        userId: { type: 'string', example: 'ckl1q2w3e0000a1b2c3d4e5f6' }
-      },
-      required: ['comment', 'userId']
-    },
-    description: 'Datos del comentario' 
-  })
-  @ApiResponse({ status: 201, description: 'Comentario agregado exitosamente' })
-  @ApiResponse({ status: 404, description: 'Incidente no encontrado' })
-  async addComment(
-    @Param(new ZodValidationPipe(IncidentIdSchema)) params: z.infer<typeof IncidentIdSchema>,
-    @Body(new ZodValidationPipe(CreateCommentSchema)) commentDto: z.infer<typeof CreateCommentSchema>,
-    // TODO: Obtener userId del token de autenticación
-    @Body() body: { userId: string }
-  ) {
-    return this.incidentsService.addComment(params.id, body.userId, commentDto);
-  }
-
-  /**
    * Elimina un incidente
    */
   @Delete(':id')

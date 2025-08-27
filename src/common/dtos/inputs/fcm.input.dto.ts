@@ -9,6 +9,7 @@ export type RegisterTokenDto = z.infer<typeof RegisterTokenSchema>;
 export const FcmTopicSchema = z.object({
   topic: z.string().min(1, 'El topic es requerido'),
   tokens: z.array(z.string().min(1, 'Cada token debe ser una cadena válida')).min(1, 'Al menos un token es requerido'),
+  userId: z.string().min(1, 'El userId es requerido'),
 });
 
 export type FcmTopicDto = z.infer<typeof FcmTopicSchema>;
