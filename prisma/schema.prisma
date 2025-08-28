@@ -149,6 +149,7 @@ model WhatsappMessage {
   receivedAt     DateTime
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  media          String?
 
   @@index([waId])
   @@index([conversationId])

@@ -14,6 +14,7 @@ export interface WhatsAppMessageData {
   flowTrigger?: string;
   receivedAt: Date;
   status: 'sent' | 'delivered' | 'read' | 'failed';
+  media?: string;
 }
 
 @Injectable()
@@ -25,6 +26,16 @@ export class WhatsAppMessageService {
    */
   async storeMessage(messageData: WhatsAppMessageData) {
     try {
+      console.log('🔍 WhatsAppMessageService.storeMessage - Datos recibidos:', {
+        messageId: messageData.messageId,
+        waId: messageData.waId,
+        messageType: messageData.messageType,
+        content: messageData.content,
+        media: messageData.media,
+        mediaType: typeof messageData.media
+      });
+
+      // Ahora que Prisma se regeneró, usar el cliente normal
       const message = await this.prisma.whatsappMessage.create({
         data: {
           messageId: messageData.messageId,
@@ -38,7 +49,8 @@ export class WhatsAppMessageService {
           conversationId: messageData.conversationId,
           flowTrigger: messageData.flowTrigger,
           receivedAt: messageData.receivedAt,
-          status: messageData.status
+          status: messageData.status,
+          media: messageData.media, // Ahora debería funcionar
         },
       });
 
