@@ -12,6 +12,7 @@ export interface WhatsAppMessageEvent {
   conversationId?: string;
   flowTrigger?: string;
   receivedAt: Date;
+  media?: string; // Campo para almacenar información del media (JSON string)
   rawPayload: any;
 }
 

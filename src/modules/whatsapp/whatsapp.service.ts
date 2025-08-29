@@ -104,9 +104,9 @@ export class WhatsappService {
 
       // Crear objeto de información del media
       const mediaData = {
-        fileName: fileName,
+        fileName: fileName, // Solo el nombre del archivo (ej: "8d172e63-4228-4476-97aa-ca540cfa6832.jpg")
         originalName: mediaInfo.originalName || `media_${Date.now()}`,
-        filePath: `uploads/whatsapp/${fileName}`,
+        filePath: fileName, // Solo el nombre del archivo, no la ruta completa
         mimeType: mediaInfo.mimeType,
         fileSize: mediaFile.data.length,
         mediaId: mediaInfo.mediaId,
@@ -115,6 +115,12 @@ export class WhatsappService {
       };
 
       console.log(`💾 Archivo guardado: ${filePath}`);
+      console.log(`📁 Media data creado:`, {
+        fileName: mediaData.fileName,
+        filePath: mediaData.filePath,
+        originalName: mediaData.originalName,
+        fileSize: mediaData.fileSize
+      });
       return mediaData;
     } catch (error) {
       console.error('❌ Error al descargar/guardar archivo:', error);
@@ -246,7 +252,8 @@ export class WhatsappService {
         content: messageData.content,
         media: messageData.media,
         hasMediaData: !!mediaData,
-        mediaDataKeys: mediaData ? Object.keys(mediaData) : 'null'
+        mediaDataKeys: mediaData ? Object.keys(mediaData) : 'null',
+        mediaDataContent: mediaData ? JSON.stringify(mediaData) : 'null'
       });
 
       // Almacenar mensaje en la base de datos
@@ -264,6 +271,7 @@ export class WhatsappService {
         conversationId: messageData.conversationId,
         flowTrigger: messageData.flowTrigger,
         receivedAt: messageData.receivedAt,
+        media: messageData.media, // Incluir información del media para el frontend
         rawPayload: {
           type: messageData.messageType,
           content: messageData.content,
@@ -272,6 +280,15 @@ export class WhatsappService {
       };
 
       // Emitir evento para SSE
+      console.log('📡 Emitiendo evento SSE con media:', {
+        messageId: messageEvent.messageId,
+        messageType: messageEvent.messageType,
+        media: messageEvent.media,
+        hasMedia: !!messageEvent.media,
+        mediaContent: messageEvent.media ? JSON.stringify(messageEvent.media) : 'null',
+        messageDataMedia: messageData.media,
+        mediaData: mediaData ? JSON.stringify(mediaData) : 'null'
+      });
       this.eventEmitter.emitNewMessage(messageEvent);
 
       // Enviar notificación FCM como backup
@@ -439,6 +456,7 @@ export class WhatsappService {
         conversationId: messageData.conversationId,
         flowTrigger: messageData.flowTrigger,
         receivedAt: messageData.receivedAt,
+        media: messageData.media, // Incluir información del media para el frontend
         rawPayload: {
           type: messageData.messageType,
           content: messageData.content,
@@ -446,6 +464,12 @@ export class WhatsappService {
         },
       };
 
+      console.log('📡 Emitiendo evento SSE para mensaje enviado con media:', {
+        messageId: messageEvent.messageId,
+        messageType: messageEvent.messageType,
+        media: messageEvent.media,
+        hasMedia: !!messageEvent.media
+      });
       this.eventEmitter.emitNewMessage(messageEvent);
 
 
