@@ -99,6 +99,7 @@ export class WhatsAppMessageService {
           status: true,
           receivedAt: true,
           contactName: true,
+          media: true,
         },
       });
 
@@ -119,6 +120,19 @@ export class WhatsAppMessageService {
         orderBy: { receivedAt: 'asc' }, // Orden cronológico para conversación
         take: limit,
         skip: offset,
+        select: {
+          id: true,
+          messageId: true,
+          direction: true,
+          messageType: true,
+          content: true,
+          status: true,
+          receivedAt: true,
+          contactName: true,
+          media: true,
+          waId: true,
+          conversationId: true,
+        },
       });
 
       return messages;
@@ -170,6 +184,19 @@ export class WhatsAppMessageService {
         where: whereClause,
         orderBy: { receivedAt: 'desc' },
         take: limit,
+        select: {
+          id: true,
+          messageId: true,
+          direction: true,
+          messageType: true,
+          content: true,
+          status: true,
+          receivedAt: true,
+          contactName: true,
+          media: true,
+          waId: true,
+          conversationId: true,
+        },
       });
 
       return messages;
