@@ -1,0 +1,46 @@
+name: Despliegue Backend por Cliente
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_PASSRORD: ${{ secrets.DB_PASSRORD }}
+      WABA_VERIFY_TOKEN: ${{ secrets.WABA_VERIFY_TOKEN }}
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan $SERVER_HOST >> ~/.ssh/known_hosts
+
+      - name: Ejecutar script de despliegue en el servidor
+        run: |
+          CLIENTE=$CLIENT_NAME
+          DB_NAME=$DB_NAME
+          PORT=$PORT
+          DB_PASSRORD=${{ secrets.DB_PASSRORD }}
+          WABA_VERIFY_TOKEN=${{ secrets.WABA_VERIFY_TOKEN }}
+
+          ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST << EOF
+            BACKEND_PATH="/var/www/$CLIENTE/backend"
+
+            mkdir -p "$BACKEND_PATH"
+
+            cat > "$BACKEND_PATH/.env" <<EOV
+DATABASE_URL="postgresql://postgres:$DB_PASSRORD@localhost:5432/$DB_NAME?schema=public"
+PORT=$PORT
+GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
+WABA_VERIFY_TOKEN="$WABA_VERIFY_TOKEN"
+EOV
+
+            /usr/local/bin/G360co_deploy $CLIENTE $DB_NAME $CLIENTE.g360co.com $PORT
+EOF
