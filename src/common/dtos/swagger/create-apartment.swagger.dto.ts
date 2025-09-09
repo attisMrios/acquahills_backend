@@ -18,4 +18,4 @@ export class CreateApartmentSwaggerDto {
 
   @ApiProperty({ description: 'Torre', maxLength: 10 })
   tower: string;
-} 
+}

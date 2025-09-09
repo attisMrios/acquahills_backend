@@ -7,7 +7,15 @@ export interface WhatsAppMessageData {
   contactName?: string;
   phoneNumberId: string;
   direction: 'inbound' | 'outbound';
-  messageType: 'text' | 'image' | 'audio' | 'video' | 'document' | 'button' | 'location' | 'sticker';
+  messageType:
+    | 'text'
+    | 'image'
+    | 'audio'
+    | 'video'
+    | 'document'
+    | 'button'
+    | 'location'
+    | 'sticker';
   content?: string;
   rawPayload: any;
   conversationId?: string;
@@ -32,7 +40,7 @@ export class WhatsAppMessageService {
         messageType: messageData.messageType,
         content: messageData.content,
         media: messageData.media,
-        mediaType: typeof messageData.media
+        mediaType: typeof messageData.media,
       });
 
       // Ahora que Prisma se regeneró, usar el cliente normal
@@ -165,8 +173,16 @@ export class WhatsAppMessageService {
    */
   async searchMessages(
     searchTerm: string,
-    messageType?: 'text' | 'image' | 'audio' | 'video' | 'document' | 'button' | 'location' | 'sticker',
-    limit: number = 50
+    messageType?:
+      | 'text'
+      | 'image'
+      | 'audio'
+      | 'video'
+      | 'document'
+      | 'button'
+      | 'location'
+      | 'sticker',
+    limit: number = 50,
   ) {
     try {
       const whereClause: any = {
@@ -214,28 +230,28 @@ export class WhatsAppMessageService {
       const stats = await this.prisma.$transaction([
         // Total de mensajes
         this.prisma.whatsappMessage.count(),
-        
+
         // Mensajes por dirección
         this.prisma.whatsappMessage.groupBy({
           by: ['direction'],
           _count: { direction: true },
-          orderBy: { direction: 'asc' }
+          orderBy: { direction: 'asc' },
         }),
-        
+
         // Mensajes por tipo
         this.prisma.whatsappMessage.groupBy({
           by: ['messageType'],
           _count: { messageType: true },
-          orderBy: { messageType: 'asc' }
+          orderBy: { messageType: 'asc' },
         }),
-        
+
         // Mensajes por estado
         this.prisma.whatsappMessage.groupBy({
           by: ['status'],
           _count: { status: true },
-          orderBy: { status: 'asc' }
+          orderBy: { status: 'asc' },
         }),
-        
+
         // Mensajes por día (últimos 7 días)
         this.prisma.whatsappMessage.groupBy({
           by: ['receivedAt'],
@@ -268,7 +284,7 @@ export class WhatsAppMessageService {
   async cleanupOldMessages(daysOld: number = 365) {
     try {
       const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
-      
+
       const result = await this.prisma.whatsappMessage.deleteMany({
         where: {
           receivedAt: {

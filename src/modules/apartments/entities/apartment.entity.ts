@@ -8,4 +8,4 @@ export class Apartment {
   tower: string;
   createdAt: Date;
   updatedAt: Date;
-} 
+}

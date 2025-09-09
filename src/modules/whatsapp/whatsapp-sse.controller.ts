@@ -9,44 +9,45 @@ import { WhatsAppEventEmitterService } from '../../common/services/whatsapp-even
 export class WhatsAppSSEController {
   constructor(
     private readonly sseService: SSEService,
-    private readonly eventEmitter: WhatsAppEventEmitterService
+    private readonly eventEmitter: WhatsAppEventEmitterService,
   ) {}
 
   @Get('connect')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Conectar administrador a SSE para mensajes de WhatsApp en tiempo real',
-    description: 'Establece una conexión Server-Sent Events para recibir mensajes de WhatsApp en tiempo real. Solo para administradores.'
+    description:
+      'Establece una conexión Server-Sent Events para recibir mensajes de WhatsApp en tiempo real. Solo para administradores.',
   })
-  @ApiQuery({ 
-    name: 'adminId', 
-    required: true, 
-    description: 'ID único del administrador' 
+  @ApiQuery({
+    name: 'adminId',
+    required: true,
+    description: 'ID único del administrador',
   })
-  @ApiQuery({ 
-    name: 'adminEmail', 
-    required: true, 
-    description: 'Email del administrador' 
+  @ApiQuery({
+    name: 'adminEmail',
+    required: true,
+    description: 'Email del administrador',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Conexión SSE establecida exitosamente' 
+  @ApiResponse({
+    status: 200,
+    description: 'Conexión SSE establecida exitosamente',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Parámetros faltantes o inválidos' 
+  @ApiResponse({
+    status: 400,
+    description: 'Parámetros faltantes o inválidos',
   })
   async connectToSSE(
     @Query('adminId') adminId: string,
     @Query('adminEmail') adminEmail: string,
     @Res() res: Response,
-    @Request() req: any
+    @Request() req: any,
   ) {
     try {
       // Validar parámetros
       if (!adminId || !adminEmail) {
         return res.status(400).json({
           success: false,
-          message: 'adminId y adminEmail son requeridos'
+          message: 'adminId y adminEmail son requeridos',
         });
       }
 
@@ -55,7 +56,7 @@ export class WhatsAppSSEController {
       if (!emailRegex.test(adminEmail)) {
         return res.status(400).json({
           success: false,
-          message: 'Formato de email inválido'
+          message: 'Formato de email inválido',
         });
       }
 
@@ -75,60 +76,59 @@ export class WhatsAppSSEController {
 
       // La respuesta se maneja en el SSE service
       // No hacer res.send() aquí, el SSE service se encarga
-
     } catch (error) {
       console.error('❌ Error estableciendo conexión SSE:', error);
-      
+
       // Solo enviar error si la respuesta no se ha enviado aún
       if (!res.headersSent) {
         return res.status(500).json({
           success: false,
           message: 'Error interno del servidor',
-          error: error.message
+          error: error.message,
         });
       }
     }
   }
 
   @Get('stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obtener estadísticas de conexiones SSE',
-    description: 'Retorna información sobre conexiones activas y mensajes pendientes'
+    description: 'Retorna información sobre conexiones activas y mensajes pendientes',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Estadísticas de conexiones SSE' 
+  @ApiResponse({
+    status: 200,
+    description: 'Estadísticas de conexiones SSE',
   })
   async getSSEStats() {
     try {
       const stats = this.sseService.getConnectionStats();
-      
+
       return {
         success: true,
         data: {
           ...stats,
           timestamp: new Date(),
-          description: 'Estadísticas de conexiones SSE para WhatsApp'
-        }
+          description: 'Estadísticas de conexiones SSE para WhatsApp',
+        },
       };
     } catch (error) {
       console.error('❌ Error obteniendo estadísticas SSE:', error);
       return {
         success: false,
         message: 'Error obteniendo estadísticas',
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   @Get('heartbeat')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verificar latencia de conexión SSE',
-    description: 'Endpoint para verificar que la conexión SSE esté funcionando correctamente'
+    description: 'Endpoint para verificar que la conexión SSE esté funcionando correctamente',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Heartbeat exitoso' 
+  @ApiResponse({
+    status: 200,
+    description: 'Heartbeat exitoso',
   })
   async heartbeat() {
     try {
@@ -136,7 +136,7 @@ export class WhatsAppSSEController {
         success: true,
         message: 'SSE heartbeat OK',
         timestamp: new Date(),
-        service: 'WhatsApp SSE Service'
+        service: 'WhatsApp SSE Service',
       };
     } catch (error) {
       console.error('❌ Error en heartbeat SSE:', error);
@@ -144,24 +144,24 @@ export class WhatsAppSSEController {
         success: false,
         message: 'Error en heartbeat',
         timestamp: new Date(),
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   @Get('health')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verificar estado del servicio SSE',
-    description: 'Endpoint de salud para verificar que el servicio SSE esté funcionando'
+    description: 'Endpoint de salud para verificar que el servicio SSE esté funcionando',
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Servicio SSE funcionando correctamente' 
+  @ApiResponse({
+    status: 200,
+    description: 'Servicio SSE funcionando correctamente',
   })
   async getSSEHealth() {
     try {
       const stats = this.sseService.getConnectionStats();
-      
+
       return {
         success: true,
         status: 'healthy',
@@ -169,11 +169,11 @@ export class WhatsAppSSEController {
         service: 'WhatsApp SSE Service',
         connections: {
           active: stats.activeConnections,
-          total: stats.totalConnections
+          total: stats.totalConnections,
         },
         messages: {
-          pending: stats.pendingMessages
-        }
+          pending: stats.pendingMessages,
+        },
       };
     } catch (error) {
       console.error('❌ Error en health check SSE:', error);
@@ -182,7 +182,7 @@ export class WhatsAppSSEController {
         status: 'unhealthy',
         timestamp: new Date(),
         service: 'WhatsApp SSE Service',
-        error: error.message
+        error: error.message,
       };
     }
   }

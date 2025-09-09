@@ -128,7 +128,12 @@ export class FcmController {
       topic: body.topic,
       image: body.image || '', // Proporcionar valor por defecto si image es undefined
     };
-    const result = await this.firebaseService.sendFCMTopic(notificationData.title, notificationData.body, notificationData.topic, notificationData.image);
+    const result = await this.firebaseService.sendFCMTopic(
+      notificationData.title,
+      notificationData.body,
+      notificationData.topic,
+      notificationData.image,
+    );
     return result;
   }
 
@@ -136,32 +141,32 @@ export class FcmController {
   @ApiOperation({ summary: 'Desuscribir usuario de un tópico' })
   @ApiResponse({ status: 200, description: 'Usuario desuscrito exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  async unsubscribeFromTopic(
-    @Param('topic') topic: string,
-    @Request() req: any
-  ) {
+  async unsubscribeFromTopic(@Param('topic') topic: string, @Request() req: any) {
     try {
-
-      const response = await this.firebaseService.unsubscribeFromTopic(topic, req.user.token, req.user.id);
+      const response = await this.firebaseService.unsubscribeFromTopic(
+        topic,
+        req.user.token,
+        req.user.id,
+      );
 
       if (response.success) {
         return {
           success: true,
           message: 'Usuario desuscrito exitosamente del tópico',
           topic: topic,
-          isSubscribed: false
+          isSubscribed: false,
         };
       } else {
         return {
           success: false,
-          message: response.message
+          message: response.message,
         };
       }
     } catch (error) {
       console.error('Error al desuscribir usuario del tópico:', error);
       return {
         success: false,
-        message: 'Error interno del servidor: ' + error.message
+        message: 'Error interno del servidor: ' + error.message,
       };
     }
   }

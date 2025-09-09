@@ -5,7 +5,6 @@ import * as path from 'path';
 
 @Controller('whatsapp/media')
 export class WhatsappMediaController {
-
   /**
    * Sirve archivos de media de WhatsApp
    * GET /api/whatsapp/media/:filename
@@ -14,11 +13,11 @@ export class WhatsappMediaController {
   async serveMedia(@Param('filename') filename: string, @Res() res: Response) {
     try {
       console.log(`🔍 Serviendo archivo de media: ${filename}`);
-      
+
       // Construir ruta del archivo
       const filePath = path.join(process.cwd(), 'uploads', 'whatsapp', filename);
       console.log(`📁 Ruta del archivo: ${filePath}`);
-      
+
       // Verificar que el archivo existe
       if (!fs.existsSync(filePath)) {
         console.error(`❌ Archivo no encontrado: ${filePath}`);
@@ -27,12 +26,12 @@ export class WhatsappMediaController {
 
       // Obtener estadísticas del archivo
       const stats = fs.statSync(filePath);
-      
+
       // Determinar el tipo MIME basado en la extensión
       const ext = path.extname(filename).toLowerCase();
       const mimeType = this.getMimeType(ext);
       console.log(`📄 Tipo MIME detectado: ${ext} -> ${mimeType}`);
-      
+
       // Configurar headers de respuesta
       res.set({
         'Content-Type': mimeType,
@@ -40,20 +39,19 @@ export class WhatsappMediaController {
         'Content-Disposition': `inline; filename="${filename}"`,
         'Cache-Control': 'public, max-age=3600', // Cache por 1 hora
       });
-      
+
       console.log(`📤 Enviando archivo: ${filename} (${stats.size} bytes)`);
 
       // Crear stream de lectura y enviar
       const fileStream = fs.createReadStream(filePath);
       fileStream.pipe(res);
-      
-      console.log(`✅ Archivo enviado exitosamente: ${filename}`);
 
+      console.log(`✅ Archivo enviado exitosamente: ${filename}`);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       console.error('Error sirviendo archivo de media:', error);
       throw new HttpException('Error interno del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
     }

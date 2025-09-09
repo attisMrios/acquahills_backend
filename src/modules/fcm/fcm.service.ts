@@ -19,11 +19,10 @@ export class FcmService {
 
       // Suscribir tokens al topic
       await admin.messaging().subscribeToTopic([token], topic);
-
     } catch (error) {
       console.error('Error al suscribir al topic:', error);
       throw new InternalServerErrorException(
-        (error as Error).message || 'Error desconocido al suscribir al topic'
+        (error as Error).message || 'Error desconocido al suscribir al topic',
       );
     }
   }

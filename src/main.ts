@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Configuración CORS más específica para el frontend Angular
   app.enableCors({
     origin: [
@@ -12,12 +12,12 @@ async function bootstrap() {
       'http://localhost:4201', // Angular alternate port
       'http://localhost:3000', // Backend port (para pruebas)
       'https://gestion-360-ph.web.app', // Firebase hosting
-      'https://gestion-360-ph.firebaseapp.com' // Firebase hosting alternate
+      'https://gestion-360-ph.firebaseapp.com', // Firebase hosting alternate
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
-    maxAge: 3600
+    maxAge: 3600,
   });
 
   // Configuración de Swagger

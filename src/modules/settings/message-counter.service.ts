@@ -22,34 +22,36 @@ export class MessageCounterService {
    * @returns Resultado de la operación
    */
   async verifyAndDecrementMessages(
-    category: SettingCategory, 
-    amount: number
+    category: SettingCategory,
+    amount: number,
   ): Promise<MessageCountResult> {
     try {
       // Verificar disponibilidad antes de decrementar
       const hasEnough = await this.settingsService.hasEnoughMessages(category, amount);
-      
+
       if (!hasEnough) {
         const available = await this.settingsService.getMessageCount(category);
         throw new BadRequestException(
-          `No hay suficientes mensajes disponibles. Disponibles: ${available}, Solicitados: ${amount}`
+          `No hay suficientes mensajes disponibles. Disponibles: ${available}, Solicitados: ${amount}`,
         );
       }
 
       // Decrementar de forma atómica
-      const updatedSetting = await this.settingsService.decrementMessageCountBatch(category, amount);
-      
+      const updatedSetting = await this.settingsService.decrementMessageCountBatch(
+        category,
+        amount,
+      );
+
       if (!updatedSetting) {
         throw new BadRequestException('Error al actualizar el contador de mensajes');
       }
-      
+
       return {
         success: true,
         remainingCount: updatedSetting.count,
         decrementedAmount: amount,
-        isUnlimited: updatedSetting.count === -99
+        isUnlimited: updatedSetting.count === -99,
       };
-
     } catch (error) {
       this.logger.error(`Error al verificar/decrementar mensajes: ${error.message}`, error.stack);
       throw error;
@@ -82,39 +84,41 @@ export class MessageCounterService {
    * @returns Resultado de la operación
    */
   async processBatchDecrements(
-    category: SettingCategory, 
-    decrements: number[]
+    category: SettingCategory,
+    decrements: number[],
   ): Promise<MessageCountResult> {
     const totalAmount = decrements.reduce((sum, amount) => sum + amount, 0);
-    
+
     try {
       // Verificar disponibilidad total
       const hasEnough = await this.settingsService.hasEnoughMessages(category, totalAmount);
-      
+
       if (!hasEnough) {
         const available = await this.settingsService.getMessageCount(category);
         throw new BadRequestException(
-          `No hay suficientes mensajes para el lote. Disponibles: ${available}, Solicitados: ${totalAmount}`
+          `No hay suficientes mensajes para el lote. Disponibles: ${available}, Solicitados: ${totalAmount}`,
         );
       }
 
       // Decrementar todo en una sola operación atómica
-      const updatedSetting = await this.settingsService.decrementMessageCountBatch(category, totalAmount);
-      
+      const updatedSetting = await this.settingsService.decrementMessageCountBatch(
+        category,
+        totalAmount,
+      );
+
       if (!updatedSetting) {
         throw new BadRequestException('Error al actualizar el contador de mensajes');
       }
-      
+
       return {
         success: true,
         remainingCount: updatedSetting.count,
         decrementedAmount: totalAmount,
-        isUnlimited: updatedSetting.count === -99
+        isUnlimited: updatedSetting.count === -99,
       };
-
     } catch (error) {
       this.logger.error(`Error al procesar decrementos en lote: ${error.message}`, error.stack);
       throw error;
     }
   }
-} 
+}

@@ -155,6 +155,7 @@ model WhatsappMessage {
   @@index([conversationId])
   @@index([flowTrigger])
   @@index([receivedAt])
+  @@map("whatsapp_messages")
 }
 
 

@@ -7,7 +7,15 @@ export interface WhatsAppMessageEvent {
   contactName?: string;
   phoneNumberId: string;
   direction: 'inbound' | 'outbound';
-  messageType: 'text' | 'image' | 'audio' | 'video' | 'document' | 'button' | 'location' | 'sticker';
+  messageType:
+    | 'text'
+    | 'image'
+    | 'audio'
+    | 'video'
+    | 'document'
+    | 'button'
+    | 'location'
+    | 'sticker';
   content?: string;
   conversationId?: string;
   flowTrigger?: string;
@@ -25,7 +33,6 @@ export interface WhatsAppStatusEvent {
 
 @Injectable()
 export class WhatsAppEventEmitterService {
-  
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
   /**
@@ -34,7 +41,9 @@ export class WhatsAppEventEmitterService {
   emitNewMessage(messageEvent: WhatsAppMessageEvent): void {
     try {
       this.eventEmitter.emit('whatsapp.message.received', messageEvent);
-      console.log(`📡 Evento emitido: whatsapp.message.received para mensaje ${messageEvent.messageId}`);
+      console.log(
+        `📡 Evento emitido: whatsapp.message.received para mensaje ${messageEvent.messageId}`,
+      );
     } catch (error) {
       console.error('❌ Error al emitir evento de mensaje:', error);
     }
@@ -46,7 +55,9 @@ export class WhatsAppEventEmitterService {
   emitMessageStatus(statusEvent: WhatsAppStatusEvent): void {
     try {
       this.eventEmitter.emit('whatsapp.message.status', statusEvent);
-      console.log(`📡 Evento emitido: whatsapp.message.status para mensaje ${statusEvent.messageId}`);
+      console.log(
+        `📡 Evento emitido: whatsapp.message.status para mensaje ${statusEvent.messageId}`,
+      );
     } catch (error) {
       console.error('❌ Error al emitir evento de estado:', error);
     }
@@ -69,7 +80,11 @@ export class WhatsAppEventEmitterService {
    */
   emitProcessingError(error: any, context: string): void {
     try {
-      this.eventEmitter.emit('whatsapp.processing.error', { error, context, timestamp: new Date() });
+      this.eventEmitter.emit('whatsapp.processing.error', {
+        error,
+        context,
+        timestamp: new Date(),
+      });
       console.log(`📡 Evento emitido: whatsapp.processing.error para contexto: ${context}`);
     } catch (emitError) {
       console.error('❌ Error al emitir evento de error:', emitError);
@@ -81,7 +96,11 @@ export class WhatsAppEventEmitterService {
    */
   emitAdminConnected(adminId: string, adminEmail: string): void {
     try {
-      this.eventEmitter.emit('whatsapp.admin.connected', { adminId, adminEmail, timestamp: new Date() });
+      this.eventEmitter.emit('whatsapp.admin.connected', {
+        adminId,
+        adminEmail,
+        timestamp: new Date(),
+      });
       console.log(`📡 Evento emitido: whatsapp.admin.connected para admin: ${adminEmail}`);
     } catch (error) {
       console.error('❌ Error al emitir evento de conexión de admin:', error);
@@ -93,7 +112,11 @@ export class WhatsAppEventEmitterService {
    */
   emitAdminDisconnected(adminId: string, adminEmail: string): void {
     try {
-      this.eventEmitter.emit('whatsapp.admin.disconnected', { adminId, adminEmail, timestamp: new Date() });
+      this.eventEmitter.emit('whatsapp.admin.disconnected', {
+        adminId,
+        adminEmail,
+        timestamp: new Date(),
+      });
       console.log(`📡 Evento emitido: whatsapp.admin.disconnected para admin: ${adminEmail}`);
     } catch (error) {
       console.error('❌ Error al emitir evento de desconexión de admin:', error);

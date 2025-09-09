@@ -1,5 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCommonAreaDto as CreateCommonAreaInputDto, UpdateCommonAreaDto as UpdateCommonAreaInputDto } from 'src/common/dtos/inputs/commonArea.input.dto';
+import {
+  CreateCommonAreaDto as CreateCommonAreaInputDto,
+  UpdateCommonAreaDto as UpdateCommonAreaInputDto,
+} from 'src/common/dtos/inputs/commonArea.input.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 import { CreateCommonAreaDto } from './dto/create-common-area.dto';
 import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
@@ -8,41 +11,43 @@ import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
 export class CommonAreasService {
   [x: string]: any;
   constructor(private readonly prisma: PrismaService) {}
-  
+
   async create(createCommonAreaDto: CreateCommonAreaDto | CreateCommonAreaInputDto) {
     try {
       console.log('🔍 Iniciando creación de área común...');
       console.log('DTO recibido:', JSON.stringify(createCommonAreaDto, null, 2));
-      
+
       const { unavailableDays, timeSlots, ...rest } = createCommonAreaDto;
       console.log('Datos extraídos:', { rest, unavailableDays, timeSlots });
 
       const commonArea = await this.prisma.commonArea.create({
         data: {
           ...rest,
-          unavailableDays: unavailableDays && unavailableDays.length > 0
-            ? {
-                create: unavailableDays.map((day) => ({
-                  weekDay: day.weekDay,
-                  isFirstWorkingDay: day.isFirstWorkingDay,
-                })),
-              }
-            : undefined,
-          timeSlots: timeSlots && timeSlots.length > 0
-            ? {
-                create: timeSlots.map((slot) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                })),
-              }
-            : undefined,
+          unavailableDays:
+            unavailableDays && unavailableDays.length > 0
+              ? {
+                  create: unavailableDays.map((day) => ({
+                    weekDay: day.weekDay,
+                    isFirstWorkingDay: day.isFirstWorkingDay,
+                  })),
+                }
+              : undefined,
+          timeSlots:
+            timeSlots && timeSlots.length > 0
+              ? {
+                  create: timeSlots.map((slot) => ({
+                    startTime: slot.startTime,
+                    endTime: slot.endTime,
+                  })),
+                }
+              : undefined,
         },
         include: {
           unavailableDays: true,
           timeSlots: true,
         },
       });
-      
+
       console.log('✅ Área común creada exitosamente:', JSON.stringify(commonArea, null, 2));
       return commonArea;
     } catch (error) {
@@ -51,12 +56,14 @@ export class CommonAreasService {
       console.error('Código:', error.code);
       console.error('Meta:', error.meta);
       console.error('Stack:', error.stack);
-      
+
       if (error.code === 'P2002') {
         throw new ConflictException('El área común ya existe');
       }
       if (error.code === 'P2003') {
-        throw new ConflictException('Error de referencia: verifique que el tipo de área común existe');
+        throw new ConflictException(
+          'Error de referencia: verifique que el tipo de área común existe',
+        );
       }
       throw error;
     }
@@ -94,14 +101,14 @@ export class CommonAreasService {
     try {
       console.log('🔍 Iniciando actualización de área común...');
       console.log('DTO recibido:', JSON.stringify(updateCommonAreaDto, null, 2));
-      
+
       // Extraer los arrays relacionados del DTO
       const { unavailableDays, timeSlots, ...rest } = updateCommonAreaDto;
       console.log('Datos extraídos:', { rest, unavailableDays, timeSlots });
 
       // Preparar los datos para la actualización
       const data: any = { ...rest };
-      
+
       // Manejar el tipo de área común si está presente
       if (typeof rest.typeCommonAreaId !== 'undefined') {
         data.typeCommonAreaId = rest.typeCommonAreaId;
@@ -114,7 +121,7 @@ export class CommonAreasService {
           await prisma.commonAreaUnavailableDay.deleteMany({
             where: { commonAreaId: id },
           });
-          
+
           if (unavailableDays && unavailableDays.length > 0) {
             await prisma.commonAreaUnavailableDay.createMany({
               data: unavailableDays.map((day) => ({
@@ -131,7 +138,7 @@ export class CommonAreasService {
           await prisma.commonAreaTimeSlot.deleteMany({
             where: { commonAreaId: id },
           });
-          
+
           if (timeSlots && timeSlots.length > 0) {
             await prisma.commonAreaTimeSlot.createMany({
               data: timeSlots.map((slot) => ({
@@ -162,7 +169,7 @@ export class CommonAreasService {
       console.error('Código:', error.code);
       console.error('Meta:', error.meta);
       console.error('Stack:', error.stack);
-      
+
       if (error.code === 'P2025') {
         throw new NotFoundException(`Área común con ID ${id} no encontrada`);
       }
@@ -170,7 +177,9 @@ export class CommonAreasService {
         throw new ConflictException('El área común ya existe');
       }
       if (error.code === 'P2003') {
-        throw new ConflictException('Error de referencia: verifique que el tipo de área común existe');
+        throw new ConflictException(
+          'Error de referencia: verifique que el tipo de área común existe',
+        );
       }
       throw error;
     }
@@ -230,26 +239,28 @@ export class CommonAreasService {
         return {
           deletedUnavailableDays: deletedUnavailableDays.count,
           deletedTimeSlots: deletedTimeSlots.count,
-          deletedArea: deletedArea.id
+          deletedArea: deletedArea.id,
         };
       });
 
       console.log('Eliminación completada exitosamente:', result);
-      return { 
+      return {
         message: 'Área común eliminada correctamente',
         details: {
           unavailableDaysDeleted: result.deletedUnavailableDays,
-          timeSlotsDeleted: result.deletedTimeSlots
-        }
+          timeSlotsDeleted: result.deletedTimeSlots,
+        },
       };
     } catch (error) {
       console.error('Error deleting common area:', error);
-      
+
       if (error.code === 'P2025') {
         throw new NotFoundException(`Área común con ID ${id} no encontrada`);
       }
       if (error.code === 'P2003') {
-        throw new ConflictException('No se puede eliminar el área común porque tiene datos relacionados');
+        throw new ConflictException(
+          'No se puede eliminar el área común porque tiene datos relacionados',
+        );
       }
       throw error;
     }
@@ -265,7 +276,7 @@ export class CommonAreasService {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
           { description: { contains: query, mode: 'insensitive' } },
-         ],
+        ],
       },
       include: {
         unavailableDays: true,
@@ -277,4 +288,3 @@ export class CommonAreasService {
     });
   }
 }
-

@@ -1,15 +1,15 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
-    CreateTypeCommonAreaDto as CreateTypeCommonAreaInputDto,
-    TypeCommonAreaQueryDto,
-    UpdateTypeCommonAreaDto as UpdateTypeCommonAreaInputDto
+  CreateTypeCommonAreaDto as CreateTypeCommonAreaInputDto,
+  TypeCommonAreaQueryDto,
+  UpdateTypeCommonAreaDto as UpdateTypeCommonAreaInputDto,
 } from 'src/common/dtos/inputs/typeCommonArea.input.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 
 @Injectable()
 export class TypeCommonAreasService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createTypeCommonAreaDto: CreateTypeCommonAreaInputDto) {
     try {
@@ -57,11 +57,11 @@ export class TypeCommonAreasService {
   async update(id: number, updateTypeCommonAreaDto: UpdateTypeCommonAreaInputDto) {
     try {
       console.log('🔍 [Service] Iniciando actualización:', { id, data: updateTypeCommonAreaDto });
-      
+
       // Verificar que el tipo existe antes de actualizarlo
       const existingType = await this.findOne(id);
       console.log('✅ [Service] Tipo encontrado:', existingType);
-      
+
       // Filtrar solo los campos que están presentes
       const updateData: any = {};
       if (updateTypeCommonAreaDto.name !== undefined) {
@@ -70,21 +70,21 @@ export class TypeCommonAreasService {
       if (updateTypeCommonAreaDto.description !== undefined) {
         updateData.description = updateTypeCommonAreaDto.description;
       }
-      
+
       console.log('📝 [Service] Datos a actualizar:', updateData);
-      
+
       // Si no hay datos para actualizar, devolver el tipo actual
       if (Object.keys(updateData).length === 0) {
         console.log('ℹ️ [Service] No hay datos para actualizar, devolviendo tipo actual');
         return existingType;
       }
-      
+
       console.log('🚀 [Service] Ejecutando actualización en Prisma...');
       const typeCommonArea = await this.prisma.typeCommonArea.update({
         where: { id },
         data: updateData,
       });
-      
+
       console.log('✅ [Service] Actualización exitosa:', typeCommonArea);
       return typeCommonArea;
     } catch (error) {
@@ -92,9 +92,9 @@ export class TypeCommonAreasService {
       console.error('🔍 [Service] Detalles del error:', {
         code: error.code,
         message: error.message,
-        meta: error.meta
+        meta: error.meta,
       });
-      
+
       if (error.code === 'P2025') {
         throw new NotFoundException(`El tipo de área común con ID ${id} no encontrado`);
       }
@@ -113,14 +113,14 @@ export class TypeCommonAreasService {
         select: {
           id: true,
           name: true,
-          description: true
-        }
+          description: true,
+        },
       });
 
       if (areasUsingType.length > 0) {
-        const areaNames = areasUsingType.map(area => area.name).join(', ');
+        const areaNames = areasUsingType.map((area) => area.name).join(', ');
         throw new ConflictException(
-          `No se puede eliminar este tipo de área común porque está siendo utilizado por ${areasUsingType.length} área(s) común(es): ${areaNames}`
+          `No se puede eliminar este tipo de área común porque está siendo utilizado por ${areasUsingType.length} área(s) común(es): ${areaNames}`,
         );
       }
 
@@ -138,7 +138,7 @@ export class TypeCommonAreasService {
       if (error.code === 'P2003') {
         // Fallback para restricción de clave foránea (aunque ya lo manejamos arriba)
         throw new ConflictException(
-          'No se puede eliminar este tipo de área común porque está siendo utilizado por una o más áreas comunes'
+          'No se puede eliminar este tipo de área común porque está siendo utilizado por una o más áreas comunes',
         );
       }
       throw error;
@@ -170,14 +170,14 @@ export class TypeCommonAreasService {
       select: {
         id: true,
         name: true,
-        description: true
-      }
+        description: true,
+      },
     });
 
     return {
       isUsed: areasUsingType.length > 0,
       usageCount: areasUsingType.length,
-      areas: areasUsingType
+      areas: areasUsingType,
     };
   }
 }

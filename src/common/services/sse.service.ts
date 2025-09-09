@@ -52,14 +52,20 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
     });
 
     // Escuchar conexiones de administradores
-    this.eventEmitter.on('whatsapp.admin.connected', (data: { adminId: string; adminEmail: string }) => {
-      console.log(`👤 Admin conectado via SSE: ${data.adminEmail}`);
-    });
+    this.eventEmitter.on(
+      'whatsapp.admin.connected',
+      (data: { adminId: string; adminEmail: string }) => {
+        console.log(`👤 Admin conectado via SSE: ${data.adminEmail}`);
+      },
+    );
 
     // Escuchar desconexiones de administradores
-    this.eventEmitter.on('whatsapp.admin.disconnected', (data: { adminId: string; adminEmail: string }) => {
-      console.log(`👤 Admin desconectado via SSE: ${data.adminEmail}`);
-    });
+    this.eventEmitter.on(
+      'whatsapp.admin.disconnected',
+      (data: { adminId: string; adminEmail: string }) => {
+        console.log(`👤 Admin desconectado via SSE: ${data.adminEmail}`);
+      },
+    );
   }
 
   /**
@@ -71,18 +77,18 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
       response.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Cache-Control',
         'X-Accel-Buffering': 'no', // Deshabilitar buffering en nginx
       });
 
       // Enviar mensaje de conexión
-      this.sendSSEMessage(response, 'connected', { 
+      this.sendSSEMessage(response, 'connected', {
         message: 'Conexión SSE establecida',
         adminId,
         adminEmail,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       // Registrar conexión
@@ -117,7 +123,6 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
 
       // Configurar timeout de inactividad más largo
       this.setupInactivityTimeout(adminId);
-
     } catch (error) {
       console.error('❌ Error al registrar conexión SSE:', error);
     }
@@ -154,13 +159,16 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
    * Configura el timeout de inactividad
    */
   private setupInactivityTimeout(adminId: string): void {
-    const timeout = setTimeout(() => {
-      const connection = this.adminConnections.get(adminId);
-      if (connection && connection.isActive) {
-        console.log(`⏰ Timeout de inactividad para admin: ${connection.email}`);
-        this.removeAdminConnection(adminId);
-      }
-    }, 10 * 60 * 1000); // 10 minutos de inactividad
+    const timeout = setTimeout(
+      () => {
+        const connection = this.adminConnections.get(adminId);
+        if (connection && connection.isActive) {
+          console.log(`⏰ Timeout de inactividad para admin: ${connection.email}`);
+          this.removeAdminConnection(adminId);
+        }
+      },
+      10 * 60 * 1000,
+    ); // 10 minutos de inactividad
 
     // Guardar el timeout para poder limpiarlo después
     const connection = this.adminConnections.get(adminId);
@@ -186,12 +194,12 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
       connection.isActive = false;
       this.adminConnections.delete(adminId);
       console.log(`🔌 Conexión SSE removida para admin: ${connection.email}`);
-      
+
       // Emitir evento de desconexión
       this.eventEmitter.emit('whatsapp.admin.disconnected', {
         adminId,
         adminEmail: connection.email,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
   }
@@ -202,22 +210,21 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
   private handleNewMessage(messageEvent: WhatsAppMessageEvent): void {
     try {
       console.log(`📨 Procesando nuevo mensaje para SSE: ${messageEvent.messageId}`);
-      
+
       // Enviar a todos los administradores conectados
       let sentToAnyAdmin = false;
-      
+
       for (const [adminId, connection] of Array.from(this.adminConnections.entries())) {
         if (connection.isActive) {
           try {
             this.sendSSEMessage(connection.response, 'new_message', {
               type: 'whatsapp_message',
               data: messageEvent,
-              timestamp: new Date()
+              timestamp: new Date(),
             });
-            
+
             connection.lastActivity = new Date();
             sentToAnyAdmin = true;
-            
           } catch (error) {
             console.error(`❌ Error enviando mensaje a admin ${connection.email}:`, error);
             connection.isActive = false;
@@ -229,7 +236,6 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
       if (!sentToAnyAdmin) {
         this.addPendingMessage(messageEvent);
       }
-
     } catch (error) {
       console.error('❌ Error manejando nuevo mensaje para SSE:', error);
     }
@@ -246,11 +252,10 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
             this.sendSSEMessage(connection.response, 'message_status', {
               type: 'whatsapp_status',
               data: statusEvent,
-              timestamp: new Date()
+              timestamp: new Date(),
             });
-            
+
             connection.lastActivity = new Date();
-            
           } catch (error) {
             console.error(`❌ Error enviando estado a admin ${connection.email}:`, error);
             connection.isActive = false;
@@ -308,22 +313,23 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
       if (!connection || !connection.isActive) return;
 
       const recentMessages = this.pendingMessages
-        .filter(msg => msg.attempts < this.MAX_RETRY_ATTEMPTS)
+        .filter((msg) => msg.attempts < this.MAX_RETRY_ATTEMPTS)
         .slice(-50); // Enviar solo los últimos 50 mensajes
 
       if (recentMessages.length > 0) {
-        console.log(`📤 Enviando ${recentMessages.length} mensajes pendientes a admin: ${connection.email}`);
-        
+        console.log(
+          `📤 Enviando ${recentMessages.length} mensajes pendientes a admin: ${connection.email}`,
+        );
+
         for (const pendingMsg of recentMessages) {
           try {
             this.sendSSEMessage(connection.response, 'pending_message', {
               type: 'whatsapp_pending',
               data: pendingMsg.data,
-              timestamp: new Date()
+              timestamp: new Date(),
             });
-            
+
             pendingMsg.attempts++;
-            
           } catch (error) {
             console.error(`❌ Error enviando mensaje pendiente:`, error);
           }
@@ -366,8 +372,8 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
     const now = new Date();
     const maxAge = 24 * 60 * 60 * 1000; // 24 horas
 
-    this.pendingMessages = this.pendingMessages.filter(msg => 
-      now.getTime() - msg.timestamp.getTime() < maxAge
+    this.pendingMessages = this.pendingMessages.filter(
+      (msg) => now.getTime() - msg.timestamp.getTime() < maxAge,
     );
   }
 
@@ -394,8 +400,9 @@ export class SSEService implements OnModuleInit, OnModuleDestroy {
     pendingMessages: number;
   } {
     const totalConnections = this.adminConnections.size;
-    const activeConnections = Array.from(this.adminConnections.values())
-      .filter(conn => conn.isActive).length;
+    const activeConnections = Array.from(this.adminConnections.values()).filter(
+      (conn) => conn.isActive,
+    ).length;
 
     return {
       totalConnections,

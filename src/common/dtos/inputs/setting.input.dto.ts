@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export enum SettingCategory {
-  WHATSAPP = 'WHATSAPP'
+  WHATSAPP = 'WHATSAPP',
 }
 
 export const CreateSettingSchema = z.object({
@@ -16,4 +16,4 @@ export const UpdateSettingSchema = z.object({
 });
 
 export type CreateSettingDto = z.infer<typeof CreateSettingSchema>;
-export type UpdateSettingDto = z.infer<typeof UpdateSettingSchema>; 
+export type UpdateSettingDto = z.infer<typeof UpdateSettingSchema>;

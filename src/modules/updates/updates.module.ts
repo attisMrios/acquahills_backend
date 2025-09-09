@@ -7,4 +7,4 @@ import { UpdatesController } from './updates.controller';
   controllers: [UpdatesController],
   exports: [UpdatesService],
 })
-export class UpdatesModule {} 
+export class UpdatesModule {}

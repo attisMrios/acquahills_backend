@@ -1,11 +1,21 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-    CreateTypeCommonAreaDto,
-    CreateTypeCommonAreaSchema,
-    TypeCommonAreaIdSchema,
-    UpdateTypeCommonAreaDto,
-    UpdateTypeCommonAreaSchema
+  CreateTypeCommonAreaDto,
+  CreateTypeCommonAreaSchema,
+  TypeCommonAreaIdSchema,
+  UpdateTypeCommonAreaDto,
+  UpdateTypeCommonAreaSchema,
 } from 'src/common/dtos/inputs/typeCommonArea.input.dto';
 import { CreateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/create-type-common-area.swagger.dto';
 import { UpdateTypeCommonAreaSwaggerDto } from 'src/common/dtos/swagger/update-type-common-areas.swagger.dto';
@@ -14,7 +24,7 @@ import { TypeCommonAreasService } from './type-common-areas.service';
 @ApiTags('type-common-areas')
 @Controller('type-common-areas')
 export class TypeCommonAreasController {
-  constructor(private readonly typeCommonAreasService: TypeCommonAreasService) { }
+  constructor(private readonly typeCommonAreasService: TypeCommonAreasService) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un tipo de área común' })
@@ -85,18 +95,21 @@ export class TypeCommonAreasController {
   @ApiResponse({ status: 409, description: 'El tipo de área común ya existe' })
   update(@Param('id') id: string, @Body() updateTypeCommonAreaDto: UpdateTypeCommonAreaDto) {
     try {
-      console.log('🔍 [Controller] Recibiendo actualización:', { id, data: updateTypeCommonAreaDto });
-      
+      console.log('🔍 [Controller] Recibiendo actualización:', {
+        id,
+        data: updateTypeCommonAreaDto,
+      });
+
       const validatedData = UpdateTypeCommonAreaSchema.parse(updateTypeCommonAreaDto);
       console.log('✅ [Controller] Datos validados:', validatedData);
-      
+
       const result = this.typeCommonAreasService.update(+id, validatedData);
       console.log('🚀 [Controller] Enviando al servicio:', { id, validatedData });
-      
+
       return result;
     } catch (error) {
       console.error('❌ [Controller] Error en validación:', error);
-      
+
       if (error.errors) {
         throw new BadRequestException({
           message: 'Datos de entrada inválidos',

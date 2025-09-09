@@ -1,37 +1,41 @@
-import { Injectable } from "@nestjs/common";
-import axios from "axios";
+import { Injectable } from '@nestjs/common';
+import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-import { FirebaseService } from "src/common/services/firebase.service";
-import { PrismaService } from "src/common/services/prisma.service";
-import { WhatsAppEventEmitterService, WhatsAppMessageEvent, WhatsAppStatusEvent } from "src/common/services/whatsapp-event-emitter.service";
+import { FirebaseService } from 'src/common/services/firebase.service';
+import { PrismaService } from 'src/common/services/prisma.service';
+import {
+  WhatsAppEventEmitterService,
+  WhatsAppMessageEvent,
+  WhatsAppStatusEvent,
+} from 'src/common/services/whatsapp-event-emitter.service';
 import { v4 as uuidv4 } from 'uuid';
-import { WhatsappWebhookDto } from "./dtos/whatsapp-webhook.dto";
-import { WhatsAppMessageData, WhatsAppMessageService } from "./whatsapp-message.service";
+import { ConversationFilters, ConversationsWithFiltersResponse } from './dtos/conversation.schema';
+import { WhatsappWebhookDto } from './dtos/whatsapp-webhook.dto';
+import { WhatsAppMessageData, WhatsAppMessageService } from './whatsapp-message.service';
 
 @Injectable()
 export class WhatsappService {
-
   constructor(
     private readonly prisma: PrismaService,
     private firebase: FirebaseService,
     private readonly messageService: WhatsAppMessageService,
-    private readonly eventEmitter: WhatsAppEventEmitterService
-  ) { }
+    private readonly eventEmitter: WhatsAppEventEmitterService,
+  ) {}
 
   async handleWebhook(body: WhatsappWebhookDto) {
     try {
       console.log('📱 Procesando webhook de WhatsApp');
       console.log('📊 Estructura del webhook:', {
         entries: body.entry?.length || 0,
-        hasChanges: body.entry?.some(entry => entry.changes?.length > 0) || false
+        hasChanges: body.entry?.some((entry) => entry.changes?.length > 0) || false,
       });
 
       // 1. Obtener configuración de WhatsApp
       const config = await this.prisma.setting.findFirst({
         where: {
-          category: 'WHATSAPP'
-        }
+          category: 'WHATSAPP',
+        },
       });
 
       if (!config) {
@@ -64,7 +68,9 @@ export class WhatsappService {
         console.log(`📝 Procesando entrada: ${entry.id}`);
         for (const change of entry.changes) {
           if (change.field === 'messages') {
-            console.log(`💬 Campo 'messages' detectado con ${change.value?.messages?.length || 0} mensajes`);
+            console.log(
+              `💬 Campo 'messages' detectado con ${change.value?.messages?.length || 0} mensajes`,
+            );
             await this.processMessages(change.value, mediaData);
           }
         }
@@ -72,6 +78,250 @@ export class WhatsappService {
     } catch (error) {
       console.error('❌ Error al procesar webhook de WhatsApp:', error);
       this.eventEmitter.emitProcessingError(error, 'handleWebhook');
+    }
+  }
+
+  async getConversations() {
+    try {
+      // SQL para obtener conversaciones únicas agrupadas por waId
+      // Evitamos duplicados tomando solo el contactName más reciente para cada waId
+      const sql = `
+        WITH latest_contacts AS (
+          SELECT DISTINCT ON ("waId") 
+            "waId",
+            "contactName",
+            "receivedAt"
+          FROM whatsapp_messages 
+          ORDER BY "waId", "receivedAt" DESC
+        ),
+        conversation_stats AS (
+          SELECT 
+            wm."waId",
+            COUNT(*) as message_count,
+            MAX(wm."receivedAt") as last_message_at,
+            MIN(wm."receivedAt") as first_message_at
+          FROM whatsapp_messages wm
+          GROUP BY wm."waId"
+        )
+        SELECT 
+          lc."waId" as "waId",
+          lc."contactName" as "contactName",
+          cs.message_count as "messageCount",
+          cs.last_message_at as "lastMessageAt",
+          cs.first_message_at as "firstMessageAt"
+        FROM latest_contacts lc
+        INNER JOIN conversation_stats cs ON lc."waId" = cs."waId"
+        ORDER BY cs.last_message_at DESC
+      `;
+
+      console.log('🔍 SQL ejecutado:', sql);
+
+      // Ejecutar la consulta SQL usando Prisma
+      const conversations: any[] = await this.prisma.$queryRawUnsafe(sql);
+
+      console.log('📊 Resultados de la consulta SQL:', {
+        totalConversations: conversations.length,
+        sampleConversation: conversations[0]
+      });
+
+      // Formatear y limpiar los datos
+      const formattedConversations = conversations.map((conv: any) => {
+        // Extraer solo el nombre del contacto (después del guión)
+        let contactName = conv.contactName || 'Sin nombre';
+
+        // Si el formato es "+573178915937 - Juanma", extraer solo "Juanma"
+        if (contactName.includes(' - ')) {
+          const parts = contactName.split(' - ');
+          if (parts.length > 1) {
+            contactName = parts[1].trim();
+          }
+        }
+
+        // Si no hay guión, intentar extraer solo el nombre del número
+        if (contactName.startsWith('+')) {
+          // Buscar el primer espacio después del número
+          const spaceIndex = contactName.indexOf(' ');
+          if (spaceIndex > 0) {
+            contactName = contactName.substring(spaceIndex + 1).trim();
+          }
+        }
+
+        return {
+          waId: conv.waId,
+          contactName: contactName,
+          messageCount: parseInt(conv.messageCount),
+          lastMessageAt: conv.lastMessageAt,
+          firstMessageAt: conv.firstMessageAt,
+        };
+      });
+
+      console.log('✅ Conversaciones formateadas:', {
+        totalFormatted: formattedConversations.length,
+        sampleFormatted: formattedConversations[0]
+      });
+
+      return {
+        success: true,
+        data: formattedConversations,
+        total: formattedConversations.length,
+      };
+    } catch (error) {
+      console.error('❌ Error al obtener conversaciones con SQL:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: [],
+        total: 0,
+      };
+    }
+  }
+
+  /**
+   * Obtiene conversaciones con filtros opcionales
+   */
+  async getConversationsWithFilters(
+    filters?: ConversationFilters,
+  ): Promise<ConversationsWithFiltersResponse> {
+    try {
+      const {
+        search,
+        limit = 50,
+        offset = 0,
+        sortBy = 'lastMessageAt',
+        sortOrder = 'desc',
+      } = filters || {};
+
+      // Construir la consulta base
+      const whereClause: any = {};
+
+      if (search) {
+        whereClause.OR = [
+          { contactName: { contains: search, mode: 'insensitive' } },
+          { waId: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      // Obtener conversaciones únicas agrupando solo por waId para evitar duplicados
+      const conversations = await this.prisma.whatsappMessage.groupBy({
+        by: ['waId'],
+        where: whereClause,
+        _count: {
+          id: true,
+        },
+        _max: {
+          receivedAt: true,
+        },
+        _min: {
+          receivedAt: true,
+        },
+        orderBy: {
+          _max: {
+            receivedAt: sortBy === 'lastMessageAt' ? sortOrder : 'desc',
+          },
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      // Obtener total de conversaciones para paginación
+      const totalConversations = await this.prisma.whatsappMessage.groupBy({
+        by: ['waId'],
+        where: whereClause,
+        _count: {
+          id: true,
+        },
+      });
+
+      // Obtener el contactName más reciente para cada waId
+      const conversationsWithNames = await Promise.all(
+        conversations.map(async (conv) => {
+          // Obtener el mensaje más reciente para este waId para extraer el contactName
+          const latestMessage = await this.prisma.whatsappMessage.findFirst({
+            where: { waId: conv.waId },
+            orderBy: { receivedAt: 'desc' },
+            select: { contactName: true }
+          });
+
+          let contactName = latestMessage?.contactName || 'Sin nombre';
+
+          // Si el formato es "+573178915937 - Juanma", extraer solo "Juanma"
+          if (contactName.includes(' - ')) {
+            const parts = contactName.split(' - ');
+            if (parts.length > 1) {
+              contactName = parts[1].trim();
+            }
+          }
+
+          // Si no hay guión, intentar extraer solo el nombre del número
+          if (contactName.startsWith('+')) {
+            const spaceIndex = contactName.indexOf(' ');
+            if (spaceIndex > 0) {
+              contactName = contactName.substring(spaceIndex + 1).trim();
+            }
+          }
+
+          return {
+            waId: conv.waId,
+            contactName: contactName,
+            messageCount: conv._count.id,
+            lastMessageAt: conv._max.receivedAt || new Date(),
+            firstMessageAt: conv._min.receivedAt || new Date(),
+          };
+        })
+      );
+
+      // Formatear y limpiar los datos
+      const formattedConversations = conversationsWithNames;
+
+      // Aplicar ordenamiento adicional si es necesario
+      if (sortBy !== 'lastMessageAt') {
+        formattedConversations.sort((a, b) => {
+          let valueA: any, valueB: any;
+
+          switch (sortBy) {
+            case 'messageCount':
+              valueA = a.messageCount;
+              valueB = b.messageCount;
+              break;
+            case 'contactName':
+              valueA = a.contactName.toLowerCase();
+              valueB = b.contactName.toLowerCase();
+              break;
+            default:
+              return 0;
+          }
+
+          if (sortOrder === 'asc') {
+            return valueA > valueB ? 1 : -1;
+          } else {
+            return valueA < valueB ? 1 : -1;
+          }
+        });
+      }
+
+      return {
+        success: true,
+        data: formattedConversations,
+        total: totalConversations.length,
+        pagination: {
+          limit,
+          offset,
+          hasMore: offset + limit < totalConversations.length,
+        },
+      };
+    } catch (error) {
+      console.error('❌ Error al obtener conversaciones con filtros:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: [],
+        total: 0,
+        pagination: {
+          limit: 0,
+          offset: 0,
+          hasMore: false,
+        },
+      };
     }
   }
 
@@ -95,7 +345,7 @@ export class WhatsappService {
       const fileExtension = this.getFileExtension(mediaInfo.mimeType);
       console.log(`🔍 MIME Type original: ${mediaInfo.mimeType}`);
       console.log(`🔍 Extensión detectada: ${fileExtension}`);
-      
+
       const fileName = `${uuidv4()}.${fileExtension}`;
       const filePath = path.join(uploadsDir, fileName);
 
@@ -111,7 +361,7 @@ export class WhatsappService {
         fileSize: mediaFile.data.length,
         mediaId: mediaInfo.mediaId,
         sha256: mediaInfo.sha256,
-        downloadedAt: new Date().toISOString()
+        downloadedAt: new Date().toISOString(),
       };
 
       console.log(`💾 Archivo guardado: ${filePath}`);
@@ -119,7 +369,7 @@ export class WhatsappService {
         fileName: mediaData.fileName,
         filePath: mediaData.filePath,
         originalName: mediaData.originalName,
-        fileSize: mediaData.fileSize
+        fileSize: mediaData.fileSize,
       });
       return mediaData;
     } catch (error) {
@@ -127,7 +377,10 @@ export class WhatsappService {
       throw error;
     }
   }
-  private async getMediaUrl(mediaInfo: { type: any; mediaId: any; mimeType: any; sha256: any; } | null, whatsappConfig: any) {
+  private async getMediaUrl(
+    mediaInfo: { type: any; mediaId: any; mimeType: any; sha256: any } | null,
+    whatsappConfig: any,
+  ) {
     if (!mediaInfo) return null;
 
     const mediaUrlRes = await axios.get(
@@ -136,13 +389,15 @@ export class WhatsappService {
         headers: {
           Authorization: `Bearer ${whatsappConfig.token}`,
         },
-      }
+      },
     );
     const mediaUrl = mediaUrlRes.data.url;
     return mediaUrl;
   }
 
-  private extractMediaInfo(payload): { type: any; mediaId: any; mimeType: any; sha256: any; originalName?: string; } | null {
+  private extractMediaInfo(
+    payload,
+  ): { type: any; mediaId: any; mimeType: any; sha256: any; originalName?: string } | null {
     const message = payload?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
     if (!message) return null;
 
@@ -151,7 +406,7 @@ export class WhatsappService {
       type: message.type,
       from: message.from,
       id: message.id,
-      timestamp: message.timestamp
+      timestamp: message.timestamp,
     });
 
     const mediaTypes = ['image', 'video', 'document', 'audio', 'sticker'];
@@ -162,12 +417,12 @@ export class WhatsappService {
         mime_type: mediaData.mime_type,
         sha256: mediaData.sha256,
         filename: mediaData.filename,
-        caption: mediaData.caption
+        caption: mediaData.caption,
       });
-      
+
       // Generar nombre más descriptivo según el tipo de media
       let originalName = mediaData.filename || mediaData.caption;
-      
+
       if (!originalName) {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         switch (message.type) {
@@ -190,21 +445,21 @@ export class WhatsappService {
             originalName = `media_${timestamp}`;
         }
       }
-      
+
       const result = {
         type: message.type,
         mediaId: mediaData.id,
         mimeType: mediaData.mime_type,
         sha256: mediaData.sha256,
-        originalName: originalName
+        originalName: originalName,
       };
-      
+
       console.log(`🔍 extractMediaInfo - Resultado:`, {
         type: result.type,
         mediaId: result.mediaId,
         mimeType: result.mimeType,
         sha256: result.sha256,
-        originalName: result.originalName
+        originalName: result.originalName,
       });
       return result;
     }
@@ -217,7 +472,7 @@ export class WhatsappService {
       console.log('📨 Mensaje entrante procesado:', {
         from: message.from,
         type: message.type,
-        timestamp: message.timestamp
+        timestamp: message.timestamp,
       });
 
       // Extraer información del mensaje
@@ -237,12 +492,12 @@ export class WhatsappService {
           type: message.type,
           from: message.from,
           id: message.id,
-          timestamp: message.timestamp
+          timestamp: message.timestamp,
         },
         conversationId: this.generateConversationId(message.from),
         receivedAt: new Date(parseInt(message.timestamp) * 1000),
         status: 'sent',
-        media: mediaData ? mediaData.filePath : undefined
+        media: mediaData ? mediaData.filePath : undefined,
       };
 
       console.log('🔍 messageData preparado:', {
@@ -253,7 +508,7 @@ export class WhatsappService {
         media: messageData.media,
         hasMediaData: !!mediaData,
         mediaDataKeys: mediaData ? Object.keys(mediaData) : 'null',
-        mediaDataContent: mediaData ? JSON.stringify(mediaData) : 'null'
+        mediaDataContent: mediaData ? JSON.stringify(mediaData) : 'null',
       });
 
       // Almacenar mensaje en la base de datos
@@ -275,7 +530,7 @@ export class WhatsappService {
         rawPayload: {
           type: messageData.messageType,
           content: messageData.content,
-          timestamp: messageData.receivedAt.toISOString()
+          timestamp: messageData.receivedAt.toISOString(),
         },
       };
 
@@ -287,18 +542,12 @@ export class WhatsappService {
         hasMedia: !!messageEvent.media,
         mediaContent: messageEvent.media ? JSON.stringify(messageEvent.media) : 'null',
         messageDataMedia: messageData.media,
-        mediaData: mediaData ? JSON.stringify(mediaData) : 'null'
+        mediaData: mediaData ? JSON.stringify(mediaData) : 'null',
       });
       this.eventEmitter.emitNewMessage(messageEvent);
 
       // Enviar notificación FCM como backup
-      await this.sendWhatsAppNotification(
-        message.from,
-        contactName,
-        messageContent,
-        message.type
-      );
-
+      await this.sendWhatsAppNotification(message.from, contactName, messageContent, message.type);
     } catch (error) {
       console.error('❌ Error al procesar mensaje entrante:', error);
       this.eventEmitter.emitProcessingError(error, 'processIncomingMessage');
@@ -311,7 +560,7 @@ export class WhatsappService {
         id: status.id,
         status: status.status,
         recipient: status.recipient_id,
-        timestamp: status.timestamp
+        timestamp: status.timestamp,
       });
 
       // Actualizar estado del mensaje en la base de datos
@@ -327,7 +576,6 @@ export class WhatsappService {
 
       // Emitir evento de estado para SSE
       this.eventEmitter.emitMessageStatus(statusEvent);
-
     } catch (error) {
       console.error('❌ Error al procesar estado del mensaje:', error);
       this.eventEmitter.emitProcessingError(error, 'processMessageStatus');
@@ -361,7 +609,7 @@ export class WhatsappService {
     // Procesar mensajes recibidos
     if (value.messages && Array.isArray(value.messages)) {
       for (const message of value.messages) {
-        message.from = `${message.from} - ${value.contacts[0].profile.name}`;
+        message.from = `${message.from}`;
         await this.processIncomingMessage(message, value.metadata, mediaData);
       }
     }
@@ -379,14 +627,14 @@ export class WhatsappService {
       console.log('📤 Enviando mensaje de WhatsApp:', {
         to: phoneNumber,
         content: message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       // 1. Obtener configuración de WhatsApp
       const config = await this.prisma.setting.findFirst({
         where: {
-          category: 'WHATSAPP'
-        }
+          category: 'WHATSAPP',
+        },
       });
 
       if (!config) {
@@ -401,22 +649,24 @@ export class WhatsappService {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${whatsappConfig.token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${whatsappConfig.token}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           messaging_product: 'whatsapp',
           to: phoneNumber,
           type: 'text',
           text: {
-            body: message
-          }
-        })
+            body: message,
+          },
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Error de WhatsApp API: ${errorData.error?.message || 'Error desconocido'}`);
+        throw new Error(
+          `Error de WhatsApp API: ${errorData.error?.message || 'Error desconocido'}`,
+        );
       }
 
       const responseData = await response.json();
@@ -434,11 +684,11 @@ export class WhatsappService {
         rawPayload: {
           success: true,
           messageId: responseData.messages?.[0]?.id,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         conversationId: this.generateConversationId(phoneNumber),
         receivedAt: new Date(),
-        status: 'sent' // Estado inicial del mensaje
+        status: 'sent', // Estado inicial del mensaje
       };
 
       // Guardar en BD usando el servicio de mensajes
@@ -460,7 +710,7 @@ export class WhatsappService {
         rawPayload: {
           type: messageData.messageType,
           content: messageData.content,
-          timestamp: messageData.receivedAt.toISOString()
+          timestamp: messageData.receivedAt.toISOString(),
         },
       };
 
@@ -468,20 +718,17 @@ export class WhatsappService {
         messageId: messageEvent.messageId,
         messageType: messageEvent.messageType,
         media: messageEvent.media,
-        hasMedia: !!messageEvent.media
+        hasMedia: !!messageEvent.media,
       });
       this.eventEmitter.emitNewMessage(messageEvent);
-
-
 
       // 5. Retornar respuesta exitosa
       return {
         success: true,
         messageId: messageData.messageId,
         whatsappResponse: responseData,
-        storedMessage: messageData
+        storedMessage: messageData,
       };
-
     } catch (error) {
       console.error('❌ Error al enviar mensaje de WhatsApp:', error);
 
@@ -492,7 +739,7 @@ export class WhatsappService {
       return {
         success: false,
         error: error.message || 'Error desconocido al enviar mensaje',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -500,7 +747,7 @@ export class WhatsappService {
   private extractContactName(message: any, metadata: any): string {
     // Intentar obtener el nombre del contacto
     if (metadata.contacts && Array.isArray(metadata.contacts)) {
-      const contact = metadata.contacts.find(c => c.wa_id === message.from);
+      const contact = metadata.contacts.find((c) => c.wa_id === message.from);
       if (contact?.profile?.name) {
         return contact.profile.name;
       }
@@ -510,7 +757,9 @@ export class WhatsappService {
     return `+${message.from}`;
   }
 
-  private mapMessageType(whatsappType: string): 'text' | 'image' | 'audio' | 'video' | 'document' | 'button' | 'location' | 'sticker' {
+  private mapMessageType(
+    whatsappType: string,
+  ): 'text' | 'image' | 'audio' | 'video' | 'document' | 'button' | 'location' | 'sticker' {
     switch (whatsappType) {
       case 'text':
         return 'text';
@@ -543,7 +792,7 @@ export class WhatsappService {
     phoneNumber: string,
     contactName: string,
     messageContent: string,
-    messageType: string
+    messageType: string,
   ) {
     try {
       const title = `Nuevo mensaje de ${contactName}`;
@@ -559,7 +808,6 @@ export class WhatsappService {
       } else {
         console.error('❌ Error al enviar notificación FCM:', result.message);
       }
-
     } catch (error) {
       console.error('❌ Error al enviar notificación FCM:', error);
       this.eventEmitter.emitProcessingError(error, 'sendWhatsAppNotification');
@@ -608,11 +856,11 @@ export class WhatsappService {
    */
   private getFileExtension(mimeType: string): string {
     console.log(`🔍 getFileExtension llamado con: "${mimeType}"`);
-    
+
     // Limpiar el MIME type removiendo parámetros adicionales como codecs
     const cleanMimeType = mimeType.split(';')[0].trim();
     console.log(`🔍 MIME Type limpio: "${cleanMimeType}"`);
-    
+
     const mimeToExt: { [key: string]: string } = {
       'image/jpeg': 'jpg',
       'image/jpg': 'jpg',
@@ -634,13 +882,13 @@ export class WhatsappService {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
       'application/vnd.ms-excel': 'xls',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
-      'text/plain': 'txt'
+      'text/plain': 'txt',
     };
 
     const extension = mimeToExt[cleanMimeType] || 'bin';
     console.log(`🔍 Extensión encontrada: "${extension}"`);
     console.log(`🔍 Mapeo completo: "${cleanMimeType}" -> "${extension}"`);
-    
+
     return extension;
   }
 }

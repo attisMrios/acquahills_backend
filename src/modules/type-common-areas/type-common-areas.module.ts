@@ -6,6 +6,6 @@ import { TypeCommonAreasService } from './type-common-areas.service';
 @Module({
   controllers: [TypeCommonAreasController],
   providers: [TypeCommonAreasService, PrismaService],
-  exports: [TypeCommonAreasService]
+  exports: [TypeCommonAreasService],
 })
 export class TypeCommonAreasModule {}
