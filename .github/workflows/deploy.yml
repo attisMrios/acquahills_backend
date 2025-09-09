@@ -9,6 +9,9 @@ jobs:
       DB_PASSRORD: ${{ secrets.DB_PASSRORD }}
       WABA_VERIFY_TOKEN: ${{ secrets.WABA_VERIFY_TOKEN }}
     steps:
+      - name: Verificar valor de SERVER_HOST
+        run: |
+          echo "SERVER_HOST es: $SERVER_HOST"
       - name: Checkout del repositorio
         uses: actions/checkout@v3
       - name: Configurar clave SSH
