@@ -5,18 +5,18 @@
 export enum UserRole {
   ADMIN = 'admin',
   MANAGER = 'manager',
-  USER = 'user'
+  USER = 'user',
 }
 
 export enum UserStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
-  SUSPENDED = 'suspended'
+  SUSPENDED = 'suspended',
 }
 
 export enum SortOrder {
   ASC = 'asc',
-  DESC = 'desc'
+  DESC = 'desc',
 }
 
 export enum UserSortField {
@@ -26,5 +26,5 @@ export enum UserSortField {
   ROLE = 'role',
   CREATED_AT = 'createdAt',
   UPDATED_AT = 'updatedAt',
-  LAST_LOGIN = 'lastLogin'
-} 
+  LAST_LOGIN = 'lastLogin',
+}

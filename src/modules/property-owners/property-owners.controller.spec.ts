@@ -17,4 +17,4 @@ describe('PropertyOwnersController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
-}); 
+});

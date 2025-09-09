@@ -15,4 +15,4 @@ export class PropertyOwner {
 
   @ApiProperty({ description: 'Fecha de última actualización' })
   updatedAt: Date;
-} 
+}

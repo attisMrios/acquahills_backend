@@ -1,18 +1,18 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { CreateTypeCommonAreaSwaggerDto } from "./create-type-common-area.swagger.dto";
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { CreateTypeCommonAreaSwaggerDto } from './create-type-common-area.swagger.dto';
 
 export class UpdateTypeCommonAreaSwaggerDto extends PartialType(CreateTypeCommonAreaSwaggerDto) {
-  @ApiProperty({ 
-    description: 'Nombre del tipo de área común (opcional para actualización)', 
+  @ApiProperty({
+    description: 'Nombre del tipo de área común (opcional para actualización)',
     maxLength: 100,
-    required: false 
+    required: false,
   })
   name?: string;
 
-  @ApiProperty({ 
-    description: 'Descripción del tipo de área común (opcional para actualización)', 
+  @ApiProperty({
+    description: 'Descripción del tipo de área común (opcional para actualización)',
     maxLength: 255,
-    required: false 
+    required: false,
   })
   description?: string;
-} 
+}

@@ -1,10 +1,24 @@
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+
+  // Configuración CORS más específica para el frontend Angular
+  app.enableCors({
+    origin: [
+      'http://localhost:4200', // Angular dev server
+      'http://localhost:4201', // Angular alternate port
+      'http://localhost:3000', // Backend port (para pruebas)
+      'https://gestion-360-ph.web.app', // Firebase hosting
+      'https://gestion-360-ph.firebaseapp.com', // Firebase hosting alternate
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+    maxAge: 3600,
+  });
 
   // Configuración de Swagger
   const config = new DocumentBuilder()

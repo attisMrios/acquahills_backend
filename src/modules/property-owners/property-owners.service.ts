@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
-import { CreatePropertyOwnerDto, CreatePropertyOwnersBulkDto } from './dto/create-property-owner.dto';
+import {
+  CreatePropertyOwnerDto,
+  CreatePropertyOwnersBulkDto,
+} from './dto/create-property-owner.dto';
 import { UpdatePropertyOwnerDto } from './dto/update-property-owner.dto';
 
 @Injectable()
@@ -16,7 +19,9 @@ export class PropertyOwnersService {
       });
 
       if (!user) {
-        throw new NotFoundException(`Usuario con ID ${createPropertyOwnerDto.userId} no encontrado`);
+        throw new NotFoundException(
+          `Usuario con ID ${createPropertyOwnerDto.userId} no encontrado`,
+        );
       }
 
       // Verificar que el apartamento existe
@@ -25,7 +30,9 @@ export class PropertyOwnersService {
       });
 
       if (!apartment) {
-        throw new NotFoundException(`Apartamento con ID ${createPropertyOwnerDto.apartmentId} no encontrado`);
+        throw new NotFoundException(
+          `Apartamento con ID ${createPropertyOwnerDto.apartmentId} no encontrado`,
+        );
       }
 
       const propertyOwner = await this.prisma.propertyOwner.create({
@@ -102,7 +109,9 @@ export class PropertyOwnersService {
         } catch (error) {
           if (error.code === 'P2002') {
             // Si ya existe, lo omitimos y continuamos
-            console.log(`La relación propietario-apartamento ya existe para usuario ${userId} y apartamento ${apartmentId}`);
+            console.log(
+              `La relación propietario-apartamento ya existe para usuario ${userId} y apartamento ${apartmentId}`,
+            );
             continue;
           }
           throw error;
@@ -113,7 +122,7 @@ export class PropertyOwnersService {
         message: `${results.length} propietarios agregados exitosamente`,
         created: results,
         total: userIds.length,
-        skipped: userIds.length - results.length
+        skipped: userIds.length - results.length,
       };
     } catch (error) {
       throw error;
@@ -139,7 +148,9 @@ export class PropertyOwnersService {
         });
 
         if (!user) {
-          throw new NotFoundException(`Usuario con ID ${updatePropertyOwnerDto.userId} no encontrado`);
+          throw new NotFoundException(
+            `Usuario con ID ${updatePropertyOwnerDto.userId} no encontrado`,
+          );
         }
       }
 
@@ -150,13 +161,16 @@ export class PropertyOwnersService {
         });
 
         if (!apartment) {
-          throw new NotFoundException(`Apartamento con ID ${updatePropertyOwnerDto.apartmentId} no encontrado`);
+          throw new NotFoundException(
+            `Apartamento con ID ${updatePropertyOwnerDto.apartmentId} no encontrado`,
+          );
         }
       }
 
       const updateData: any = {};
       if (updatePropertyOwnerDto.userId) updateData.userId = updatePropertyOwnerDto.userId;
-      if (updatePropertyOwnerDto.apartmentId) updateData.apartmentId = updatePropertyOwnerDto.apartmentId;
+      if (updatePropertyOwnerDto.apartmentId)
+        updateData.apartmentId = updatePropertyOwnerDto.apartmentId;
 
       const propertyOwner = await this.prisma.propertyOwner.update({
         where: { id },
@@ -213,7 +227,9 @@ export class PropertyOwnersService {
       });
 
       if (!propertyOwner) {
-        throw new NotFoundException(`No se encontró la relación de propietario para el apartamento ${apartmentId} y usuario ${userId}`);
+        throw new NotFoundException(
+          `No se encontró la relación de propietario para el apartamento ${apartmentId} y usuario ${userId}`,
+        );
       }
 
       // Eliminar la relación
@@ -224,9 +240,11 @@ export class PropertyOwnersService {
       return { message: 'Propietario eliminado correctamente' };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new NotFoundException(`No se encontró la relación de propietario para el apartamento ${apartmentId} y usuario ${userId}`);
+        throw new NotFoundException(
+          `No se encontró la relación de propietario para el apartamento ${apartmentId} y usuario ${userId}`,
+        );
       }
       throw error;
     }
   }
-} 
+}

@@ -36,7 +36,7 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
     PrismaModule,
     FcmModule,
     TypeCommonAreasModule,
-    WhatsappModule
+    WhatsappModule,
   ],
 })
 export class AppModule {}

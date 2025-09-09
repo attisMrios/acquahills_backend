@@ -6,7 +6,7 @@ describe('FcmInputDto', () => {
     it('should validate correct fcmToken', () => {
       // Arrange
       const validData = {
-        fcmToken: 'fcm_token_example_123456789'
+        fcmToken: 'fcm_token_example_123456789',
       };
 
       // Act
@@ -22,7 +22,7 @@ describe('FcmInputDto', () => {
     it('should reject empty fcmToken', () => {
       // Arrange
       const invalidData = {
-        fcmToken: ''
+        fcmToken: '',
       };
 
       // Act
@@ -52,7 +52,7 @@ describe('FcmInputDto', () => {
     it('should reject fcmToken with only whitespace', () => {
       // Arrange
       const invalidData = {
-        fcmToken: '   '
+        fcmToken: '   ',
       };
 
       // Act
@@ -68,7 +68,7 @@ describe('FcmInputDto', () => {
     it('should accept fcmToken with special characters', () => {
       // Arrange
       const validData = {
-        fcmToken: 'fcm_token_with_special_chars_!@#$%^&*()_+-=[]{}|;:,.<>?'
+        fcmToken: 'fcm_token_with_special_chars_!@#$%^&*()_+-=[]{}|;:,.<>?',
       };
 
       // Act
@@ -84,7 +84,7 @@ describe('FcmInputDto', () => {
     it('should accept fcmToken with numbers', () => {
       // Arrange
       const validData = {
-        fcmToken: 'fcm_token_123456789'
+        fcmToken: 'fcm_token_123456789',
       };
 
       // Act
@@ -101,7 +101,7 @@ describe('FcmInputDto', () => {
       // Arrange
       const longToken = 'fcm_token_' + 'a'.repeat(1000);
       const validData = {
-        fcmToken: longToken
+        fcmToken: longToken,
       };
 
       // Act
@@ -117,7 +117,7 @@ describe('FcmInputDto', () => {
     it('should reject null fcmToken', () => {
       // Arrange
       const invalidData = {
-        fcmToken: null
+        fcmToken: null,
       };
 
       // Act
@@ -130,7 +130,7 @@ describe('FcmInputDto', () => {
     it('should reject undefined fcmToken', () => {
       // Arrange
       const invalidData = {
-        fcmToken: undefined
+        fcmToken: undefined,
       };
 
       // Act
@@ -150,7 +150,7 @@ describe('FcmInputDto', () => {
       };
 
       const validData = {
-        fcmToken: 'valid_fcm_token'
+        fcmToken: 'valid_fcm_token',
       };
 
       // Should not throw TypeScript errors

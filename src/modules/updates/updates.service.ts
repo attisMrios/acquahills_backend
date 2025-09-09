@@ -21,4 +21,4 @@ export class UpdatesService {
   getVehicleEvents() {
     return this.vehicleEvents$.asObservable();
   }
-} 
+}

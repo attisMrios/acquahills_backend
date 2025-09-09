@@ -1,5 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateSettingDto, CreateSettingSchema, SettingCategory, UpdateSettingDto, UpdateSettingSchema } from 'src/common/dtos/inputs/setting.input.dto';
+import {
+  CreateSettingDto,
+  CreateSettingSchema,
+  SettingCategory,
+  UpdateSettingDto,
+  UpdateSettingSchema,
+} from 'src/common/dtos/inputs/setting.input.dto';
 import { PrismaService } from 'src/common/services/prisma.service';
 
 @Injectable()
@@ -12,7 +18,9 @@ export class SettingsService {
       throw new BadRequestException(parsed.error.issues);
     }
     // Verificar si ya existe un registro para la categoría
-    const existing = await this.prisma.setting.findFirst({ where: { category: parsed.data.category } });
+    const existing = await this.prisma.setting.findFirst({
+      where: { category: parsed.data.category },
+    });
     if (existing) {
       // Si existe, actualizarlo
       return this.prisma.setting.update({
@@ -56,38 +64,43 @@ export class SettingsService {
    * @returns El setting actualizado
    */
   async decrementMessageCount(category: SettingCategory, amount: number = 1) {
-    return this.prisma.$transaction(async (tx) => {
-      // Usar FOR UPDATE para bloquear la fila durante la transacción
-      const setting = await tx.setting.findFirst({ 
-        where: { category },
-        select: { id: true, count: true }
-      });
-      
-      if (!setting) throw new NotFoundException('Setting not found');
-      
-      // Si el contador es -99 (ilimitado), no decrementar
-      if (setting.count === -99) {
-        return await tx.setting.findUnique({ where: { id: setting.id } });
-      }
-      
-      // Verificar si hay suficientes mensajes disponibles
-      if (setting.count < amount) {
-        throw new BadRequestException(`No hay suficientes mensajes disponibles. Disponibles: ${setting.count}, Solicitados: ${amount}`);
-      }
-      
-      // Calcular el nuevo contador
-      const newCount = setting.count - amount;
-      
-      // Actualizar el contador de forma atómica
-      return await tx.setting.update({
-        where: { id: setting.id },
-        data: { count: newCount },
-      });
-    }, {
-      isolationLevel: 'Serializable', // Nivel más alto de aislamiento para prevenir condiciones de carrera
-      maxWait: 5000, // Esperar máximo 5 segundos por el lock
-      timeout: 10000 // Timeout total de 10 segundos
-    });
+    return this.prisma.$transaction(
+      async (tx) => {
+        // Usar FOR UPDATE para bloquear la fila durante la transacción
+        const setting = await tx.setting.findFirst({
+          where: { category },
+          select: { id: true, count: true },
+        });
+
+        if (!setting) throw new NotFoundException('Setting not found');
+
+        // Si el contador es -99 (ilimitado), no decrementar
+        if (setting.count === -99) {
+          return await tx.setting.findUnique({ where: { id: setting.id } });
+        }
+
+        // Verificar si hay suficientes mensajes disponibles
+        if (setting.count < amount) {
+          throw new BadRequestException(
+            `No hay suficientes mensajes disponibles. Disponibles: ${setting.count}, Solicitados: ${amount}`,
+          );
+        }
+
+        // Calcular el nuevo contador
+        const newCount = setting.count - amount;
+
+        // Actualizar el contador de forma atómica
+        return await tx.setting.update({
+          where: { id: setting.id },
+          data: { count: newCount },
+        });
+      },
+      {
+        isolationLevel: 'Serializable', // Nivel más alto de aislamiento para prevenir condiciones de carrera
+        maxWait: 5000, // Esperar máximo 5 segundos por el lock
+        timeout: 10000, // Timeout total de 10 segundos
+      },
+    );
   }
 
   /**
@@ -109,38 +122,43 @@ export class SettingsService {
    * @returns El setting actualizado
    */
   async decrementMessageCountBatch(category: SettingCategory, amount: number) {
-    return this.prisma.$transaction(async (tx) => {
-      // Usar FOR UPDATE para bloquear la fila durante la transacción
-      const setting = await tx.setting.findFirst({ 
-        where: { category },
-        select: { id: true, count: true }
-      });
-      
-      if (!setting) throw new NotFoundException('Setting not found');
-      
-      // Si el contador es -99 (ilimitado), no decrementar
-      if (setting.count === -99) {
-        return await tx.setting.findUnique({ where: { id: setting.id } });
-      }
-      
-      // Verificar si hay suficientes mensajes disponibles
-      if (setting.count < amount) {
-        throw new BadRequestException(`No hay suficientes mensajes disponibles. Disponibles: ${setting.count}, Solicitados: ${amount}`);
-      }
-      
-      // Calcular el nuevo contador
-      const newCount = setting.count - amount;
-      
-      // Actualizar el contador de forma atómica
-      return await tx.setting.update({
-        where: { id: setting.id },
-        data: { count: newCount },
-      });
-    }, {
-      isolationLevel: 'Serializable',
-      maxWait: 5000,
-      timeout: 10000
-    });
+    return this.prisma.$transaction(
+      async (tx) => {
+        // Usar FOR UPDATE para bloquear la fila durante la transacción
+        const setting = await tx.setting.findFirst({
+          where: { category },
+          select: { id: true, count: true },
+        });
+
+        if (!setting) throw new NotFoundException('Setting not found');
+
+        // Si el contador es -99 (ilimitado), no decrementar
+        if (setting.count === -99) {
+          return await tx.setting.findUnique({ where: { id: setting.id } });
+        }
+
+        // Verificar si hay suficientes mensajes disponibles
+        if (setting.count < amount) {
+          throw new BadRequestException(
+            `No hay suficientes mensajes disponibles. Disponibles: ${setting.count}, Solicitados: ${amount}`,
+          );
+        }
+
+        // Calcular el nuevo contador
+        const newCount = setting.count - amount;
+
+        // Actualizar el contador de forma atómica
+        return await tx.setting.update({
+          where: { id: setting.id },
+          data: { count: newCount },
+        });
+      },
+      {
+        isolationLevel: 'Serializable',
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    );
   }
 
   /**
@@ -150,16 +168,16 @@ export class SettingsService {
    * @returns true si hay suficientes mensajes
    */
   async hasEnoughMessages(category: SettingCategory, amount: number): Promise<boolean> {
-    const setting = await this.prisma.setting.findFirst({ 
+    const setting = await this.prisma.setting.findFirst({
       where: { category },
-      select: { count: true }
+      select: { count: true },
     });
-    
+
     if (!setting) return false;
-    
+
     // Si es ilimitado, siempre hay suficientes
     if (setting.count === -99) return true;
-    
+
     return setting.count >= amount;
   }
 
@@ -170,30 +188,33 @@ export class SettingsService {
    * @returns El setting actualizado
    */
   async incrementMessageCount(category: SettingCategory, amount: number) {
-    return this.prisma.$transaction(async (tx) => {
-      const setting = await tx.setting.findFirst({ 
-        where: { category },
-        select: { id: true, count: true }
-      });
-      
-      if (!setting) throw new NotFoundException('Setting not found');
-      
-      // Si es ilimitado, no hacer nada
-      if (setting.count === -99) {
-        return await tx.setting.findUnique({ where: { id: setting.id } });
-      }
-      
-      // Incrementar el contador
-      const newCount = setting.count + amount;
-      
-      return await tx.setting.update({
-        where: { id: setting.id },
-        data: { count: newCount },
-      });
-    }, {
-      isolationLevel: 'Serializable',
-      maxWait: 5000,
-      timeout: 10000
-    });
+    return this.prisma.$transaction(
+      async (tx) => {
+        const setting = await tx.setting.findFirst({
+          where: { category },
+          select: { id: true, count: true },
+        });
+
+        if (!setting) throw new NotFoundException('Setting not found');
+
+        // Si es ilimitado, no hacer nada
+        if (setting.count === -99) {
+          return await tx.setting.findUnique({ where: { id: setting.id } });
+        }
+
+        // Incrementar el contador
+        const newCount = setting.count + amount;
+
+        return await tx.setting.update({
+          where: { id: setting.id },
+          data: { count: newCount },
+        });
+      },
+      {
+        isolationLevel: 'Serializable',
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    );
   }
-} 
+}

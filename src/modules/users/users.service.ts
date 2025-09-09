@@ -1,10 +1,27 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from 'src/common/enums/user.enums';
 import { FirebaseService } from 'src/common/services/firebase.service';
-import { CreateUserDto, FilterUsersDto, FilterUsersForGroupDto, UpdateUserDto, UserQueryDto } from '../../common/dtos/inputs/user.input.dto';
+import {
+  CreateUserDto,
+  FilterUsersDto,
+  FilterUsersForGroupDto,
+  UpdateUserDto,
+  UserQueryDto,
+} from '../../common/dtos/inputs/user.input.dto';
 import { PrismaService } from '../../common/services/prisma.service';
-import { CreateUserResponse, DeleteUserResponse, UpdateUserResponse, User, UsersResponse } from '../../common/types/user.types';
+import {
+  CreateUserResponse,
+  DeleteUserResponse,
+  UpdateUserResponse,
+  User,
+  UsersResponse,
+} from '../../common/types/user.types';
 import { UpdatesService } from '../updates/updates.service';
 
 @Injectable()
@@ -12,7 +29,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly firebaseService: FirebaseService,
-    private readonly updatesService: UpdatesService
+    private readonly updatesService: UpdatesService,
   ) {}
 
   /**
@@ -22,9 +39,13 @@ export class UsersService {
     let firebaseUser;
     try {
       // Validaciones previas en la base de datos
-      const existingEmail = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
+      const existingEmail = await this.prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      });
       if (existingEmail) throw new ConflictException('El correo electrónico ya está registrado');
-      const existingUserName = await this.prisma.user.findUnique({ where: { userName: createUserDto.userName } });
+      const existingUserName = await this.prisma.user.findUnique({
+        where: { userName: createUserDto.userName },
+      });
       if (existingUserName) throw new ConflictException('El nombre de usuario ya está en uso');
       const existingDni = await this.prisma.user.findUnique({ where: { dni: createUserDto.dni } });
       if (existingDni) throw new ConflictException('El DNI ya está registrado');
@@ -33,7 +54,7 @@ export class UsersService {
       try {
         firebaseUser = await this.firebaseService.getFirebaseAuth().createUser({
           email: createUserDto.email,
-          password: createUserDto.password
+          password: createUserDto.password,
         });
       } catch (firebaseError) {
         throw new ConflictException('El correo electrónico ya está registrado.');
@@ -66,19 +87,23 @@ export class UsersService {
       // Claims, eventos, etc
       const customClaims = {
         role: createUserDto.role,
-        canSendNotifications: createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
+        canSendNotifications:
+          createUserDto.role === UserRole.ADMIN || createUserDto.role === UserRole.MANAGER,
         createdAt: user.createdAt,
       };
-      await this.firebaseService.getFirebaseAuth().setCustomUserClaims(firebaseUser.uid, customClaims);
-      await this.firebaseService.getFirebaseAuth().generateEmailVerificationLink(createUserDto.email);
+      await this.firebaseService
+        .getFirebaseAuth()
+        .setCustomUserClaims(firebaseUser.uid, customClaims);
+      await this.firebaseService
+        .getFirebaseAuth()
+        .generateEmailVerificationLink(createUserDto.email);
       await this.firebaseService.getFirebaseAuth().generatePasswordResetLink(createUserDto.email);
       this.updatesService.emitUserEvent('created', user);
 
       return {
         userId: user.id,
-        message: 'Usuario creado exitosamente'
+        message: 'Usuario creado exitosamente',
       };
-
     } catch (error) {
       if (error instanceof ConflictException || error instanceof BadRequestException) {
         throw error;
@@ -102,7 +127,7 @@ export class UsersService {
         { userName: { contains: search, mode: 'insensitive' } },
         { fullName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { dni: { contains: search, mode: 'insensitive' } }
+        { dni: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -133,17 +158,17 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          whatsappEnabled: true
-        }
+          whatsappEnabled: true,
+        },
       }),
-      this.prisma.user.count({ where })
+      this.prisma.user.count({ where }),
     ]);
 
     return {
       users: users as User[],
       total,
       page,
-      limit
+      limit,
     };
   }
 
@@ -169,8 +194,8 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        whatsappEnabled: true
-      }
+        whatsappEnabled: true,
+      },
     });
 
     if (!user) {
@@ -202,8 +227,8 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        whatsappEnabled: true
-      }
+        whatsappEnabled: true,
+      },
     });
 
     if (!user) {
@@ -235,8 +260,8 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
         isEmailVerified: true,
-        whatsappEnabled: true
-      }
+        whatsappEnabled: true,
+      },
     });
 
     if (!user) {
@@ -253,7 +278,7 @@ export class UsersService {
     try {
       // Verificar si el usuario existe
       const existingUser = await this.prisma.user.findUnique({
-        where: { id }
+        where: { id },
       });
 
       if (!existingUser) {
@@ -263,7 +288,7 @@ export class UsersService {
       // Verificar conflictos si se están actualizando campos únicos
       if (updateUserDto.userName && updateUserDto.userName !== existingUser.userName) {
         const existingUserName = await this.prisma.user.findUnique({
-          where: { userName: updateUserDto.userName }
+          where: { userName: updateUserDto.userName },
         });
 
         if (existingUserName) {
@@ -273,7 +298,7 @@ export class UsersService {
 
       if (updateUserDto.dni && updateUserDto.dni !== existingUser.dni) {
         const existingDni = await this.prisma.user.findUnique({
-          where: { dni: updateUserDto.dni }
+          where: { dni: updateUserDto.dni },
         });
 
         if (existingDni) {
@@ -311,8 +336,8 @@ export class UsersService {
           createdAt: true,
           updatedAt: true,
           isEmailVerified: true,
-          whatsappEnabled: true
-        }
+          whatsappEnabled: true,
+        },
       });
 
       // Emitir evento SSE
@@ -320,7 +345,7 @@ export class UsersService {
 
       return {
         user: user as User,
-        message: 'Usuario actualizado exitosamente'
+        message: 'Usuario actualizado exitosamente',
       };
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ConflictException) {
@@ -337,7 +362,7 @@ export class UsersService {
     try {
       // Verificar si el usuario existe
       const existingUser = await this.prisma.user.findUnique({
-        where: { id }
+        where: { id },
       });
 
       if (!existingUser) {
@@ -346,7 +371,7 @@ export class UsersService {
 
       // Eliminar usuario (esto también eliminará los FCM tokens por la relación cascade)
       await this.prisma.user.delete({
-        where: { id }
+        where: { id },
       });
 
       // Emitir evento SSE
@@ -354,7 +379,7 @@ export class UsersService {
 
       return {
         userId: id,
-        message: 'Usuario eliminado exitosamente'
+        message: 'Usuario eliminado exitosamente',
       };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -370,7 +395,7 @@ export class UsersService {
   async updateLastLogin(id: string): Promise<void> {
     await this.prisma.user.update({
       where: { id },
-      data: { lastLogin: new Date() }
+      data: { lastLogin: new Date() },
     });
   }
 
@@ -380,7 +405,7 @@ export class UsersService {
   async emailExists(email: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      select: { id: true }
+      select: { id: true },
     });
     return !!user;
   }
@@ -391,7 +416,7 @@ export class UsersService {
   async userNameExists(userName: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { userName },
-      select: { id: true }
+      select: { id: true },
     });
     return !!user;
   }
@@ -402,7 +427,7 @@ export class UsersService {
   async dniExists(dni: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { dni },
-      select: { id: true }
+      select: { id: true },
     });
     return !!user;
   }
@@ -413,21 +438,21 @@ export class UsersService {
   async filterUsers(filterDto: FilterUsersDto): Promise<User[]> {
     try {
       console.log('FilterUsers - Input:', filterDto);
-      
+
       // Validar que apartmentId existe
       if (!filterDto.apartmentId) {
         throw new BadRequestException('apartmentId es requerido');
       }
-      
+
       // Obtener los IDs de usuarios que ya están asignados al apartamento
       const assignedUserIds = await this.prisma.propertyOwner.findMany({
         where: { apartmentId: filterDto.apartmentId },
-        select: { userId: true }
+        select: { userId: true },
       });
 
       console.log('Assigned user IDs:', assignedUserIds);
 
-      const assignedIds = assignedUserIds.map(po => po.userId);
+      const assignedIds = assignedUserIds.map((po) => po.userId);
 
       // Construir filtros para la búsqueda
       const where: any = {};
@@ -435,7 +460,7 @@ export class UsersService {
       // Solo agregar notIn si hay usuarios asignados
       if (assignedIds.length > 0) {
         where.id = {
-          notIn: assignedIds
+          notIn: assignedIds,
         };
       }
 
@@ -443,21 +468,21 @@ export class UsersService {
       if (filterDto.fullName && filterDto.fullName.trim() !== '') {
         where.fullName = {
           contains: filterDto.fullName,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       if (filterDto.dni && filterDto.dni.trim() !== '') {
         where.dni = {
           contains: filterDto.dni,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       if (filterDto.email && filterDto.email.trim() !== '') {
         where.email = {
           contains: filterDto.email,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
@@ -484,8 +509,8 @@ export class UsersService {
           isEmailVerified: true,
         },
         orderBy: {
-          fullName: 'asc'
-        }
+          fullName: 'asc',
+        },
       });
       return users as User[];
     } catch (error) {
@@ -502,21 +527,21 @@ export class UsersService {
   async filterUsersForGroup(filterDto: FilterUsersForGroupDto): Promise<User[]> {
     try {
       console.log('FilterUsersForGroup - Input:', filterDto);
-      
+
       // Validar que userGroupId existe
       if (!filterDto.userGroupId) {
         throw new BadRequestException('userGroupId es requerido');
       }
-      
+
       // Obtener los IDs de usuarios que ya están en el grupo
       const existingMemberIds = await this.prisma.userGroupMember.findMany({
         where: { userGroupId: filterDto.userGroupId },
-        select: { userId: true }
+        select: { userId: true },
       });
 
       console.log('Existing member IDs:', existingMemberIds);
 
-      const existingIds = existingMemberIds.map(member => member.userId);
+      const existingIds = existingMemberIds.map((member) => member.userId);
 
       // Construir filtros para la búsqueda de usuarios
       const where: any = {};
@@ -524,7 +549,7 @@ export class UsersService {
       // Solo agregar notIn si hay usuarios en el grupo
       if (existingIds.length > 0) {
         where.id = {
-          notIn: existingIds
+          notIn: existingIds,
         };
       }
 
@@ -532,84 +557,89 @@ export class UsersService {
       if (filterDto.fullName && filterDto.fullName.trim() !== '') {
         where.fullName = {
           contains: filterDto.fullName,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       if (filterDto.dni && filterDto.dni.trim() !== '') {
         where.dni = {
           contains: filterDto.dni,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       if (filterDto.email && filterDto.email.trim() !== '') {
         where.email = {
           contains: filterDto.email,
-          mode: 'insensitive'
+          mode: 'insensitive',
         };
       }
 
       // Si hay filtros de apartamento, necesitamos hacer un join
-      const hasApartmentFilters = filterDto.apartment || filterDto.tower || filterDto.floor || filterDto.block || filterDto.house;
+      const hasApartmentFilters =
+        filterDto.apartment ||
+        filterDto.tower ||
+        filterDto.floor ||
+        filterDto.block ||
+        filterDto.house;
 
       if (hasApartmentFilters) {
         // Buscar usuarios que sean propietarios de apartamentos que cumplan los criterios
         const apartmentWhere: any = {};
-        
+
         if (filterDto.apartment) {
           apartmentWhere.apartment = {
             contains: filterDto.apartment,
-            mode: 'insensitive'
+            mode: 'insensitive',
           };
         }
-        
+
         if (filterDto.tower) {
           apartmentWhere.tower = {
             contains: filterDto.tower,
-            mode: 'insensitive'
+            mode: 'insensitive',
           };
         }
-        
+
         if (filterDto.floor) {
           apartmentWhere.floor = {
             contains: filterDto.floor,
-            mode: 'insensitive'
+            mode: 'insensitive',
           };
         }
-        
+
         if (filterDto.block) {
           apartmentWhere.block = {
             contains: filterDto.block,
-            mode: 'insensitive'
+            mode: 'insensitive',
           };
         }
-        
+
         if (filterDto.house) {
           apartmentWhere.house = {
             contains: filterDto.house,
-            mode: 'insensitive'
+            mode: 'insensitive',
           };
         }
 
         // Buscar usuarios que sean propietarios de apartamentos que cumplan los criterios
         const usersWithApartments = await this.prisma.propertyOwner.findMany({
           where: {
-            apartment: apartmentWhere
+            apartment: apartmentWhere,
           },
           select: {
-            userId: true
+            userId: true,
           },
-          distinct: ['userId'] // Evitar duplicados
+          distinct: ['userId'], // Evitar duplicados
         });
 
-        const userIdsFromApartments = usersWithApartments.map(po => po.userId);
-        
+        const userIdsFromApartments = usersWithApartments.map((po) => po.userId);
+
         // Agregar el filtro de usuarios que sean propietarios de estos apartamentos
         if (userIdsFromApartments.length > 0) {
           where.id = {
             ...where.id,
-            in: userIdsFromApartments
+            in: userIdsFromApartments,
           };
         } else {
           // Si no hay apartamentos que cumplan los criterios, no hay usuarios
@@ -640,8 +670,8 @@ export class UsersService {
           isEmailVerified: true,
         },
         orderBy: {
-          fullName: 'asc'
-        }
+          fullName: 'asc',
+        },
       });
       return users as User[];
     } catch (error) {
@@ -650,4 +680,4 @@ export class UsersService {
       throw new BadRequestException(`Error al filtrar usuarios para grupo: ${error.message}`);
     }
   }
-} 
+}

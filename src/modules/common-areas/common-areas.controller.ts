@@ -1,6 +1,22 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CommonAreaIdSchema, CreateCommonAreaSchema, UpdateCommonAreaSchema } from 'src/common/dtos/inputs/commonArea.input.dto';
+import {
+  CommonAreaIdSchema,
+  CreateCommonAreaSchema,
+  UpdateCommonAreaSchema,
+} from 'src/common/dtos/inputs/commonArea.input.dto';
 import { CommonAreasService } from './common-areas.service';
 import { CreateCommonAreaDto } from './dto/create-common-area.dto';
 import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
@@ -8,7 +24,7 @@ import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
 @ApiTags('common-areas')
 @Controller('common-areas')
 export class CommonAreasController {
-  constructor(private readonly commonAreasService: CommonAreasService) { }
+  constructor(private readonly commonAreasService: CommonAreasService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -41,7 +57,6 @@ export class CommonAreasController {
       return this.commonAreasService.search(search);
     }
     return this.commonAreasService.findAll();
-
   }
 
   @Get('count')
@@ -53,11 +68,11 @@ export class CommonAreasController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un área común por ID' })
-  @ApiParam({ 
-    name: 'id', 
-    type: 'number', 
+  @ApiParam({
+    name: 'id',
+    type: 'number',
     description: 'ID único del área común',
-    example: 1
+    example: 1,
   })
   @ApiResponse({ status: 200, description: 'Área común encontrada' })
   @ApiResponse({ status: 404, description: 'Área común no encontrada' })
@@ -79,15 +94,15 @@ export class CommonAreasController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un área común' })
-  @ApiParam({ 
-    name: 'id', 
-    type: 'number', 
+  @ApiParam({
+    name: 'id',
+    type: 'number',
     description: 'ID único del área común a actualizar',
-    example: 1
+    example: 1,
   })
-  @ApiBody({ 
-    type: UpdateCommonAreaDto, 
-    description: 'Datos para actualizar el área común'
+  @ApiBody({
+    type: UpdateCommonAreaDto,
+    description: 'Datos para actualizar el área común',
   })
   @ApiResponse({ status: 200, description: 'Área común actualizada exitosamente' })
   @ApiResponse({ status: 404, description: 'Área común no encontrada' })
@@ -109,15 +124,22 @@ export class CommonAreasController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un área común' })
-  @ApiParam({ 
-    name: 'id', 
-    type: 'number', 
+  @ApiParam({
+    name: 'id',
+    type: 'number',
     description: 'ID único del área común a eliminar',
-    example: 1
+    example: 1,
   })
-  @ApiResponse({ status: 200, description: 'Área común eliminada exitosamente', schema: { example: { message: 'Área común eliminada correctamente' } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Área común eliminada exitosamente',
+    schema: { example: { message: 'Área común eliminada correctamente' } },
+  })
   @ApiResponse({ status: 404, description: 'Área común no encontrada' })
-  @ApiResponse({ status: 409, description: 'No se puede eliminar el área común porque tiene datos relacionados' })
+  @ApiResponse({
+    status: 409,
+    description: 'No se puede eliminar el área común porque tiene datos relacionados',
+  })
   @ApiResponse({ status: 400, description: 'ID inválido' })
   remove(@Param() params: any): Promise<any> {
     try {

@@ -155,7 +155,7 @@ export class IncidentsService {
             email: true,
           },
         },
-      }
+      },
     });
 
     if (!incident) {

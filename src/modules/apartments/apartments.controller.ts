@@ -26,7 +26,7 @@ import { UpdateApartmentSwaggerDto } from '../../common/dtos/swagger/update-apar
 @ApiTags('apartments')
 @Controller('apartments')
 export class ApartmentsController {
-  constructor(private readonly apartmentsService: ApartmentsService) { }
+  constructor(private readonly apartmentsService: ApartmentsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -67,8 +67,6 @@ export class ApartmentsController {
   count() {
     return this.apartmentsService.count();
   }
-
-
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un apartamento por ID' })
@@ -133,6 +131,4 @@ export class ApartmentsController {
       throw error;
     }
   }
-
-
-} 
+}

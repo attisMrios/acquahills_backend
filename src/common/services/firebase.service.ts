@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { PrismaService } from './prisma.service';
 
-
 @Injectable()
 export class FirebaseService {
   private firebaseApp: admin.app.App;
@@ -24,11 +23,10 @@ export class FirebaseService {
 
   async sendFCMTopic(title: string, body: string, topic: string, image: string) {
     try {
-
       if (!title || !body || !topic) {
         return {
           success: false,
-          message: "Falta información requerida: title, body y topic son necesarios",
+          message: 'Falta información requerida: title, body y topic son necesarios',
           response: null,
         };
       }
@@ -41,12 +39,12 @@ export class FirebaseService {
           ...(image ? { image } : {}),
         },
         android: {
-          priority: "high",
+          priority: 'high',
           notification: {
-            channelId: "high-priority",
-            sound: "notification",
+            channelId: 'high-priority',
+            sound: 'notification',
             defaultVibrateTimings: true,
-            visibility: "public",
+            visibility: 'public',
             ...(image ? { image } : {}),
           },
         },
@@ -54,7 +52,7 @@ export class FirebaseService {
           payload: {
             aps: {
               alert: { title, body },
-              sound: "default",
+              sound: 'default',
               mutableContent: true,
             },
           },
@@ -70,17 +68,16 @@ export class FirebaseService {
 
       const response = await admin.messaging().send(message);
 
-
       return {
         success: true,
-        message: "Notificación enviada con éxito",
+        message: 'Notificación enviada con éxito',
         response: response,
       };
     } catch (error) {
-      console.error("❌ Error al enviar notificación:", error);
+      console.error('❌ Error al enviar notificación:', error);
       return {
         success: true,
-        message: "Notificación enviada con éxito",
+        message: 'Notificación enviada con éxito',
         response: null,
       };
     }
@@ -114,20 +111,20 @@ export class FirebaseService {
           },
         });
       } catch (dbError) {
-        console.error("❌ Error al guardar en BD:", dbError);
+        console.error('❌ Error al guardar en BD:', dbError);
         // Continuar aunque falle la BD, ya que FCM sí funcionó
       }
 
       return {
         success: true,
-        message: "Suscripción exitosa",
+        message: 'Suscripción exitosa',
         response: response,
       };
     } catch (error) {
-      console.error("❌ Error al suscribirse al tópico:", error);
+      console.error('❌ Error al suscribirse al tópico:', error);
       return {
         success: false,
-        message: "Error al suscribirse al tópico",
+        message: 'Error al suscribirse al tópico',
         response: null,
       };
     }
@@ -151,20 +148,20 @@ export class FirebaseService {
           },
         });
       } catch (dbError) {
-        console.error("❌ Error al actualizar en BD:", dbError);
+        console.error('❌ Error al actualizar en BD:', dbError);
         // Continuar aunque falle la BD, ya que FCM sí funcionó
       }
 
       return {
         success: true,
-        message: "Desuscripción exitosa",
+        message: 'Desuscripción exitosa',
         response: response,
       };
     } catch (error) {
-      console.error("❌ Error al desuscribirse del tópico:", error);
+      console.error('❌ Error al desuscribirse del tópico:', error);
       return {
         success: false,
-        message: "Error al desuscribirse del tópico: " + error.message,
+        message: 'Error al desuscribirse del tópico: ' + error.message,
         response: null,
       };
     }
@@ -187,7 +184,7 @@ export class FirebaseService {
         },
       });
     } catch (error) {
-      console.error("❌ Error al obtener suscripciones:", error);
+      console.error('❌ Error al obtener suscripciones:', error);
       return [];
     }
   }
@@ -202,10 +199,10 @@ export class FirebaseService {
           token,
         },
       });
-      return { success: true, message: "Suscripción eliminada" };
+      return { success: true, message: 'Suscripción eliminada' };
     } catch (error) {
-      console.error("❌ Error al eliminar suscripción:", error);
-      return { success: false, message: "Error al eliminar suscripción" };
+      console.error('❌ Error al eliminar suscripción:', error);
+      return { success: false, message: 'Error al eliminar suscripción' };
     }
   }
 }

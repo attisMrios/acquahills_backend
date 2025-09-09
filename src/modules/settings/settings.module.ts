@@ -12,4 +12,4 @@ import { SettingsService } from './settings.service';
   exports: [SettingsService, MessageCounterService],
   imports: [ServicesModule],
 })
-export class SettingsModule {} 
+export class SettingsModule {}

@@ -18,4 +18,4 @@ export class CreateApartmentDto {
 
   @ApiProperty({ description: 'Torre', maxLength: 10 })
   tower: string;
-} 
+}

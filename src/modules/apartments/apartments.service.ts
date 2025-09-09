@@ -96,8 +96,6 @@ export class ApartmentsService {
     return this.prisma.apartment.count();
   }
 
-
-
   async search(query: string) {
     return this.prisma.apartment.findMany({
       where: {
@@ -115,10 +113,4 @@ export class ApartmentsService {
       },
     });
   }
-
-
-
-
-
-
-} 
+}

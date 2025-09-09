@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
-import { 
-  createUserGroupSchema, 
-  createUserGroupMembersBulkSchema
+import {
+  createUserGroupSchema,
+  createUserGroupMembersBulkSchema,
 } from './dto/create-user-group.dto';
 import { updateUserGroupSchema } from './dto/update-user-group.dto';
 
@@ -163,7 +163,9 @@ export class UserGroupsService {
         } catch (error) {
           if (error.code === 'P2002') {
             // Si ya existe, lo omitimos y continuamos
-            console.log(`La relación usuario-grupo ya existe para usuario ${userId} y grupo ${userGroupId}`);
+            console.log(
+              `La relación usuario-grupo ya existe para usuario ${userId} y grupo ${userGroupId}`,
+            );
             continue;
           }
           throw error;
@@ -174,7 +176,7 @@ export class UserGroupsService {
         message: `${results.length} usuarios agregados al grupo exitosamente`,
         created: results,
         total: userIds.length,
-        skipped: userIds.length - results.length
+        skipped: userIds.length - results.length,
       };
     } catch (error) {
       throw error;
@@ -193,7 +195,9 @@ export class UserGroupsService {
       });
 
       if (!member) {
-        throw new NotFoundException(`No se encontró la relación de usuario-grupo para el grupo ${userGroupId} y usuario ${userId}`);
+        throw new NotFoundException(
+          `No se encontró la relación de usuario-grupo para el grupo ${userGroupId} y usuario ${userId}`,
+        );
       }
 
       // Eliminar la relación
@@ -204,9 +208,11 @@ export class UserGroupsService {
       return { message: 'Usuario eliminado del grupo correctamente' };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new NotFoundException(`No se encontró la relación de usuario-grupo para el grupo ${userGroupId} y usuario ${userId}`);
+        throw new NotFoundException(
+          `No se encontró la relación de usuario-grupo para el grupo ${userGroupId} y usuario ${userId}`,
+        );
       }
       throw error;
     }
   }
-} 
+}

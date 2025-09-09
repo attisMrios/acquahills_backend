@@ -19,21 +19,19 @@ interface TopicSubscriptionResponse {
 export class FCMTopicsController {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-
   @Post('subscribe')
   @ApiOperation({ summary: 'Suscribir usuario a un tópico' })
   @ApiResponse({ status: 200, description: 'Usuario suscrito exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async subscribeToTopic(
     @Body() subscribeDto: SubscribeTopicDto,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<TopicSubscriptionResponse> {
     try {
-      
       const response = await this.firebaseService.subscribeToTopic(
         subscribeDto.topic,
         subscribeDto.token,
-        req.user.id
+        req.user.id,
       );
 
       if (response.success) {
@@ -41,19 +39,19 @@ export class FCMTopicsController {
           success: true,
           message: 'Usuario suscrito exitosamente al tópico',
           topic: subscribeDto.topic,
-          isSubscribed: true
+          isSubscribed: true,
         };
       } else {
         return {
           success: false,
-          message: 'Error al suscribir usuario al tópico'
+          message: 'Error al suscribir usuario al tópico',
         };
       }
     } catch (error) {
       console.error('Error al suscribir usuario al tópico:', error);
       return {
         success: false,
-        message: 'Error interno del servidor'
+        message: 'Error interno del servidor',
       };
     }
   }
@@ -64,30 +62,33 @@ export class FCMTopicsController {
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async unsubscribeFromTopic(
     @Param('topic') topic: string,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<TopicSubscriptionResponse> {
     try {
-
-      const response = await this.firebaseService.unsubscribeFromTopic(topic, req.user.token, req.user.id);
+      const response = await this.firebaseService.unsubscribeFromTopic(
+        topic,
+        req.user.token,
+        req.user.id,
+      );
 
       if (response.success) {
         return {
           success: true,
           message: 'Usuario desuscrito exitosamente del tópico',
           topic: topic,
-          isSubscribed: false
+          isSubscribed: false,
         };
       } else {
         return {
           success: false,
-          message: response.message
+          message: response.message,
         };
       }
     } catch (error) {
       console.error('Error al desuscribir usuario del tópico:', error);
       return {
         success: false,
-        message: 'Error interno del servidor: ' + error.message
+        message: 'Error interno del servidor: ' + error.message,
       };
     }
   }

@@ -1,7 +1,19 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiProperty,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/Auth/firebase-auth.guard';
-import { CreateSettingDto, SettingCategory, UpdateSettingDto } from 'src/common/dtos/inputs/setting.input.dto';
+import {
+  CreateSettingDto,
+  SettingCategory,
+  UpdateSettingDto,
+} from 'src/common/dtos/inputs/setting.input.dto';
 import { CountryCodeResponseDto } from 'src/common/dtos/swagger/country-code.response.dto';
 import { SettingsService } from './settings.service';
 
@@ -13,22 +25,26 @@ class SettingResponseDto {
   category: SettingCategory;
 
   @ApiProperty({
-    example: '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
-    description: 'Configuración en formato JSON string (ver modelo WhatsappConfig en frontend)'
+    example:
+      '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
+    description: 'Configuración en formato JSON string (ver modelo WhatsappConfig en frontend)',
   })
   jsonSettings: string;
 
-  @ApiProperty({ 
-    example: 1000, 
+  @ApiProperty({
+    example: 1000,
     description: 'Cantidad de mensajes restantes (-99 = ilimitado, >= 0 = cantidad específica)',
-    minimum: -99
+    minimum: -99,
   })
   count: number;
 
   @ApiProperty({ example: '2024-07-24T05:22:58.000Z', description: 'Fecha de creación' })
   createdAt: Date;
 
-  @ApiProperty({ example: '2024-07-24T05:22:58.000Z', description: 'Fecha de última actualización' })
+  @ApiProperty({
+    example: '2024-07-24T05:22:58.000Z',
+    description: 'Fecha de última actualización',
+  })
   updatedAt: Date;
 }
 
@@ -46,7 +62,11 @@ export class SettingsController {
   @Post()
   @UseGuards(FirebaseAuthGuard)
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ summary: 'Crear o actualizar un setting', description: 'Crea una configuración para una categoría específica. Si ya existe, la actualiza.' })
+  @ApiOperation({
+    summary: 'Crear o actualizar un setting',
+    description:
+      'Crea una configuración para una categoría específica. Si ya existe, la actualiza.',
+  })
   @ApiBody({
     type: 'object',
     description: 'Datos para crear o actualizar el setting',
@@ -55,13 +75,18 @@ export class SettingsController {
         summary: 'Ejemplo WhatsApp',
         value: {
           category: 'WHATSAPP',
-          jsonSettings: '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
-          count: 1000
-        }
-      }
-    }
+          jsonSettings:
+            '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
+          count: 1000,
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 201, description: 'Setting creado o actualizado exitosamente', type: SettingResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Setting creado o actualizado exitosamente',
+    type: SettingResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   create(@Body() createSettingDto: CreateSettingDto) {
     return this.settingsService.create(createSettingDto);
@@ -73,8 +98,16 @@ export class SettingsController {
    */
   @Get(':category')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ summary: 'Obtener setting por categoría', description: 'Obtiene la configuración de una categoría específica.' })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiOperation({
+    summary: 'Obtener setting por categoría',
+    description: 'Obtiene la configuración de una categoría específica.',
+  })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiResponse({
     status: 200,
     description: 'Configuración encontrada',
@@ -82,16 +115,17 @@ export class SettingsController {
     examples: {
       whatsapp: {
         summary: 'Ejemplo WhatsApp',
-                  value: {
-            id: 'ckl1q2w3e0000a1b2c3d4e5f6',
-            category: 'WHATSAPP',
-            jsonSettings: '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
-            count: 1000,
-            createdAt: '2024-07-24T05:22:58.000Z',
-            updatedAt: '2024-07-24T05:22:58.000Z'
-          }
-      }
-    }
+        value: {
+          id: 'ckl1q2w3e0000a1b2c3d4e5f6',
+          category: 'WHATSAPP',
+          jsonSettings:
+            '{"token":"abc123","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
+          count: 1000,
+          createdAt: '2024-07-24T05:22:58.000Z',
+          updatedAt: '2024-07-24T05:22:58.000Z',
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   findByCategory(@Param('category') category: SettingCategory) {
@@ -105,8 +139,16 @@ export class SettingsController {
    */
   @Patch(':category')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ summary: 'Actualizar setting por categoría', description: 'Actualiza la configuración de una categoría específica.' })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiOperation({
+    summary: 'Actualizar setting por categoría',
+    description: 'Actualiza la configuración de una categoría específica.',
+  })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiBody({
     type: 'object',
     description: 'Datos a actualizar',
@@ -114,17 +156,18 @@ export class SettingsController {
       whatsapp: {
         summary: 'Ejemplo actualización WhatsApp',
         value: {
-          jsonSettings: '{"token":"nuevoToken","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
-          count: 950
-        }
-      }
-    }
+          jsonSettings:
+            '{"token":"nuevoToken","apiVersion":"v18.0","wabaId":"1234567890","cellphoneNumberId":"987654321","isActive":true}',
+          count: 950,
+        },
+      },
+    },
   })
   @ApiResponse({ status: 200, description: 'Setting actualizado', type: SettingResponseDto })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   updateByCategory(
     @Param('category') category: SettingCategory,
-    @Body() updateSettingDto: UpdateSettingDto
+    @Body() updateSettingDto: UpdateSettingDto,
   ) {
     return this.settingsService.updateByCategory(category, updateSettingDto);
   }
@@ -135,8 +178,16 @@ export class SettingsController {
    */
   @Delete(':category')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ summary: 'Eliminar setting por categoría', description: 'Elimina la configuración de una categoría específica.' })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiOperation({
+    summary: 'Eliminar setting por categoría',
+    description: 'Elimina la configuración de una categoría específica.',
+  })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiResponse({ status: 200, description: 'Setting eliminado', type: SettingResponseDto })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   removeByCategory(@Param('category') category: SettingCategory) {
@@ -150,30 +201,36 @@ export class SettingsController {
    */
   @Post(':category/decrement-messages')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Decrementar contador de mensajes', 
-    description: 'Decrementa el contador de mensajes restantes. Si es -99 (ilimitado), no se decrementa.' 
+  @ApiOperation({
+    summary: 'Decrementar contador de mensajes',
+    description:
+      'Decrementa el contador de mensajes restantes. Si es -99 (ilimitado), no se decrementa.',
   })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiBody({
     type: 'object',
     description: 'Cantidad a decrementar',
     examples: {
       default: {
         summary: 'Decrementar 1 mensaje',
-        value: { amount: 1 }
+        value: { amount: 1 },
       },
       multiple: {
         summary: 'Decrementar múltiples mensajes',
-        value: { amount: 5 }
-      }
-    }
+        value: { amount: 5 },
+      },
+    },
   })
   @ApiResponse({ status: 200, description: 'Contador decrementado', type: SettingResponseDto })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   decrementMessageCount(
     @Param('category') category: SettingCategory,
-    @Body() body: { amount?: number }
+    @Body() body: { amount?: number },
   ) {
     return this.settingsService.decrementMessageCount(category, body.amount || 1);
   }
@@ -184,13 +241,18 @@ export class SettingsController {
    */
   @Get(':category/message-count')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Obtener contador de mensajes', 
-    description: 'Obtiene el contador de mensajes restantes para una categoría específica.' 
+  @ApiOperation({
+    summary: 'Obtener contador de mensajes',
+    description: 'Obtiene el contador de mensajes restantes para una categoría específica.',
   })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
+  @ApiResponse({
+    status: 200,
     description: 'Contador de mensajes',
     schema: {
       type: 'object',
@@ -198,10 +260,10 @@ export class SettingsController {
         count: {
           type: 'number',
           description: 'Cantidad de mensajes restantes (-99 = ilimitado)',
-          example: 1000
-        }
-      }
-    }
+          example: 1000,
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   getMessageCount(@Param('category') category: SettingCategory) {
@@ -215,27 +277,37 @@ export class SettingsController {
    */
   @Post(':category/decrement-messages-batch')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Decrementar contador de mensajes en lote', 
-    description: 'Decrementa el contador de mensajes restantes en una sola operación atómica. Más eficiente para múltiples mensajes.' 
+  @ApiOperation({
+    summary: 'Decrementar contador de mensajes en lote',
+    description:
+      'Decrementa el contador de mensajes restantes en una sola operación atómica. Más eficiente para múltiples mensajes.',
   })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiBody({
     type: 'object',
     description: 'Cantidad total a decrementar',
     examples: {
       batch: {
         summary: 'Decrementar múltiples mensajes',
-        value: { amount: 1000 }
-      }
-    }
+        value: { amount: 1000 },
+      },
+    },
   })
-  @ApiResponse({ status: 200, description: 'Contador decrementado en lote', type: SettingResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Contador decrementado en lote',
+    type: SettingResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'No hay suficientes mensajes disponibles' })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   decrementMessageCountBatch(
     @Param('category') category: SettingCategory,
-    @Body() body: { amount: number }
+    @Body() body: { amount: number },
   ) {
     return this.settingsService.decrementMessageCountBatch(category, body.amount);
   }
@@ -247,23 +319,28 @@ export class SettingsController {
    */
   @Post(':category/check-messages')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Verificar disponibilidad de mensajes', 
-    description: 'Verifica si hay suficientes mensajes disponibles sin decrementar el contador.' 
+  @ApiOperation({
+    summary: 'Verificar disponibilidad de mensajes',
+    description: 'Verifica si hay suficientes mensajes disponibles sin decrementar el contador.',
   })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiBody({
     type: 'object',
     description: 'Cantidad a verificar',
     examples: {
       check: {
         summary: 'Verificar disponibilidad',
-        value: { amount: 1000 }
-      }
-    }
+        value: { amount: 1000 },
+      },
+    },
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Resultado de la verificación',
     schema: {
       type: 'object',
@@ -271,33 +348,33 @@ export class SettingsController {
         hasEnough: {
           type: 'boolean',
           description: 'Si hay suficientes mensajes disponibles',
-          example: true
+          example: true,
         },
         available: {
           type: 'number',
           description: 'Cantidad de mensajes disponibles',
-          example: 15000
+          example: 15000,
         },
         requested: {
           type: 'number',
           description: 'Cantidad solicitada',
-          example: 1000
-        }
-      }
-    }
+          example: 1000,
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   async checkMessages(
     @Param('category') category: SettingCategory,
-    @Body() body: { amount: number }
+    @Body() body: { amount: number },
   ) {
     const hasEnough = await this.settingsService.hasEnoughMessages(category, body.amount);
     const available = await this.settingsService.getMessageCount(category);
-    
+
     return {
       hasEnough,
       available,
-      requested: body.amount
+      requested: body.amount,
     };
   }
 
@@ -308,1771 +385,1780 @@ export class SettingsController {
    */
   @Post(':category/increment-messages')
   @ApiBearerAuth('firebase-auth')
-  @ApiOperation({ 
-    summary: 'Incrementar contador de mensajes (Rollback)', 
-    description: 'Incrementa el contador de mensajes restantes. Usado para rollback cuando fallan envíos.' 
+  @ApiOperation({
+    summary: 'Incrementar contador de mensajes (Rollback)',
+    description:
+      'Incrementa el contador de mensajes restantes. Usado para rollback cuando fallan envíos.',
   })
-  @ApiParam({ name: 'category', enum: SettingCategory, description: 'Categoría del setting', example: 'WHATSAPP' })
+  @ApiParam({
+    name: 'category',
+    enum: SettingCategory,
+    description: 'Categoría del setting',
+    example: 'WHATSAPP',
+  })
   @ApiBody({
     type: 'object',
     description: 'Cantidad a incrementar',
     examples: {
       rollback: {
         summary: 'Rollback de mensajes fallidos',
-        value: { amount: 50 }
-      }
-    }
+        value: { amount: 50 },
+      },
+    },
   })
   @ApiResponse({ status: 200, description: 'Contador incrementado', type: SettingResponseDto })
   @ApiResponse({ status: 404, description: 'Setting no encontrado' })
   incrementMessageCount(
     @Param('category') category: SettingCategory,
-    @Body() body: { amount: number }
+    @Body() body: { amount: number },
   ) {
     return this.settingsService.incrementMessageCount(category, body.amount);
   }
 
   @Get('country-codes')
-  @ApiOperation({ summary: 'Obtener códigos de país', description: 'Obtiene la lista de códigos de país.' })
+  @ApiOperation({
+    summary: 'Obtener códigos de país',
+    description: 'Obtiene la lista de códigos de país.',
+  })
   @ApiResponse({ status: 200, description: 'Códigos de país', type: [CountryCodeResponseDto] })
   getCountryCodes(): CountryCodeResponseDto[] {
     return [
       {
-        "nameES": "Afganistán",
-        "nameEN": "Afghanistan",
-        "iso2": "AF",
-        "iso3": "AFG",
-        "phoneCode": "93"
+        nameES: 'Afganistán',
+        nameEN: 'Afghanistan',
+        iso2: 'AF',
+        iso3: 'AFG',
+        phoneCode: '93',
       },
       {
-        "nameES": "Albania",
-        "nameEN": "Albania",
-        "iso2": "AL",
-        "iso3": "ALB",
-        "phoneCode": "355"
+        nameES: 'Albania',
+        nameEN: 'Albania',
+        iso2: 'AL',
+        iso3: 'ALB',
+        phoneCode: '355',
       },
       {
-        "nameES": "Alemania",
-        "nameEN": "Germany",
-        "iso2": "DE",
-        "iso3": "DEU",
-        "phoneCode": "49"
+        nameES: 'Alemania',
+        nameEN: 'Germany',
+        iso2: 'DE',
+        iso3: 'DEU',
+        phoneCode: '49',
       },
       {
-        "nameES": "Andorra",
-        "nameEN": "Andorra",
-        "iso2": "AD",
-        "iso3": "AND",
-        "phoneCode": "376"
+        nameES: 'Andorra',
+        nameEN: 'Andorra',
+        iso2: 'AD',
+        iso3: 'AND',
+        phoneCode: '376',
       },
       {
-        "nameES": "Angola",
-        "nameEN": "Angola",
-        "iso2": "AO",
-        "iso3": "AGO",
-        "phoneCode": "244"
+        nameES: 'Angola',
+        nameEN: 'Angola',
+        iso2: 'AO',
+        iso3: 'AGO',
+        phoneCode: '244',
       },
       {
-        "nameES": "Anguila",
-        "nameEN": "Anguilla",
-        "iso2": "AI",
-        "iso3": "AIA",
-        "phoneCode": "1 264"
+        nameES: 'Anguila',
+        nameEN: 'Anguilla',
+        iso2: 'AI',
+        iso3: 'AIA',
+        phoneCode: '1 264',
       },
       {
-        "nameES": "Antártida",
-        "nameEN": "Antarctica",
-        "iso2": "AQ",
-        "iso3": "ATA",
-        "phoneCode": "672"
+        nameES: 'Antártida',
+        nameEN: 'Antarctica',
+        iso2: 'AQ',
+        iso3: 'ATA',
+        phoneCode: '672',
       },
       {
-        "nameES": "Antigua y Barbuda",
-        "nameEN": "Antigua and Barbuda",
-        "iso2": "AG",
-        "iso3": "ATG",
-        "phoneCode": "1 268"
+        nameES: 'Antigua y Barbuda',
+        nameEN: 'Antigua and Barbuda',
+        iso2: 'AG',
+        iso3: 'ATG',
+        phoneCode: '1 268',
       },
       {
-        "nameES": "Arabia Saudita",
-        "nameEN": "Saudi Arabia",
-        "iso2": "SA",
-        "iso3": "SAU",
-        "phoneCode": "966"
+        nameES: 'Arabia Saudita',
+        nameEN: 'Saudi Arabia',
+        iso2: 'SA',
+        iso3: 'SAU',
+        phoneCode: '966',
       },
       {
-        "nameES": "Argelia",
-        "nameEN": "Algeria",
-        "iso2": "DZ",
-        "iso3": "DZA",
-        "phoneCode": "213"
+        nameES: 'Argelia',
+        nameEN: 'Algeria',
+        iso2: 'DZ',
+        iso3: 'DZA',
+        phoneCode: '213',
       },
       {
-        "nameES": "Argentina",
-        "nameEN": "Argentina",
-        "iso2": "AR",
-        "iso3": "ARG",
-        "phoneCode": "54"
+        nameES: 'Argentina',
+        nameEN: 'Argentina',
+        iso2: 'AR',
+        iso3: 'ARG',
+        phoneCode: '54',
       },
       {
-        "nameES": "Armenia",
-        "nameEN": "Armenia",
-        "iso2": "AM",
-        "iso3": "ARM",
-        "phoneCode": "374"
+        nameES: 'Armenia',
+        nameEN: 'Armenia',
+        iso2: 'AM',
+        iso3: 'ARM',
+        phoneCode: '374',
       },
       {
-        "nameES": "Aruba",
-        "nameEN": "Aruba",
-        "iso2": "AW",
-        "iso3": "ABW",
-        "phoneCode": "297"
+        nameES: 'Aruba',
+        nameEN: 'Aruba',
+        iso2: 'AW',
+        iso3: 'ABW',
+        phoneCode: '297',
       },
       {
-        "nameES": "Australia",
-        "nameEN": "Australia",
-        "iso2": "AU",
-        "iso3": "AUS",
-        "phoneCode": "61"
+        nameES: 'Australia',
+        nameEN: 'Australia',
+        iso2: 'AU',
+        iso3: 'AUS',
+        phoneCode: '61',
       },
       {
-        "nameES": "Austria",
-        "nameEN": "Austria",
-        "iso2": "AT",
-        "iso3": "AUT",
-        "phoneCode": "43"
+        nameES: 'Austria',
+        nameEN: 'Austria',
+        iso2: 'AT',
+        iso3: 'AUT',
+        phoneCode: '43',
       },
       {
-        "nameES": "Azerbaiyán",
-        "nameEN": "Azerbaijan",
-        "iso2": "AZ",
-        "iso3": "AZE",
-        "phoneCode": "994"
+        nameES: 'Azerbaiyán',
+        nameEN: 'Azerbaijan',
+        iso2: 'AZ',
+        iso3: 'AZE',
+        phoneCode: '994',
       },
       {
-        "nameES": "Bélgica",
-        "nameEN": "Belgium",
-        "iso2": "BE",
-        "iso3": "BEL",
-        "phoneCode": "32"
+        nameES: 'Bélgica',
+        nameEN: 'Belgium',
+        iso2: 'BE',
+        iso3: 'BEL',
+        phoneCode: '32',
       },
       {
-        "nameES": "Bahamas",
-        "nameEN": "Bahamas",
-        "iso2": "BS",
-        "iso3": "BHS",
-        "phoneCode": "1 242"
+        nameES: 'Bahamas',
+        nameEN: 'Bahamas',
+        iso2: 'BS',
+        iso3: 'BHS',
+        phoneCode: '1 242',
       },
       {
-        "nameES": "Bahrein",
-        "nameEN": "Bahrain",
-        "iso2": "BH",
-        "iso3": "BHR",
-        "phoneCode": "973"
+        nameES: 'Bahrein',
+        nameEN: 'Bahrain',
+        iso2: 'BH',
+        iso3: 'BHR',
+        phoneCode: '973',
       },
       {
-        "nameES": "Bangladesh",
-        "nameEN": "Bangladesh",
-        "iso2": "BD",
-        "iso3": "BGD",
-        "phoneCode": "880"
+        nameES: 'Bangladesh',
+        nameEN: 'Bangladesh',
+        iso2: 'BD',
+        iso3: 'BGD',
+        phoneCode: '880',
       },
       {
-        "nameES": "Barbados",
-        "nameEN": "Barbados",
-        "iso2": "BB",
-        "iso3": "BRB",
-        "phoneCode": "1 246"
+        nameES: 'Barbados',
+        nameEN: 'Barbados',
+        iso2: 'BB',
+        iso3: 'BRB',
+        phoneCode: '1 246',
       },
       {
-        "nameES": "Belice",
-        "nameEN": "Belize",
-        "iso2": "BZ",
-        "iso3": "BLZ",
-        "phoneCode": "501"
+        nameES: 'Belice',
+        nameEN: 'Belize',
+        iso2: 'BZ',
+        iso3: 'BLZ',
+        phoneCode: '501',
       },
       {
-        "nameES": "Benín",
-        "nameEN": "Benin",
-        "iso2": "BJ",
-        "iso3": "BEN",
-        "phoneCode": "229"
+        nameES: 'Benín',
+        nameEN: 'Benin',
+        iso2: 'BJ',
+        iso3: 'BEN',
+        phoneCode: '229',
       },
       {
-        "nameES": "Bhután",
-        "nameEN": "Bhutan",
-        "iso2": "BT",
-        "iso3": "BTN",
-        "phoneCode": "975"
+        nameES: 'Bhután',
+        nameEN: 'Bhutan',
+        iso2: 'BT',
+        iso3: 'BTN',
+        phoneCode: '975',
       },
       {
-        "nameES": "Bielorrusia",
-        "nameEN": "Belarus",
-        "iso2": "BY",
-        "iso3": "BLR",
-        "phoneCode": "375"
+        nameES: 'Bielorrusia',
+        nameEN: 'Belarus',
+        iso2: 'BY',
+        iso3: 'BLR',
+        phoneCode: '375',
       },
       {
-        "nameES": "Birmania",
-        "nameEN": "Myanmar",
-        "iso2": "MM",
-        "iso3": "MMR",
-        "phoneCode": "95"
+        nameES: 'Birmania',
+        nameEN: 'Myanmar',
+        iso2: 'MM',
+        iso3: 'MMR',
+        phoneCode: '95',
       },
       {
-        "nameES": "Bolivia",
-        "nameEN": "Bolivia",
-        "iso2": "BO",
-        "iso3": "BOL",
-        "phoneCode": "591"
+        nameES: 'Bolivia',
+        nameEN: 'Bolivia',
+        iso2: 'BO',
+        iso3: 'BOL',
+        phoneCode: '591',
       },
       {
-        "nameES": "Bosnia y Herzegovina",
-        "nameEN": "Bosnia and Herzegovina",
-        "iso2": "BA",
-        "iso3": "BIH",
-        "phoneCode": "387"
+        nameES: 'Bosnia y Herzegovina',
+        nameEN: 'Bosnia and Herzegovina',
+        iso2: 'BA',
+        iso3: 'BIH',
+        phoneCode: '387',
       },
       {
-        "nameES": "Botsuana",
-        "nameEN": "Botswana",
-        "iso2": "BW",
-        "iso3": "BWA",
-        "phoneCode": "267"
+        nameES: 'Botsuana',
+        nameEN: 'Botswana',
+        iso2: 'BW',
+        iso3: 'BWA',
+        phoneCode: '267',
       },
       {
-        "nameES": "Brasil",
-        "nameEN": "Brazil",
-        "iso2": "BR",
-        "iso3": "BRA",
-        "phoneCode": "55"
+        nameES: 'Brasil',
+        nameEN: 'Brazil',
+        iso2: 'BR',
+        iso3: 'BRA',
+        phoneCode: '55',
       },
       {
-        "nameES": "Brunéi",
-        "nameEN": "Brunei",
-        "iso2": "BN",
-        "iso3": "BRN",
-        "phoneCode": "673"
+        nameES: 'Brunéi',
+        nameEN: 'Brunei',
+        iso2: 'BN',
+        iso3: 'BRN',
+        phoneCode: '673',
       },
       {
-        "nameES": "Bulgaria",
-        "nameEN": "Bulgaria",
-        "iso2": "BG",
-        "iso3": "BGR",
-        "phoneCode": "359"
+        nameES: 'Bulgaria',
+        nameEN: 'Bulgaria',
+        iso2: 'BG',
+        iso3: 'BGR',
+        phoneCode: '359',
       },
       {
-        "nameES": "Burkina Faso",
-        "nameEN": "Burkina Faso",
-        "iso2": "BF",
-        "iso3": "BFA",
-        "phoneCode": "226"
+        nameES: 'Burkina Faso',
+        nameEN: 'Burkina Faso',
+        iso2: 'BF',
+        iso3: 'BFA',
+        phoneCode: '226',
       },
       {
-        "nameES": "Burundi",
-        "nameEN": "Burundi",
-        "iso2": "BI",
-        "iso3": "BDI",
-        "phoneCode": "257"
+        nameES: 'Burundi',
+        nameEN: 'Burundi',
+        iso2: 'BI',
+        iso3: 'BDI',
+        phoneCode: '257',
       },
       {
-        "nameES": "Cabo Verde",
-        "nameEN": "Cape Verde",
-        "iso2": "CV",
-        "iso3": "CPV",
-        "phoneCode": "238"
+        nameES: 'Cabo Verde',
+        nameEN: 'Cape Verde',
+        iso2: 'CV',
+        iso3: 'CPV',
+        phoneCode: '238',
       },
       {
-        "nameES": "Camboya",
-        "nameEN": "Cambodia",
-        "iso2": "KH",
-        "iso3": "KHM",
-        "phoneCode": "855"
+        nameES: 'Camboya',
+        nameEN: 'Cambodia',
+        iso2: 'KH',
+        iso3: 'KHM',
+        phoneCode: '855',
       },
       {
-        "nameES": "Camerún",
-        "nameEN": "Cameroon",
-        "iso2": "CM",
-        "iso3": "CMR",
-        "phoneCode": "237"
+        nameES: 'Camerún',
+        nameEN: 'Cameroon',
+        iso2: 'CM',
+        iso3: 'CMR',
+        phoneCode: '237',
       },
       {
-        "nameES": "Canadá",
-        "nameEN": "Canada",
-        "iso2": "CA",
-        "iso3": "CAN",
-        "phoneCode": "1"
+        nameES: 'Canadá',
+        nameEN: 'Canada',
+        iso2: 'CA',
+        iso3: 'CAN',
+        phoneCode: '1',
       },
       {
-        "nameES": "Chad",
-        "nameEN": "Chad",
-        "iso2": "TD",
-        "iso3": "TCD",
-        "phoneCode": "235"
+        nameES: 'Chad',
+        nameEN: 'Chad',
+        iso2: 'TD',
+        iso3: 'TCD',
+        phoneCode: '235',
       },
       {
-        "nameES": "Chile",
-        "nameEN": "Chile",
-        "iso2": "CL",
-        "iso3": "CHL",
-        "phoneCode": "56"
+        nameES: 'Chile',
+        nameEN: 'Chile',
+        iso2: 'CL',
+        iso3: 'CHL',
+        phoneCode: '56',
       },
       {
-        "nameES": "China",
-        "nameEN": "China",
-        "iso2": "CN",
-        "iso3": "CHN",
-        "phoneCode": "86"
+        nameES: 'China',
+        nameEN: 'China',
+        iso2: 'CN',
+        iso3: 'CHN',
+        phoneCode: '86',
       },
       {
-        "nameES": "Chipre",
-        "nameEN": "Cyprus",
-        "iso2": "CY",
-        "iso3": "CYP",
-        "phoneCode": "357"
+        nameES: 'Chipre',
+        nameEN: 'Cyprus',
+        iso2: 'CY',
+        iso3: 'CYP',
+        phoneCode: '357',
       },
       {
-        "nameES": "Ciudad del Vaticano",
-        "nameEN": "Vatican City State",
-        "iso2": "VA",
-        "iso3": "VAT",
-        "phoneCode": "39"
+        nameES: 'Ciudad del Vaticano',
+        nameEN: 'Vatican City State',
+        iso2: 'VA',
+        iso3: 'VAT',
+        phoneCode: '39',
       },
       {
-        "nameES": "Colombia",
-        "nameEN": "Colombia",
-        "iso2": "CO",
-        "iso3": "COL",
-        "phoneCode": "57"
+        nameES: 'Colombia',
+        nameEN: 'Colombia',
+        iso2: 'CO',
+        iso3: 'COL',
+        phoneCode: '57',
       },
       {
-        "nameES": "Comoras",
-        "nameEN": "Comoros",
-        "iso2": "KM",
-        "iso3": "COM",
-        "phoneCode": "269"
+        nameES: 'Comoras',
+        nameEN: 'Comoros',
+        iso2: 'KM',
+        iso3: 'COM',
+        phoneCode: '269',
       },
       {
-        "nameES": "República del Congo",
-        "nameEN": "Republic of the Congo",
-        "iso2": "CG",
-        "iso3": "COG",
-        "phoneCode": "242"
+        nameES: 'República del Congo',
+        nameEN: 'Republic of the Congo',
+        iso2: 'CG',
+        iso3: 'COG',
+        phoneCode: '242',
       },
       {
-        "nameES": "República Democrática del Congo",
-        "nameEN": "Democratic Republic of the Congo",
-        "iso2": "CD",
-        "iso3": "COD",
-        "phoneCode": "243"
+        nameES: 'República Democrática del Congo',
+        nameEN: 'Democratic Republic of the Congo',
+        iso2: 'CD',
+        iso3: 'COD',
+        phoneCode: '243',
       },
       {
-        "nameES": "Corea del Norte",
-        "nameEN": "North Korea",
-        "iso2": "KP",
-        "iso3": "PRK",
-        "phoneCode": "850"
+        nameES: 'Corea del Norte',
+        nameEN: 'North Korea',
+        iso2: 'KP',
+        iso3: 'PRK',
+        phoneCode: '850',
       },
       {
-        "nameES": "Corea del Sur",
-        "nameEN": "South Korea",
-        "iso2": "KR",
-        "iso3": "KOR",
-        "phoneCode": "82"
+        nameES: 'Corea del Sur',
+        nameEN: 'South Korea',
+        iso2: 'KR',
+        iso3: 'KOR',
+        phoneCode: '82',
       },
       {
-        "nameES": "Costa de Marfil",
-        "nameEN": "Ivory Coast",
-        "iso2": "CI",
-        "iso3": "CIV",
-        "phoneCode": "225"
+        nameES: 'Costa de Marfil',
+        nameEN: 'Ivory Coast',
+        iso2: 'CI',
+        iso3: 'CIV',
+        phoneCode: '225',
       },
       {
-        "nameES": "Costa Rica",
-        "nameEN": "Costa Rica",
-        "iso2": "CR",
-        "iso3": "CRI",
-        "phoneCode": "506"
+        nameES: 'Costa Rica',
+        nameEN: 'Costa Rica',
+        iso2: 'CR',
+        iso3: 'CRI',
+        phoneCode: '506',
       },
       {
-        "nameES": "Croacia",
-        "nameEN": "Croatia",
-        "iso2": "HR",
-        "iso3": "HRV",
-        "phoneCode": "385"
+        nameES: 'Croacia',
+        nameEN: 'Croatia',
+        iso2: 'HR',
+        iso3: 'HRV',
+        phoneCode: '385',
       },
       {
-        "nameES": "Cuba",
-        "nameEN": "Cuba",
-        "iso2": "CU",
-        "iso3": "CUB",
-        "phoneCode": "53"
+        nameES: 'Cuba',
+        nameEN: 'Cuba',
+        iso2: 'CU',
+        iso3: 'CUB',
+        phoneCode: '53',
       },
       {
-        "nameES": "Curazao",
-        "nameEN": "Curaçao",
-        "iso2": "CW",
-        "iso3": "CWU",
-        "phoneCode": "5999"
+        nameES: 'Curazao',
+        nameEN: 'Curaçao',
+        iso2: 'CW',
+        iso3: 'CWU',
+        phoneCode: '5999',
       },
       {
-        "nameES": "Dinamarca",
-        "nameEN": "Denmark",
-        "iso2": "DK",
-        "iso3": "DNK",
-        "phoneCode": "45"
+        nameES: 'Dinamarca',
+        nameEN: 'Denmark',
+        iso2: 'DK',
+        iso3: 'DNK',
+        phoneCode: '45',
       },
       {
-        "nameES": "Dominica",
-        "nameEN": "Dominica",
-        "iso2": "DM",
-        "iso3": "DMA",
-        "phoneCode": "1 767"
+        nameES: 'Dominica',
+        nameEN: 'Dominica',
+        iso2: 'DM',
+        iso3: 'DMA',
+        phoneCode: '1 767',
       },
       {
-        "nameES": "Ecuador",
-        "nameEN": "Ecuador",
-        "iso2": "EC",
-        "iso3": "ECU",
-        "phoneCode": "593"
+        nameES: 'Ecuador',
+        nameEN: 'Ecuador',
+        iso2: 'EC',
+        iso3: 'ECU',
+        phoneCode: '593',
       },
       {
-        "nameES": "Egipto",
-        "nameEN": "Egypt",
-        "iso2": "EG",
-        "iso3": "EGY",
-        "phoneCode": "20"
+        nameES: 'Egipto',
+        nameEN: 'Egypt',
+        iso2: 'EG',
+        iso3: 'EGY',
+        phoneCode: '20',
       },
       {
-        "nameES": "El Salvador",
-        "nameEN": "El Salvador",
-        "iso2": "SV",
-        "iso3": "SLV",
-        "phoneCode": "503"
+        nameES: 'El Salvador',
+        nameEN: 'El Salvador',
+        iso2: 'SV',
+        iso3: 'SLV',
+        phoneCode: '503',
       },
       {
-        "nameES": "Emiratos Árabes Unidos",
-        "nameEN": "United Arab Emirates",
-        "iso2": "AE",
-        "iso3": "ARE",
-        "phoneCode": "971"
+        nameES: 'Emiratos Árabes Unidos',
+        nameEN: 'United Arab Emirates',
+        iso2: 'AE',
+        iso3: 'ARE',
+        phoneCode: '971',
       },
       {
-        "nameES": "Eritrea",
-        "nameEN": "Eritrea",
-        "iso2": "ER",
-        "iso3": "ERI",
-        "phoneCode": "291"
+        nameES: 'Eritrea',
+        nameEN: 'Eritrea',
+        iso2: 'ER',
+        iso3: 'ERI',
+        phoneCode: '291',
       },
       {
-        "nameES": "Eslovaquia",
-        "nameEN": "Slovakia",
-        "iso2": "SK",
-        "iso3": "SVK",
-        "phoneCode": "421"
+        nameES: 'Eslovaquia',
+        nameEN: 'Slovakia',
+        iso2: 'SK',
+        iso3: 'SVK',
+        phoneCode: '421',
       },
       {
-        "nameES": "Eslovenia",
-        "nameEN": "Slovenia",
-        "iso2": "SI",
-        "iso3": "SVN",
-        "phoneCode": "386"
+        nameES: 'Eslovenia',
+        nameEN: 'Slovenia',
+        iso2: 'SI',
+        iso3: 'SVN',
+        phoneCode: '386',
       },
       {
-        "nameES": "España",
-        "nameEN": "Spain",
-        "iso2": "ES",
-        "iso3": "ESP",
-        "phoneCode": "34"
+        nameES: 'España',
+        nameEN: 'Spain',
+        iso2: 'ES',
+        iso3: 'ESP',
+        phoneCode: '34',
       },
       {
-        "nameES": "Estados Unidos de América",
-        "nameEN": "United States of America",
-        "iso2": "US",
-        "iso3": "USA",
-        "phoneCode": "1"
+        nameES: 'Estados Unidos de América',
+        nameEN: 'United States of America',
+        iso2: 'US',
+        iso3: 'USA',
+        phoneCode: '1',
       },
       {
-        "nameES": "Estonia",
-        "nameEN": "Estonia",
-        "iso2": "EE",
-        "iso3": "EST",
-        "phoneCode": "372"
+        nameES: 'Estonia',
+        nameEN: 'Estonia',
+        iso2: 'EE',
+        iso3: 'EST',
+        phoneCode: '372',
       },
       {
-        "nameES": "Etiopía",
-        "nameEN": "Ethiopia",
-        "iso2": "ET",
-        "iso3": "ETH",
-        "phoneCode": "251"
+        nameES: 'Etiopía',
+        nameEN: 'Ethiopia',
+        iso2: 'ET',
+        iso3: 'ETH',
+        phoneCode: '251',
       },
       {
-        "nameES": "Filipinas",
-        "nameEN": "Philippines",
-        "iso2": "PH",
-        "iso3": "PHL",
-        "phoneCode": "63"
+        nameES: 'Filipinas',
+        nameEN: 'Philippines',
+        iso2: 'PH',
+        iso3: 'PHL',
+        phoneCode: '63',
       },
       {
-        "nameES": "Finlandia",
-        "nameEN": "Finland",
-        "iso2": "FI",
-        "iso3": "FIN",
-        "phoneCode": "358"
+        nameES: 'Finlandia',
+        nameEN: 'Finland',
+        iso2: 'FI',
+        iso3: 'FIN',
+        phoneCode: '358',
       },
       {
-        "nameES": "Fiyi",
-        "nameEN": "Fiji",
-        "iso2": "FJ",
-        "iso3": "FJI",
-        "phoneCode": "679"
+        nameES: 'Fiyi',
+        nameEN: 'Fiji',
+        iso2: 'FJ',
+        iso3: 'FJI',
+        phoneCode: '679',
       },
       {
-        "nameES": "Francia",
-        "nameEN": "France",
-        "iso2": "FR",
-        "iso3": "FRA",
-        "phoneCode": "33"
+        nameES: 'Francia',
+        nameEN: 'France',
+        iso2: 'FR',
+        iso3: 'FRA',
+        phoneCode: '33',
       },
       {
-        "nameES": "Gabón",
-        "nameEN": "Gabon",
-        "iso2": "GA",
-        "iso3": "GAB",
-        "phoneCode": "241"
+        nameES: 'Gabón',
+        nameEN: 'Gabon',
+        iso2: 'GA',
+        iso3: 'GAB',
+        phoneCode: '241',
       },
       {
-        "nameES": "Gambia",
-        "nameEN": "Gambia",
-        "iso2": "GM",
-        "iso3": "GMB",
-        "phoneCode": "220"
+        nameES: 'Gambia',
+        nameEN: 'Gambia',
+        iso2: 'GM',
+        iso3: 'GMB',
+        phoneCode: '220',
       },
       {
-        "nameES": "Georgia",
-        "nameEN": "Georgia",
-        "iso2": "GE",
-        "iso3": "GEO",
-        "phoneCode": "995"
+        nameES: 'Georgia',
+        nameEN: 'Georgia',
+        iso2: 'GE',
+        iso3: 'GEO',
+        phoneCode: '995',
       },
       {
-        "nameES": "Ghana",
-        "nameEN": "Ghana",
-        "iso2": "GH",
-        "iso3": "GHA",
-        "phoneCode": "233"
+        nameES: 'Ghana',
+        nameEN: 'Ghana',
+        iso2: 'GH',
+        iso3: 'GHA',
+        phoneCode: '233',
       },
       {
-        "nameES": "Gibraltar",
-        "nameEN": "Gibraltar",
-        "iso2": "GI",
-        "iso3": "GIB",
-        "phoneCode": "350"
+        nameES: 'Gibraltar',
+        nameEN: 'Gibraltar',
+        iso2: 'GI',
+        iso3: 'GIB',
+        phoneCode: '350',
       },
       {
-        "nameES": "Granada",
-        "nameEN": "Grenada",
-        "iso2": "GD",
-        "iso3": "GRD",
-        "phoneCode": "1 473"
+        nameES: 'Granada',
+        nameEN: 'Grenada',
+        iso2: 'GD',
+        iso3: 'GRD',
+        phoneCode: '1 473',
       },
       {
-        "nameES": "Grecia",
-        "nameEN": "Greece",
-        "iso2": "GR",
-        "iso3": "GRC",
-        "phoneCode": "30"
+        nameES: 'Grecia',
+        nameEN: 'Greece',
+        iso2: 'GR',
+        iso3: 'GRC',
+        phoneCode: '30',
       },
       {
-        "nameES": "Groenlandia",
-        "nameEN": "Greenland",
-        "iso2": "GL",
-        "iso3": "GRL",
-        "phoneCode": "299"
+        nameES: 'Groenlandia',
+        nameEN: 'Greenland',
+        iso2: 'GL',
+        iso3: 'GRL',
+        phoneCode: '299',
       },
       {
-        "nameES": "Guadalupe",
-        "nameEN": "Guadeloupe",
-        "iso2": "GP",
-        "iso3": "GLP",
-        "phoneCode": "590"
+        nameES: 'Guadalupe',
+        nameEN: 'Guadeloupe',
+        iso2: 'GP',
+        iso3: 'GLP',
+        phoneCode: '590',
       },
       {
-        "nameES": "Guam",
-        "nameEN": "Guam",
-        "iso2": "GU",
-        "iso3": "GUM",
-        "phoneCode": "1 671"
+        nameES: 'Guam',
+        nameEN: 'Guam',
+        iso2: 'GU',
+        iso3: 'GUM',
+        phoneCode: '1 671',
       },
       {
-        "nameES": "Guatemala",
-        "nameEN": "Guatemala",
-        "iso2": "GT",
-        "iso3": "GTM",
-        "phoneCode": "502"
+        nameES: 'Guatemala',
+        nameEN: 'Guatemala',
+        iso2: 'GT',
+        iso3: 'GTM',
+        phoneCode: '502',
       },
       {
-        "nameES": "Guayana Francesa",
-        "nameEN": "French Guiana",
-        "iso2": "GF",
-        "iso3": "GUF",
-        "phoneCode": "594"
+        nameES: 'Guayana Francesa',
+        nameEN: 'French Guiana',
+        iso2: 'GF',
+        iso3: 'GUF',
+        phoneCode: '594',
       },
       {
-        "nameES": "Guernsey",
-        "nameEN": "Guernsey",
-        "iso2": "GG",
-        "iso3": "GGY",
-        "phoneCode": "44"
+        nameES: 'Guernsey',
+        nameEN: 'Guernsey',
+        iso2: 'GG',
+        iso3: 'GGY',
+        phoneCode: '44',
       },
       {
-        "nameES": "Guinea",
-        "nameEN": "Guinea",
-        "iso2": "GN",
-        "iso3": "GIN",
-        "phoneCode": "224"
+        nameES: 'Guinea',
+        nameEN: 'Guinea',
+        iso2: 'GN',
+        iso3: 'GIN',
+        phoneCode: '224',
       },
       {
-        "nameES": "Guinea Ecuatorial",
-        "nameEN": "Equatorial Guinea",
-        "iso2": "GQ",
-        "iso3": "GNQ",
-        "phoneCode": "240"
+        nameES: 'Guinea Ecuatorial',
+        nameEN: 'Equatorial Guinea',
+        iso2: 'GQ',
+        iso3: 'GNQ',
+        phoneCode: '240',
       },
       {
-        "nameES": "Guinea-Bissau",
-        "nameEN": "Guinea-Bissau",
-        "iso2": "GW",
-        "iso3": "GNB",
-        "phoneCode": "245"
+        nameES: 'Guinea-Bissau',
+        nameEN: 'Guinea-Bissau',
+        iso2: 'GW',
+        iso3: 'GNB',
+        phoneCode: '245',
       },
       {
-        "nameES": "Guyana",
-        "nameEN": "Guyana",
-        "iso2": "GY",
-        "iso3": "GUY",
-        "phoneCode": "592"
+        nameES: 'Guyana',
+        nameEN: 'Guyana',
+        iso2: 'GY',
+        iso3: 'GUY',
+        phoneCode: '592',
       },
       {
-        "nameES": "Haití",
-        "nameEN": "Haiti",
-        "iso2": "HT",
-        "iso3": "HTI",
-        "phoneCode": "509"
+        nameES: 'Haití',
+        nameEN: 'Haiti',
+        iso2: 'HT',
+        iso3: 'HTI',
+        phoneCode: '509',
       },
       {
-        "nameES": "Honduras",
-        "nameEN": "Honduras",
-        "iso2": "HN",
-        "iso3": "HND",
-        "phoneCode": "504"
+        nameES: 'Honduras',
+        nameEN: 'Honduras',
+        iso2: 'HN',
+        iso3: 'HND',
+        phoneCode: '504',
       },
       {
-        "nameES": "Hong kong",
-        "nameEN": "Hong Kong",
-        "iso2": "HK",
-        "iso3": "HKG",
-        "phoneCode": "852"
+        nameES: 'Hong kong',
+        nameEN: 'Hong Kong',
+        iso2: 'HK',
+        iso3: 'HKG',
+        phoneCode: '852',
       },
       {
-        "nameES": "Hungría",
-        "nameEN": "Hungary",
-        "iso2": "HU",
-        "iso3": "HUN",
-        "phoneCode": "36"
+        nameES: 'Hungría',
+        nameEN: 'Hungary',
+        iso2: 'HU',
+        iso3: 'HUN',
+        phoneCode: '36',
       },
       {
-        "nameES": "India",
-        "nameEN": "India",
-        "iso2": "IN",
-        "iso3": "IND",
-        "phoneCode": "91"
+        nameES: 'India',
+        nameEN: 'India',
+        iso2: 'IN',
+        iso3: 'IND',
+        phoneCode: '91',
       },
       {
-        "nameES": "Indonesia",
-        "nameEN": "Indonesia",
-        "iso2": "ID",
-        "iso3": "IDN",
-        "phoneCode": "62"
+        nameES: 'Indonesia',
+        nameEN: 'Indonesia',
+        iso2: 'ID',
+        iso3: 'IDN',
+        phoneCode: '62',
       },
       {
-        "nameES": "Irán",
-        "nameEN": "Iran",
-        "iso2": "IR",
-        "iso3": "IRN",
-        "phoneCode": "98"
+        nameES: 'Irán',
+        nameEN: 'Iran',
+        iso2: 'IR',
+        iso3: 'IRN',
+        phoneCode: '98',
       },
       {
-        "nameES": "Irak",
-        "nameEN": "Iraq",
-        "iso2": "IQ",
-        "iso3": "IRQ",
-        "phoneCode": "964"
+        nameES: 'Irak',
+        nameEN: 'Iraq',
+        iso2: 'IQ',
+        iso3: 'IRQ',
+        phoneCode: '964',
       },
       {
-        "nameES": "Irlanda",
-        "nameEN": "Ireland",
-        "iso2": "IE",
-        "iso3": "IRL",
-        "phoneCode": "353"
+        nameES: 'Irlanda',
+        nameEN: 'Ireland',
+        iso2: 'IE',
+        iso3: 'IRL',
+        phoneCode: '353',
       },
       {
-        "nameES": "Isla Bouvet",
-        "nameEN": "Bouvet Island",
-        "iso2": "BV",
-        "iso3": "BVT",
-        "phoneCode": ""
+        nameES: 'Isla Bouvet',
+        nameEN: 'Bouvet Island',
+        iso2: 'BV',
+        iso3: 'BVT',
+        phoneCode: '',
       },
       {
-        "nameES": "Isla de Man",
-        "nameEN": "Isle of Man",
-        "iso2": "IM",
-        "iso3": "IMN",
-        "phoneCode": "44"
+        nameES: 'Isla de Man',
+        nameEN: 'Isle of Man',
+        iso2: 'IM',
+        iso3: 'IMN',
+        phoneCode: '44',
       },
       {
-        "nameES": "Isla de Navidad",
-        "nameEN": "Christmas Island",
-        "iso2": "CX",
-        "iso3": "CXR",
-        "phoneCode": "61"
+        nameES: 'Isla de Navidad',
+        nameEN: 'Christmas Island',
+        iso2: 'CX',
+        iso3: 'CXR',
+        phoneCode: '61',
       },
       {
-        "nameES": "Isla Norfolk",
-        "nameEN": "Norfolk Island",
-        "iso2": "NF",
-        "iso3": "NFK",
-        "phoneCode": "672"
+        nameES: 'Isla Norfolk',
+        nameEN: 'Norfolk Island',
+        iso2: 'NF',
+        iso3: 'NFK',
+        phoneCode: '672',
       },
       {
-        "nameES": "Islandia",
-        "nameEN": "Iceland",
-        "iso2": "IS",
-        "iso3": "ISL",
-        "phoneCode": "354"
+        nameES: 'Islandia',
+        nameEN: 'Iceland',
+        iso2: 'IS',
+        iso3: 'ISL',
+        phoneCode: '354',
       },
       {
-        "nameES": "Islas Bermudas",
-        "nameEN": "Bermuda Islands",
-        "iso2": "BM",
-        "iso3": "BMU",
-        "phoneCode": "1 441"
+        nameES: 'Islas Bermudas',
+        nameEN: 'Bermuda Islands',
+        iso2: 'BM',
+        iso3: 'BMU',
+        phoneCode: '1 441',
       },
       {
-        "nameES": "Islas Caimán",
-        "nameEN": "Cayman Islands",
-        "iso2": "KY",
-        "iso3": "CYM",
-        "phoneCode": "1 345"
+        nameES: 'Islas Caimán',
+        nameEN: 'Cayman Islands',
+        iso2: 'KY',
+        iso3: 'CYM',
+        phoneCode: '1 345',
       },
       {
-        "nameES": "Islas Cocos (Keeling)",
-        "nameEN": "Cocos (Keeling) Islands",
-        "iso2": "CC",
-        "iso3": "CCK",
-        "phoneCode": "61"
+        nameES: 'Islas Cocos (Keeling)',
+        nameEN: 'Cocos (Keeling) Islands',
+        iso2: 'CC',
+        iso3: 'CCK',
+        phoneCode: '61',
       },
       {
-        "nameES": "Islas Cook",
-        "nameEN": "Cook Islands",
-        "iso2": "CK",
-        "iso3": "COK",
-        "phoneCode": "682"
+        nameES: 'Islas Cook',
+        nameEN: 'Cook Islands',
+        iso2: 'CK',
+        iso3: 'COK',
+        phoneCode: '682',
       },
       {
-        "nameES": "Islas de Åland",
-        "nameEN": "Åland Islands",
-        "iso2": "AX",
-        "iso3": "ALA",
-        "phoneCode": "358"
+        nameES: 'Islas de Åland',
+        nameEN: 'Åland Islands',
+        iso2: 'AX',
+        iso3: 'ALA',
+        phoneCode: '358',
       },
       {
-        "nameES": "Islas Feroe",
-        "nameEN": "Faroe Islands",
-        "iso2": "FO",
-        "iso3": "FRO",
-        "phoneCode": "298"
+        nameES: 'Islas Feroe',
+        nameEN: 'Faroe Islands',
+        iso2: 'FO',
+        iso3: 'FRO',
+        phoneCode: '298',
       },
       {
-        "nameES": "Islas Georgias del Sur y Sandwich del Sur",
-        "nameEN": "South Georgia and the South Sandwich Islands",
-        "iso2": "GS",
-        "iso3": "SGS",
-        "phoneCode": "500"
+        nameES: 'Islas Georgias del Sur y Sandwich del Sur',
+        nameEN: 'South Georgia and the South Sandwich Islands',
+        iso2: 'GS',
+        iso3: 'SGS',
+        phoneCode: '500',
       },
       {
-        "nameES": "Islas Heard y McDonald",
-        "nameEN": "Heard Island and McDonald Islands",
-        "iso2": "HM",
-        "iso3": "HMD",
-        "phoneCode": ""
+        nameES: 'Islas Heard y McDonald',
+        nameEN: 'Heard Island and McDonald Islands',
+        iso2: 'HM',
+        iso3: 'HMD',
+        phoneCode: '',
       },
       {
-        "nameES": "Islas Maldivas",
-        "nameEN": "Maldives",
-        "iso2": "MV",
-        "iso3": "MDV",
-        "phoneCode": "960"
+        nameES: 'Islas Maldivas',
+        nameEN: 'Maldives',
+        iso2: 'MV',
+        iso3: 'MDV',
+        phoneCode: '960',
       },
       {
-        "nameES": "Islas Malvinas",
-        "nameEN": "Falkland Islands (Malvinas)",
-        "iso2": "FK",
-        "iso3": "FLK",
-        "phoneCode": "500"
+        nameES: 'Islas Malvinas',
+        nameEN: 'Falkland Islands (Malvinas)',
+        iso2: 'FK',
+        iso3: 'FLK',
+        phoneCode: '500',
       },
       {
-        "nameES": "Islas Marianas del Norte",
-        "nameEN": "Northern Mariana Islands",
-        "iso2": "MP",
-        "iso3": "MNP",
-        "phoneCode": "1 670"
+        nameES: 'Islas Marianas del Norte',
+        nameEN: 'Northern Mariana Islands',
+        iso2: 'MP',
+        iso3: 'MNP',
+        phoneCode: '1 670',
       },
       {
-        "nameES": "Islas Marshall",
-        "nameEN": "Marshall Islands",
-        "iso2": "MH",
-        "iso3": "MHL",
-        "phoneCode": "692"
+        nameES: 'Islas Marshall',
+        nameEN: 'Marshall Islands',
+        iso2: 'MH',
+        iso3: 'MHL',
+        phoneCode: '692',
       },
       {
-        "nameES": "Islas Pitcairn",
-        "nameEN": "Pitcairn Islands",
-        "iso2": "PN",
-        "iso3": "PCN",
-        "phoneCode": "870"
+        nameES: 'Islas Pitcairn',
+        nameEN: 'Pitcairn Islands',
+        iso2: 'PN',
+        iso3: 'PCN',
+        phoneCode: '870',
       },
       {
-        "nameES": "Islas Salomón",
-        "nameEN": "Solomon Islands",
-        "iso2": "SB",
-        "iso3": "SLB",
-        "phoneCode": "677"
+        nameES: 'Islas Salomón',
+        nameEN: 'Solomon Islands',
+        iso2: 'SB',
+        iso3: 'SLB',
+        phoneCode: '677',
       },
       {
-        "nameES": "Islas Turcas y Caicos",
-        "nameEN": "Turks and Caicos Islands",
-        "iso2": "TC",
-        "iso3": "TCA",
-        "phoneCode": "1 649"
+        nameES: 'Islas Turcas y Caicos',
+        nameEN: 'Turks and Caicos Islands',
+        iso2: 'TC',
+        iso3: 'TCA',
+        phoneCode: '1 649',
       },
       {
-        "nameES": "Islas Ultramarinas Menores de Estados Unidos",
-        "nameEN": "United States Minor Outlying Islands",
-        "iso2": "UM",
-        "iso3": "UMI",
-        "phoneCode": "246"
+        nameES: 'Islas Ultramarinas Menores de Estados Unidos',
+        nameEN: 'United States Minor Outlying Islands',
+        iso2: 'UM',
+        iso3: 'UMI',
+        phoneCode: '246',
       },
       {
-        "nameES": "Islas Vírgenes Británicas",
-        "nameEN": "Virgin Islands",
-        "iso2": "VG",
-        "iso3": "VGB",
-        "phoneCode": "1 284"
+        nameES: 'Islas Vírgenes Británicas',
+        nameEN: 'Virgin Islands',
+        iso2: 'VG',
+        iso3: 'VGB',
+        phoneCode: '1 284',
       },
       {
-        "nameES": "Islas Vírgenes de los Estados Unidos",
-        "nameEN": "United States Virgin Islands",
-        "iso2": "VI",
-        "iso3": "VIR",
-        "phoneCode": "1 340"
+        nameES: 'Islas Vírgenes de los Estados Unidos',
+        nameEN: 'United States Virgin Islands',
+        iso2: 'VI',
+        iso3: 'VIR',
+        phoneCode: '1 340',
       },
       {
-        "nameES": "Israel",
-        "nameEN": "Israel",
-        "iso2": "IL",
-        "iso3": "ISR",
-        "phoneCode": "972"
+        nameES: 'Israel',
+        nameEN: 'Israel',
+        iso2: 'IL',
+        iso3: 'ISR',
+        phoneCode: '972',
       },
       {
-        "nameES": "Italia",
-        "nameEN": "Italy",
-        "iso2": "IT",
-        "iso3": "ITA",
-        "phoneCode": "39"
+        nameES: 'Italia',
+        nameEN: 'Italy',
+        iso2: 'IT',
+        iso3: 'ITA',
+        phoneCode: '39',
       },
       {
-        "nameES": "Jamaica",
-        "nameEN": "Jamaica",
-        "iso2": "JM",
-        "iso3": "JAM",
-        "phoneCode": "1 876"
+        nameES: 'Jamaica',
+        nameEN: 'Jamaica',
+        iso2: 'JM',
+        iso3: 'JAM',
+        phoneCode: '1 876',
       },
       {
-        "nameES": "Japón",
-        "nameEN": "Japan",
-        "iso2": "JP",
-        "iso3": "JPN",
-        "phoneCode": "81"
+        nameES: 'Japón',
+        nameEN: 'Japan',
+        iso2: 'JP',
+        iso3: 'JPN',
+        phoneCode: '81',
       },
       {
-        "nameES": "Jersey",
-        "nameEN": "Jersey",
-        "iso2": "JE",
-        "iso3": "JEY",
-        "phoneCode": "44"
+        nameES: 'Jersey',
+        nameEN: 'Jersey',
+        iso2: 'JE',
+        iso3: 'JEY',
+        phoneCode: '44',
       },
       {
-        "nameES": "Jordania",
-        "nameEN": "Jordan",
-        "iso2": "JO",
-        "iso3": "JOR",
-        "phoneCode": "962"
+        nameES: 'Jordania',
+        nameEN: 'Jordan',
+        iso2: 'JO',
+        iso3: 'JOR',
+        phoneCode: '962',
       },
       {
-        "nameES": "Kazajistán",
-        "nameEN": "Kazakhstan",
-        "iso2": "KZ",
-        "iso3": "KAZ",
-        "phoneCode": "7"
+        nameES: 'Kazajistán',
+        nameEN: 'Kazakhstan',
+        iso2: 'KZ',
+        iso3: 'KAZ',
+        phoneCode: '7',
       },
       {
-        "nameES": "Kenia",
-        "nameEN": "Kenya",
-        "iso2": "KE",
-        "iso3": "KEN",
-        "phoneCode": "254"
+        nameES: 'Kenia',
+        nameEN: 'Kenya',
+        iso2: 'KE',
+        iso3: 'KEN',
+        phoneCode: '254',
       },
       {
-        "nameES": "Kirguistán",
-        "nameEN": "Kyrgyzstan",
-        "iso2": "KG",
-        "iso3": "KGZ",
-        "phoneCode": "996"
+        nameES: 'Kirguistán',
+        nameEN: 'Kyrgyzstan',
+        iso2: 'KG',
+        iso3: 'KGZ',
+        phoneCode: '996',
       },
       {
-        "nameES": "Kiribati",
-        "nameEN": "Kiribati",
-        "iso2": "KI",
-        "iso3": "KIR",
-        "phoneCode": "686"
+        nameES: 'Kiribati',
+        nameEN: 'Kiribati',
+        iso2: 'KI',
+        iso3: 'KIR',
+        phoneCode: '686',
       },
       {
-        "nameES": "Kuwait",
-        "nameEN": "Kuwait",
-        "iso2": "KW",
-        "iso3": "KWT",
-        "phoneCode": "965"
+        nameES: 'Kuwait',
+        nameEN: 'Kuwait',
+        iso2: 'KW',
+        iso3: 'KWT',
+        phoneCode: '965',
       },
       {
-        "nameES": "Líbano",
-        "nameEN": "Lebanon",
-        "iso2": "LB",
-        "iso3": "LBN",
-        "phoneCode": "961"
+        nameES: 'Líbano',
+        nameEN: 'Lebanon',
+        iso2: 'LB',
+        iso3: 'LBN',
+        phoneCode: '961',
       },
       {
-        "nameES": "Laos",
-        "nameEN": "Laos",
-        "iso2": "LA",
-        "iso3": "LAO",
-        "phoneCode": "856"
+        nameES: 'Laos',
+        nameEN: 'Laos',
+        iso2: 'LA',
+        iso3: 'LAO',
+        phoneCode: '856',
       },
       {
-        "nameES": "Lesoto",
-        "nameEN": "Lesotho",
-        "iso2": "LS",
-        "iso3": "LSO",
-        "phoneCode": "266"
+        nameES: 'Lesoto',
+        nameEN: 'Lesotho',
+        iso2: 'LS',
+        iso3: 'LSO',
+        phoneCode: '266',
       },
       {
-        "nameES": "Letonia",
-        "nameEN": "Latvia",
-        "iso2": "LV",
-        "iso3": "LVA",
-        "phoneCode": "371"
+        nameES: 'Letonia',
+        nameEN: 'Latvia',
+        iso2: 'LV',
+        iso3: 'LVA',
+        phoneCode: '371',
       },
       {
-        "nameES": "Liberia",
-        "nameEN": "Liberia",
-        "iso2": "LR",
-        "iso3": "LBR",
-        "phoneCode": "231"
+        nameES: 'Liberia',
+        nameEN: 'Liberia',
+        iso2: 'LR',
+        iso3: 'LBR',
+        phoneCode: '231',
       },
       {
-        "nameES": "Libia",
-        "nameEN": "Libya",
-        "iso2": "LY",
-        "iso3": "LBY",
-        "phoneCode": "218"
+        nameES: 'Libia',
+        nameEN: 'Libya',
+        iso2: 'LY',
+        iso3: 'LBY',
+        phoneCode: '218',
       },
       {
-        "nameES": "Liechtenstein",
-        "nameEN": "Liechtenstein",
-        "iso2": "LI",
-        "iso3": "LIE",
-        "phoneCode": "423"
+        nameES: 'Liechtenstein',
+        nameEN: 'Liechtenstein',
+        iso2: 'LI',
+        iso3: 'LIE',
+        phoneCode: '423',
       },
       {
-        "nameES": "Lituania",
-        "nameEN": "Lithuania",
-        "iso2": "LT",
-        "iso3": "LTU",
-        "phoneCode": "370"
+        nameES: 'Lituania',
+        nameEN: 'Lithuania',
+        iso2: 'LT',
+        iso3: 'LTU',
+        phoneCode: '370',
       },
       {
-        "nameES": "Luxemburgo",
-        "nameEN": "Luxembourg",
-        "iso2": "LU",
-        "iso3": "LUX",
-        "phoneCode": "352"
+        nameES: 'Luxemburgo',
+        nameEN: 'Luxembourg',
+        iso2: 'LU',
+        iso3: 'LUX',
+        phoneCode: '352',
       },
       {
-        "nameES": "México",
-        "nameEN": "Mexico",
-        "iso2": "MX",
-        "iso3": "MEX",
-        "phoneCode": "52"
+        nameES: 'México',
+        nameEN: 'Mexico',
+        iso2: 'MX',
+        iso3: 'MEX',
+        phoneCode: '52',
       },
       {
-        "nameES": "Mónaco",
-        "nameEN": "Monaco",
-        "iso2": "MC",
-        "iso3": "MCO",
-        "phoneCode": "377"
+        nameES: 'Mónaco',
+        nameEN: 'Monaco',
+        iso2: 'MC',
+        iso3: 'MCO',
+        phoneCode: '377',
       },
       {
-        "nameES": "Macao",
-        "nameEN": "Macao",
-        "iso2": "MO",
-        "iso3": "MAC",
-        "phoneCode": "853"
+        nameES: 'Macao',
+        nameEN: 'Macao',
+        iso2: 'MO',
+        iso3: 'MAC',
+        phoneCode: '853',
       },
       {
-        "nameES": "Macedônia",
-        "nameEN": "Macedonia",
-        "iso2": "MK",
-        "iso3": "MKD",
-        "phoneCode": "389"
+        nameES: 'Macedônia',
+        nameEN: 'Macedonia',
+        iso2: 'MK',
+        iso3: 'MKD',
+        phoneCode: '389',
       },
       {
-        "nameES": "Madagascar",
-        "nameEN": "Madagascar",
-        "iso2": "MG",
-        "iso3": "MDG",
-        "phoneCode": "261"
+        nameES: 'Madagascar',
+        nameEN: 'Madagascar',
+        iso2: 'MG',
+        iso3: 'MDG',
+        phoneCode: '261',
       },
       {
-        "nameES": "Malasia",
-        "nameEN": "Malaysia",
-        "iso2": "MY",
-        "iso3": "MYS",
-        "phoneCode": "60"
+        nameES: 'Malasia',
+        nameEN: 'Malaysia',
+        iso2: 'MY',
+        iso3: 'MYS',
+        phoneCode: '60',
       },
       {
-        "nameES": "Malawi",
-        "nameEN": "Malawi",
-        "iso2": "MW",
-        "iso3": "MWI",
-        "phoneCode": "265"
+        nameES: 'Malawi',
+        nameEN: 'Malawi',
+        iso2: 'MW',
+        iso3: 'MWI',
+        phoneCode: '265',
       },
       {
-        "nameES": "Mali",
-        "nameEN": "Mali",
-        "iso2": "ML",
-        "iso3": "MLI",
-        "phoneCode": "223"
+        nameES: 'Mali',
+        nameEN: 'Mali',
+        iso2: 'ML',
+        iso3: 'MLI',
+        phoneCode: '223',
       },
       {
-        "nameES": "Malta",
-        "nameEN": "Malta",
-        "iso2": "MT",
-        "iso3": "MLT",
-        "phoneCode": "356"
+        nameES: 'Malta',
+        nameEN: 'Malta',
+        iso2: 'MT',
+        iso3: 'MLT',
+        phoneCode: '356',
       },
       {
-        "nameES": "Marruecos",
-        "nameEN": "Morocco",
-        "iso2": "MA",
-        "iso3": "MAR",
-        "phoneCode": "212"
+        nameES: 'Marruecos',
+        nameEN: 'Morocco',
+        iso2: 'MA',
+        iso3: 'MAR',
+        phoneCode: '212',
       },
       {
-        "nameES": "Martinica",
-        "nameEN": "Martinique",
-        "iso2": "MQ",
-        "iso3": "MTQ",
-        "phoneCode": "596"
+        nameES: 'Martinica',
+        nameEN: 'Martinique',
+        iso2: 'MQ',
+        iso3: 'MTQ',
+        phoneCode: '596',
       },
       {
-        "nameES": "Mauricio",
-        "nameEN": "Mauritius",
-        "iso2": "MU",
-        "iso3": "MUS",
-        "phoneCode": "230"
+        nameES: 'Mauricio',
+        nameEN: 'Mauritius',
+        iso2: 'MU',
+        iso3: 'MUS',
+        phoneCode: '230',
       },
       {
-        "nameES": "Mauritania",
-        "nameEN": "Mauritania",
-        "iso2": "MR",
-        "iso3": "MRT",
-        "phoneCode": "222"
+        nameES: 'Mauritania',
+        nameEN: 'Mauritania',
+        iso2: 'MR',
+        iso3: 'MRT',
+        phoneCode: '222',
       },
       {
-        "nameES": "Mayotte",
-        "nameEN": "Mayotte",
-        "iso2": "YT",
-        "iso3": "MYT",
-        "phoneCode": "262"
+        nameES: 'Mayotte',
+        nameEN: 'Mayotte',
+        iso2: 'YT',
+        iso3: 'MYT',
+        phoneCode: '262',
       },
       {
-        "nameES": "Micronesia",
-        "nameEN": "Estados Federados de",
-        "iso2": "FM",
-        "iso3": "FSM",
-        "phoneCode": "691"
+        nameES: 'Micronesia',
+        nameEN: 'Estados Federados de',
+        iso2: 'FM',
+        iso3: 'FSM',
+        phoneCode: '691',
       },
       {
-        "nameES": "Moldavia",
-        "nameEN": "Moldova",
-        "iso2": "MD",
-        "iso3": "MDA",
-        "phoneCode": "373"
+        nameES: 'Moldavia',
+        nameEN: 'Moldova',
+        iso2: 'MD',
+        iso3: 'MDA',
+        phoneCode: '373',
       },
       {
-        "nameES": "Mongolia",
-        "nameEN": "Mongolia",
-        "iso2": "MN",
-        "iso3": "MNG",
-        "phoneCode": "976"
+        nameES: 'Mongolia',
+        nameEN: 'Mongolia',
+        iso2: 'MN',
+        iso3: 'MNG',
+        phoneCode: '976',
       },
       {
-        "nameES": "Montenegro",
-        "nameEN": "Montenegro",
-        "iso2": "ME",
-        "iso3": "MNE",
-        "phoneCode": "382"
+        nameES: 'Montenegro',
+        nameEN: 'Montenegro',
+        iso2: 'ME',
+        iso3: 'MNE',
+        phoneCode: '382',
       },
       {
-        "nameES": "Montserrat",
-        "nameEN": "Montserrat",
-        "iso2": "MS",
-        "iso3": "MSR",
-        "phoneCode": "1 664"
+        nameES: 'Montserrat',
+        nameEN: 'Montserrat',
+        iso2: 'MS',
+        iso3: 'MSR',
+        phoneCode: '1 664',
       },
       {
-        "nameES": "Mozambique",
-        "nameEN": "Mozambique",
-        "iso2": "MZ",
-        "iso3": "MOZ",
-        "phoneCode": "258"
+        nameES: 'Mozambique',
+        nameEN: 'Mozambique',
+        iso2: 'MZ',
+        iso3: 'MOZ',
+        phoneCode: '258',
       },
       {
-        "nameES": "Namibia",
-        "nameEN": "Namibia",
-        "iso2": "NA",
-        "iso3": "NAM",
-        "phoneCode": "264"
+        nameES: 'Namibia',
+        nameEN: 'Namibia',
+        iso2: 'NA',
+        iso3: 'NAM',
+        phoneCode: '264',
       },
       {
-        "nameES": "Nauru",
-        "nameEN": "Nauru",
-        "iso2": "NR",
-        "iso3": "NRU",
-        "phoneCode": "674"
+        nameES: 'Nauru',
+        nameEN: 'Nauru',
+        iso2: 'NR',
+        iso3: 'NRU',
+        phoneCode: '674',
       },
       {
-        "nameES": "Nepal",
-        "nameEN": "Nepal",
-        "iso2": "NP",
-        "iso3": "NPL",
-        "phoneCode": "977"
+        nameES: 'Nepal',
+        nameEN: 'Nepal',
+        iso2: 'NP',
+        iso3: 'NPL',
+        phoneCode: '977',
       },
       {
-        "nameES": "Nicaragua",
-        "nameEN": "Nicaragua",
-        "iso2": "NI",
-        "iso3": "NIC",
-        "phoneCode": "505"
+        nameES: 'Nicaragua',
+        nameEN: 'Nicaragua',
+        iso2: 'NI',
+        iso3: 'NIC',
+        phoneCode: '505',
       },
       {
-        "nameES": "Niger",
-        "nameEN": "Niger",
-        "iso2": "NE",
-        "iso3": "NER",
-        "phoneCode": "227"
+        nameES: 'Niger',
+        nameEN: 'Niger',
+        iso2: 'NE',
+        iso3: 'NER',
+        phoneCode: '227',
       },
       {
-        "nameES": "Nigeria",
-        "nameEN": "Nigeria",
-        "iso2": "NG",
-        "iso3": "NGA",
-        "phoneCode": "234"
+        nameES: 'Nigeria',
+        nameEN: 'Nigeria',
+        iso2: 'NG',
+        iso3: 'NGA',
+        phoneCode: '234',
       },
       {
-        "nameES": "Niue",
-        "nameEN": "Niue",
-        "iso2": "NU",
-        "iso3": "NIU",
-        "phoneCode": "683"
+        nameES: 'Niue',
+        nameEN: 'Niue',
+        iso2: 'NU',
+        iso3: 'NIU',
+        phoneCode: '683',
       },
       {
-        "nameES": "Noruega",
-        "nameEN": "Norway",
-        "iso2": "NO",
-        "iso3": "NOR",
-        "phoneCode": "47"
+        nameES: 'Noruega',
+        nameEN: 'Norway',
+        iso2: 'NO',
+        iso3: 'NOR',
+        phoneCode: '47',
       },
       {
-        "nameES": "Nueva Caledonia",
-        "nameEN": "New Caledonia",
-        "iso2": "NC",
-        "iso3": "NCL",
-        "phoneCode": "687"
+        nameES: 'Nueva Caledonia',
+        nameEN: 'New Caledonia',
+        iso2: 'NC',
+        iso3: 'NCL',
+        phoneCode: '687',
       },
       {
-        "nameES": "Nueva Zelanda",
-        "nameEN": "New Zealand",
-        "iso2": "NZ",
-        "iso3": "NZL",
-        "phoneCode": "64"
+        nameES: 'Nueva Zelanda',
+        nameEN: 'New Zealand',
+        iso2: 'NZ',
+        iso3: 'NZL',
+        phoneCode: '64',
       },
       {
-        "nameES": "Omán",
-        "nameEN": "Oman",
-        "iso2": "OM",
-        "iso3": "OMN",
-        "phoneCode": "968"
+        nameES: 'Omán',
+        nameEN: 'Oman',
+        iso2: 'OM',
+        iso3: 'OMN',
+        phoneCode: '968',
       },
       {
-        "nameES": "Países Bajos",
-        "nameEN": "Netherlands",
-        "iso2": "NL",
-        "iso3": "NLD",
-        "phoneCode": "31"
+        nameES: 'Países Bajos',
+        nameEN: 'Netherlands',
+        iso2: 'NL',
+        iso3: 'NLD',
+        phoneCode: '31',
       },
       {
-        "nameES": "Pakistán",
-        "nameEN": "Pakistan",
-        "iso2": "PK",
-        "iso3": "PAK",
-        "phoneCode": "92"
+        nameES: 'Pakistán',
+        nameEN: 'Pakistan',
+        iso2: 'PK',
+        iso3: 'PAK',
+        phoneCode: '92',
       },
       {
-        "nameES": "Palau",
-        "nameEN": "Palau",
-        "iso2": "PW",
-        "iso3": "PLW",
-        "phoneCode": "680"
+        nameES: 'Palau',
+        nameEN: 'Palau',
+        iso2: 'PW',
+        iso3: 'PLW',
+        phoneCode: '680',
       },
       {
-        "nameES": "Palestina",
-        "nameEN": "Palestine",
-        "iso2": "PS",
-        "iso3": "PSE",
-        "phoneCode": "970"
+        nameES: 'Palestina',
+        nameEN: 'Palestine',
+        iso2: 'PS',
+        iso3: 'PSE',
+        phoneCode: '970',
       },
       {
-        "nameES": "Panamá",
-        "nameEN": "Panama",
-        "iso2": "PA",
-        "iso3": "PAN",
-        "phoneCode": "507"
+        nameES: 'Panamá',
+        nameEN: 'Panama',
+        iso2: 'PA',
+        iso3: 'PAN',
+        phoneCode: '507',
       },
       {
-        "nameES": "Papúa Nueva Guinea",
-        "nameEN": "Papua New Guinea",
-        "iso2": "PG",
-        "iso3": "PNG",
-        "phoneCode": "675"
+        nameES: 'Papúa Nueva Guinea',
+        nameEN: 'Papua New Guinea',
+        iso2: 'PG',
+        iso3: 'PNG',
+        phoneCode: '675',
       },
       {
-        "nameES": "Paraguay",
-        "nameEN": "Paraguay",
-        "iso2": "PY",
-        "iso3": "PRY",
-        "phoneCode": "595"
+        nameES: 'Paraguay',
+        nameEN: 'Paraguay',
+        iso2: 'PY',
+        iso3: 'PRY',
+        phoneCode: '595',
       },
       {
-        "nameES": "Perú",
-        "nameEN": "Peru",
-        "iso2": "PE",
-        "iso3": "PER",
-        "phoneCode": "51"
+        nameES: 'Perú',
+        nameEN: 'Peru',
+        iso2: 'PE',
+        iso3: 'PER',
+        phoneCode: '51',
       },
       {
-        "nameES": "Polinesia Francesa",
-        "nameEN": "French Polynesia",
-        "iso2": "PF",
-        "iso3": "PYF",
-        "phoneCode": "689"
+        nameES: 'Polinesia Francesa',
+        nameEN: 'French Polynesia',
+        iso2: 'PF',
+        iso3: 'PYF',
+        phoneCode: '689',
       },
       {
-        "nameES": "Polonia",
-        "nameEN": "Poland",
-        "iso2": "PL",
-        "iso3": "POL",
-        "phoneCode": "48"
+        nameES: 'Polonia',
+        nameEN: 'Poland',
+        iso2: 'PL',
+        iso3: 'POL',
+        phoneCode: '48',
       },
       {
-        "nameES": "Portugal",
-        "nameEN": "Portugal",
-        "iso2": "PT",
-        "iso3": "PRT",
-        "phoneCode": "351"
+        nameES: 'Portugal',
+        nameEN: 'Portugal',
+        iso2: 'PT',
+        iso3: 'PRT',
+        phoneCode: '351',
       },
       {
-        "nameES": "Puerto Rico",
-        "nameEN": "Puerto Rico",
-        "iso2": "PR",
-        "iso3": "PRI",
-        "phoneCode": "1"
+        nameES: 'Puerto Rico',
+        nameEN: 'Puerto Rico',
+        iso2: 'PR',
+        iso3: 'PRI',
+        phoneCode: '1',
       },
       {
-        "nameES": "Qatar",
-        "nameEN": "Qatar",
-        "iso2": "QA",
-        "iso3": "QAT",
-        "phoneCode": "974"
+        nameES: 'Qatar',
+        nameEN: 'Qatar',
+        iso2: 'QA',
+        iso3: 'QAT',
+        phoneCode: '974',
       },
       {
-        "nameES": "Reino Unido",
-        "nameEN": "United Kingdom",
-        "iso2": "GB",
-        "iso3": "GBR",
-        "phoneCode": "44"
+        nameES: 'Reino Unido',
+        nameEN: 'United Kingdom',
+        iso2: 'GB',
+        iso3: 'GBR',
+        phoneCode: '44',
       },
       {
-        "nameES": "República Centroafricana",
-        "nameEN": "Central African Republic",
-        "iso2": "CF",
-        "iso3": "CAF",
-        "phoneCode": "236"
+        nameES: 'República Centroafricana',
+        nameEN: 'Central African Republic',
+        iso2: 'CF',
+        iso3: 'CAF',
+        phoneCode: '236',
       },
       {
-        "nameES": "República Checa",
-        "nameEN": "Czech Republic",
-        "iso2": "CZ",
-        "iso3": "CZE",
-        "phoneCode": "420"
+        nameES: 'República Checa',
+        nameEN: 'Czech Republic',
+        iso2: 'CZ',
+        iso3: 'CZE',
+        phoneCode: '420',
       },
       {
-        "nameES": "República Dominicana",
-        "nameEN": "Dominican Republic",
-        "iso2": "DO",
-        "iso3": "DOM",
-        "phoneCode": "1 809"
+        nameES: 'República Dominicana',
+        nameEN: 'Dominican Republic',
+        iso2: 'DO',
+        iso3: 'DOM',
+        phoneCode: '1 809',
       },
       {
-        "nameES": "República de Sudán del Sur",
-        "nameEN": "South Sudan",
-        "iso2": "SS",
-        "iso3": "SSD",
-        "phoneCode": "211"
+        nameES: 'República de Sudán del Sur',
+        nameEN: 'South Sudan',
+        iso2: 'SS',
+        iso3: 'SSD',
+        phoneCode: '211',
       },
       {
-        "nameES": "Reunión",
-        "nameEN": "Réunion",
-        "iso2": "RE",
-        "iso3": "REU",
-        "phoneCode": "262"
+        nameES: 'Reunión',
+        nameEN: 'Réunion',
+        iso2: 'RE',
+        iso3: 'REU',
+        phoneCode: '262',
       },
       {
-        "nameES": "Ruanda",
-        "nameEN": "Rwanda",
-        "iso2": "RW",
-        "iso3": "RWA",
-        "phoneCode": "250"
+        nameES: 'Ruanda',
+        nameEN: 'Rwanda',
+        iso2: 'RW',
+        iso3: 'RWA',
+        phoneCode: '250',
       },
       {
-        "nameES": "Rumanía",
-        "nameEN": "Romania",
-        "iso2": "RO",
-        "iso3": "ROU",
-        "phoneCode": "40"
+        nameES: 'Rumanía',
+        nameEN: 'Romania',
+        iso2: 'RO',
+        iso3: 'ROU',
+        phoneCode: '40',
       },
       {
-        "nameES": "Rusia",
-        "nameEN": "Russia",
-        "iso2": "RU",
-        "iso3": "RUS",
-        "phoneCode": "7"
+        nameES: 'Rusia',
+        nameEN: 'Russia',
+        iso2: 'RU',
+        iso3: 'RUS',
+        phoneCode: '7',
       },
       {
-        "nameES": "Sahara Occidental",
-        "nameEN": "Western Sahara",
-        "iso2": "EH",
-        "iso3": "ESH",
-        "phoneCode": "212"
+        nameES: 'Sahara Occidental',
+        nameEN: 'Western Sahara',
+        iso2: 'EH',
+        iso3: 'ESH',
+        phoneCode: '212',
       },
       {
-        "nameES": "Samoa",
-        "nameEN": "Samoa",
-        "iso2": "WS",
-        "iso3": "WSM",
-        "phoneCode": "685"
+        nameES: 'Samoa',
+        nameEN: 'Samoa',
+        iso2: 'WS',
+        iso3: 'WSM',
+        phoneCode: '685',
       },
       {
-        "nameES": "Samoa Americana",
-        "nameEN": "American Samoa",
-        "iso2": "AS",
-        "iso3": "ASM",
-        "phoneCode": "1 684"
+        nameES: 'Samoa Americana',
+        nameEN: 'American Samoa',
+        iso2: 'AS',
+        iso3: 'ASM',
+        phoneCode: '1 684',
       },
       {
-        "nameES": "San Bartolomé",
-        "nameEN": "Saint Barthélemy",
-        "iso2": "BL",
-        "iso3": "BLM",
-        "phoneCode": "590"
+        nameES: 'San Bartolomé',
+        nameEN: 'Saint Barthélemy',
+        iso2: 'BL',
+        iso3: 'BLM',
+        phoneCode: '590',
       },
       {
-        "nameES": "San Cristóbal y Nieves",
-        "nameEN": "Saint Kitts and Nevis",
-        "iso2": "KN",
-        "iso3": "KNA",
-        "phoneCode": "1 869"
+        nameES: 'San Cristóbal y Nieves',
+        nameEN: 'Saint Kitts and Nevis',
+        iso2: 'KN',
+        iso3: 'KNA',
+        phoneCode: '1 869',
       },
       {
-        "nameES": "San Marino",
-        "nameEN": "San Marino",
-        "iso2": "SM",
-        "iso3": "SMR",
-        "phoneCode": "378"
+        nameES: 'San Marino',
+        nameEN: 'San Marino',
+        iso2: 'SM',
+        iso3: 'SMR',
+        phoneCode: '378',
       },
       {
-        "nameES": "San Martín (Francia)",
-        "nameEN": "Saint Martin (French part)",
-        "iso2": "MF",
-        "iso3": "MAF",
-        "phoneCode": "1 599"
+        nameES: 'San Martín (Francia)',
+        nameEN: 'Saint Martin (French part)',
+        iso2: 'MF',
+        iso3: 'MAF',
+        phoneCode: '1 599',
       },
       {
-        "nameES": "San Pedro y Miquelón",
-        "nameEN": "Saint Pierre and Miquelon",
-        "iso2": "PM",
-        "iso3": "SPM",
-        "phoneCode": "508"
+        nameES: 'San Pedro y Miquelón',
+        nameEN: 'Saint Pierre and Miquelon',
+        iso2: 'PM',
+        iso3: 'SPM',
+        phoneCode: '508',
       },
       {
-        "nameES": "San Vicente y las Granadinas",
-        "nameEN": "Saint Vincent and the Grenadines",
-        "iso2": "VC",
-        "iso3": "VCT",
-        "phoneCode": "1 784"
+        nameES: 'San Vicente y las Granadinas',
+        nameEN: 'Saint Vincent and the Grenadines',
+        iso2: 'VC',
+        iso3: 'VCT',
+        phoneCode: '1 784',
       },
       {
-        "nameES": "Santa Elena",
-        "nameEN": "Ascensión y Tristán de Acuña",
-        "iso2": "SH",
-        "iso3": "SHN",
-        "phoneCode": "290"
+        nameES: 'Santa Elena',
+        nameEN: 'Ascensión y Tristán de Acuña',
+        iso2: 'SH',
+        iso3: 'SHN',
+        phoneCode: '290',
       },
       {
-        "nameES": "Santa Lucía",
-        "nameEN": "Saint Lucia",
-        "iso2": "LC",
-        "iso3": "LCA",
-        "phoneCode": "1 758"
+        nameES: 'Santa Lucía',
+        nameEN: 'Saint Lucia',
+        iso2: 'LC',
+        iso3: 'LCA',
+        phoneCode: '1 758',
       },
       {
-        "nameES": "Santo Tomé y Príncipe",
-        "nameEN": "Sao Tome and Principe",
-        "iso2": "ST",
-        "iso3": "STP",
-        "phoneCode": "239"
+        nameES: 'Santo Tomé y Príncipe',
+        nameEN: 'Sao Tome and Principe',
+        iso2: 'ST',
+        iso3: 'STP',
+        phoneCode: '239',
       },
       {
-        "nameES": "Senegal",
-        "nameEN": "Senegal",
-        "iso2": "SN",
-        "iso3": "SEN",
-        "phoneCode": "221"
+        nameES: 'Senegal',
+        nameEN: 'Senegal',
+        iso2: 'SN',
+        iso3: 'SEN',
+        phoneCode: '221',
       },
       {
-        "nameES": "Serbia",
-        "nameEN": "Serbia",
-        "iso2": "RS",
-        "iso3": "SRB",
-        "phoneCode": "381"
+        nameES: 'Serbia',
+        nameEN: 'Serbia',
+        iso2: 'RS',
+        iso3: 'SRB',
+        phoneCode: '381',
       },
       {
-        "nameES": "Seychelles",
-        "nameEN": "Seychelles",
-        "iso2": "SC",
-        "iso3": "SYC",
-        "phoneCode": "248"
+        nameES: 'Seychelles',
+        nameEN: 'Seychelles',
+        iso2: 'SC',
+        iso3: 'SYC',
+        phoneCode: '248',
       },
       {
-        "nameES": "Sierra Leona",
-        "nameEN": "Sierra Leone",
-        "iso2": "SL",
-        "iso3": "SLE",
-        "phoneCode": "232"
+        nameES: 'Sierra Leona',
+        nameEN: 'Sierra Leone',
+        iso2: 'SL',
+        iso3: 'SLE',
+        phoneCode: '232',
       },
       {
-        "nameES": "Singapur",
-        "nameEN": "Singapore",
-        "iso2": "SG",
-        "iso3": "SGP",
-        "phoneCode": "65"
+        nameES: 'Singapur',
+        nameEN: 'Singapore',
+        iso2: 'SG',
+        iso3: 'SGP',
+        phoneCode: '65',
       },
       {
-        "nameES": "Sint Maarten",
-        "nameEN": "Sint Maarten",
-        "iso2": "SX",
-        "iso3": "SMX",
-        "phoneCode": "1 721"
+        nameES: 'Sint Maarten',
+        nameEN: 'Sint Maarten',
+        iso2: 'SX',
+        iso3: 'SMX',
+        phoneCode: '1 721',
       },
       {
-        "nameES": "Siria",
-        "nameEN": "Syria",
-        "iso2": "SY",
-        "iso3": "SYR",
-        "phoneCode": "963"
+        nameES: 'Siria',
+        nameEN: 'Syria',
+        iso2: 'SY',
+        iso3: 'SYR',
+        phoneCode: '963',
       },
       {
-        "nameES": "Somalia",
-        "nameEN": "Somalia",
-        "iso2": "SO",
-        "iso3": "SOM",
-        "phoneCode": "252"
+        nameES: 'Somalia',
+        nameEN: 'Somalia',
+        iso2: 'SO',
+        iso3: 'SOM',
+        phoneCode: '252',
       },
       {
-        "nameES": "Sri lanka",
-        "nameEN": "Sri Lanka",
-        "iso2": "LK",
-        "iso3": "LKA",
-        "phoneCode": "94"
+        nameES: 'Sri lanka',
+        nameEN: 'Sri Lanka',
+        iso2: 'LK',
+        iso3: 'LKA',
+        phoneCode: '94',
       },
       {
-        "nameES": "Sudáfrica",
-        "nameEN": "South Africa",
-        "iso2": "ZA",
-        "iso3": "ZAF",
-        "phoneCode": "27"
+        nameES: 'Sudáfrica',
+        nameEN: 'South Africa',
+        iso2: 'ZA',
+        iso3: 'ZAF',
+        phoneCode: '27',
       },
       {
-        "nameES": "Sudán",
-        "nameEN": "Sudan",
-        "iso2": "SD",
-        "iso3": "SDN",
-        "phoneCode": "249"
+        nameES: 'Sudán',
+        nameEN: 'Sudan',
+        iso2: 'SD',
+        iso3: 'SDN',
+        phoneCode: '249',
       },
       {
-        "nameES": "Suecia",
-        "nameEN": "Sweden",
-        "iso2": "SE",
-        "iso3": "SWE",
-        "phoneCode": "46"
+        nameES: 'Suecia',
+        nameEN: 'Sweden',
+        iso2: 'SE',
+        iso3: 'SWE',
+        phoneCode: '46',
       },
       {
-        "nameES": "Suiza",
-        "nameEN": "Switzerland",
-        "iso2": "CH",
-        "iso3": "CHE",
-        "phoneCode": "41"
+        nameES: 'Suiza',
+        nameEN: 'Switzerland',
+        iso2: 'CH',
+        iso3: 'CHE',
+        phoneCode: '41',
       },
       {
-        "nameES": "Surinám",
-        "nameEN": "Suriname",
-        "iso2": "SR",
-        "iso3": "SUR",
-        "phoneCode": "597"
+        nameES: 'Surinám',
+        nameEN: 'Suriname',
+        iso2: 'SR',
+        iso3: 'SUR',
+        phoneCode: '597',
       },
       {
-        "nameES": "Svalbard y Jan Mayen",
-        "nameEN": "Svalbard and Jan Mayen",
-        "iso2": "SJ",
-        "iso3": "SJM",
-        "phoneCode": "47"
+        nameES: 'Svalbard y Jan Mayen',
+        nameEN: 'Svalbard and Jan Mayen',
+        iso2: 'SJ',
+        iso3: 'SJM',
+        phoneCode: '47',
       },
       {
-        "nameES": "Swazilandia",
-        "nameEN": "Swaziland",
-        "iso2": "SZ",
-        "iso3": "SWZ",
-        "phoneCode": "268"
+        nameES: 'Swazilandia',
+        nameEN: 'Swaziland',
+        iso2: 'SZ',
+        iso3: 'SWZ',
+        phoneCode: '268',
       },
       {
-        "nameES": "Tayikistán",
-        "nameEN": "Tajikistan",
-        "iso2": "TJ",
-        "iso3": "TJK",
-        "phoneCode": "992"
+        nameES: 'Tayikistán',
+        nameEN: 'Tajikistan',
+        iso2: 'TJ',
+        iso3: 'TJK',
+        phoneCode: '992',
       },
       {
-        "nameES": "Tailandia",
-        "nameEN": "Thailand",
-        "iso2": "TH",
-        "iso3": "THA",
-        "phoneCode": "66"
+        nameES: 'Tailandia',
+        nameEN: 'Thailand',
+        iso2: 'TH',
+        iso3: 'THA',
+        phoneCode: '66',
       },
       {
-        "nameES": "Taiwán",
-        "nameEN": "Taiwan",
-        "iso2": "TW",
-        "iso3": "TWN",
-        "phoneCode": "886"
+        nameES: 'Taiwán',
+        nameEN: 'Taiwan',
+        iso2: 'TW',
+        iso3: 'TWN',
+        phoneCode: '886',
       },
       {
-        "nameES": "Tanzania",
-        "nameEN": "Tanzania",
-        "iso2": "TZ",
-        "iso3": "TZA",
-        "phoneCode": "255"
+        nameES: 'Tanzania',
+        nameEN: 'Tanzania',
+        iso2: 'TZ',
+        iso3: 'TZA',
+        phoneCode: '255',
       },
       {
-        "nameES": "Territorio Británico del Océano Índico",
-        "nameEN": "British Indian Ocean Territory",
-        "iso2": "IO",
-        "iso3": "IOT",
-        "phoneCode": "246"
+        nameES: 'Territorio Británico del Océano Índico',
+        nameEN: 'British Indian Ocean Territory',
+        iso2: 'IO',
+        iso3: 'IOT',
+        phoneCode: '246',
       },
       {
-        "nameES": "Territorios Australes y Antárticas Franceses",
-        "nameEN": "French Southern Territories",
-        "iso2": "TF",
-        "iso3": "ATF",
-        "phoneCode": ""
+        nameES: 'Territorios Australes y Antárticas Franceses',
+        nameEN: 'French Southern Territories',
+        iso2: 'TF',
+        iso3: 'ATF',
+        phoneCode: '',
       },
       {
-        "nameES": "Timor Oriental",
-        "nameEN": "East Timor",
-        "iso2": "TL",
-        "iso3": "TLS",
-        "phoneCode": "670"
+        nameES: 'Timor Oriental',
+        nameEN: 'East Timor',
+        iso2: 'TL',
+        iso3: 'TLS',
+        phoneCode: '670',
       },
       {
-        "nameES": "Togo",
-        "nameEN": "Togo",
-        "iso2": "TG",
-        "iso3": "TGO",
-        "phoneCode": "228"
+        nameES: 'Togo',
+        nameEN: 'Togo',
+        iso2: 'TG',
+        iso3: 'TGO',
+        phoneCode: '228',
       },
       {
-        "nameES": "Tokelau",
-        "nameEN": "Tokelau",
-        "iso2": "TK",
-        "iso3": "TKL",
-        "phoneCode": "690"
+        nameES: 'Tokelau',
+        nameEN: 'Tokelau',
+        iso2: 'TK',
+        iso3: 'TKL',
+        phoneCode: '690',
       },
       {
-        "nameES": "Tonga",
-        "nameEN": "Tonga",
-        "iso2": "TO",
-        "iso3": "TON",
-        "phoneCode": "676"
+        nameES: 'Tonga',
+        nameEN: 'Tonga',
+        iso2: 'TO',
+        iso3: 'TON',
+        phoneCode: '676',
       },
       {
-        "nameES": "Trinidad y Tobago",
-        "nameEN": "Trinidad and Tobago",
-        "iso2": "TT",
-        "iso3": "TTO",
-        "phoneCode": "1 868"
+        nameES: 'Trinidad y Tobago',
+        nameEN: 'Trinidad and Tobago',
+        iso2: 'TT',
+        iso3: 'TTO',
+        phoneCode: '1 868',
       },
       {
-        "nameES": "Tunez",
-        "nameEN": "Tunisia",
-        "iso2": "TN",
-        "iso3": "TUN",
-        "phoneCode": "216"
+        nameES: 'Tunez',
+        nameEN: 'Tunisia',
+        iso2: 'TN',
+        iso3: 'TUN',
+        phoneCode: '216',
       },
       {
-        "nameES": "Turkmenistán",
-        "nameEN": "Turkmenistan",
-        "iso2": "TM",
-        "iso3": "TKM",
-        "phoneCode": "993"
+        nameES: 'Turkmenistán',
+        nameEN: 'Turkmenistan',
+        iso2: 'TM',
+        iso3: 'TKM',
+        phoneCode: '993',
       },
       {
-        "nameES": "Turquía",
-        "nameEN": "Turkey",
-        "iso2": "TR",
-        "iso3": "TUR",
-        "phoneCode": "90"
+        nameES: 'Turquía',
+        nameEN: 'Turkey',
+        iso2: 'TR',
+        iso3: 'TUR',
+        phoneCode: '90',
       },
       {
-        "nameES": "Tuvalu",
-        "nameEN": "Tuvalu",
-        "iso2": "TV",
-        "iso3": "TUV",
-        "phoneCode": "688"
+        nameES: 'Tuvalu',
+        nameEN: 'Tuvalu',
+        iso2: 'TV',
+        iso3: 'TUV',
+        phoneCode: '688',
       },
       {
-        "nameES": "Ucrania",
-        "nameEN": "Ukraine",
-        "iso2": "UA",
-        "iso3": "UKR",
-        "phoneCode": "380"
+        nameES: 'Ucrania',
+        nameEN: 'Ukraine',
+        iso2: 'UA',
+        iso3: 'UKR',
+        phoneCode: '380',
       },
       {
-        "nameES": "Uganda",
-        "nameEN": "Uganda",
-        "iso2": "UG",
-        "iso3": "UGA",
-        "phoneCode": "256"
+        nameES: 'Uganda',
+        nameEN: 'Uganda',
+        iso2: 'UG',
+        iso3: 'UGA',
+        phoneCode: '256',
       },
       {
-        "nameES": "Uruguay",
-        "nameEN": "Uruguay",
-        "iso2": "UY",
-        "iso3": "URY",
-        "phoneCode": "598"
+        nameES: 'Uruguay',
+        nameEN: 'Uruguay',
+        iso2: 'UY',
+        iso3: 'URY',
+        phoneCode: '598',
       },
       {
-        "nameES": "Uzbekistán",
-        "nameEN": "Uzbekistan",
-        "iso2": "UZ",
-        "iso3": "UZB",
-        "phoneCode": "998"
+        nameES: 'Uzbekistán',
+        nameEN: 'Uzbekistan',
+        iso2: 'UZ',
+        iso3: 'UZB',
+        phoneCode: '998',
       },
       {
-        "nameES": "Vanuatu",
-        "nameEN": "Vanuatu",
-        "iso2": "VU",
-        "iso3": "VUT",
-        "phoneCode": "678"
+        nameES: 'Vanuatu',
+        nameEN: 'Vanuatu',
+        iso2: 'VU',
+        iso3: 'VUT',
+        phoneCode: '678',
       },
       {
-        "nameES": "Venezuela",
-        "nameEN": "Venezuela",
-        "iso2": "VE",
-        "iso3": "VEN",
-        "phoneCode": "58"
+        nameES: 'Venezuela',
+        nameEN: 'Venezuela',
+        iso2: 'VE',
+        iso3: 'VEN',
+        phoneCode: '58',
       },
       {
-        "nameES": "Vietnam",
-        "nameEN": "Vietnam",
-        "iso2": "VN",
-        "iso3": "VNM",
-        "phoneCode": "84"
+        nameES: 'Vietnam',
+        nameEN: 'Vietnam',
+        iso2: 'VN',
+        iso3: 'VNM',
+        phoneCode: '84',
       },
       {
-        "nameES": "Wallis y Futuna",
-        "nameEN": "Wallis and Futuna",
-        "iso2": "WF",
-        "iso3": "WLF",
-        "phoneCode": "681"
+        nameES: 'Wallis y Futuna',
+        nameEN: 'Wallis and Futuna',
+        iso2: 'WF',
+        iso3: 'WLF',
+        phoneCode: '681',
       },
       {
-        "nameES": "Yemen",
-        "nameEN": "Yemen",
-        "iso2": "YE",
-        "iso3": "YEM",
-        "phoneCode": "967"
+        nameES: 'Yemen',
+        nameEN: 'Yemen',
+        iso2: 'YE',
+        iso3: 'YEM',
+        phoneCode: '967',
       },
       {
-        "nameES": "Yibuti",
-        "nameEN": "Djibouti",
-        "iso2": "DJ",
-        "iso3": "DJI",
-        "phoneCode": "253"
+        nameES: 'Yibuti',
+        nameEN: 'Djibouti',
+        iso2: 'DJ',
+        iso3: 'DJI',
+        phoneCode: '253',
       },
       {
-        "nameES": "Zambia",
-        "nameEN": "Zambia",
-        "iso2": "ZM",
-        "iso3": "ZMB",
-        "phoneCode": "260"
+        nameES: 'Zambia',
+        nameEN: 'Zambia',
+        iso2: 'ZM',
+        iso3: 'ZMB',
+        phoneCode: '260',
       },
       {
-        "nameES": "Zimbabue",
-        "nameEN": "Zimbabwe",
-        "iso2": "ZW",
-        "iso3": "ZWE",
-        "phoneCode": "263"
-      }
+        nameES: 'Zimbabue',
+        nameEN: 'Zimbabwe',
+        iso2: 'ZW',
+        iso3: 'ZWE',
+        phoneCode: '263',
+      },
     ];
   }
-} 
+}

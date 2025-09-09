@@ -6,4 +6,4 @@ export class CreateUserGroupSwaggerDto {
 
   @ApiProperty({ description: 'Descripción del grupo', required: false })
   description?: string;
-} 
+}

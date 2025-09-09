@@ -6,4 +6,4 @@ export class CreatePropertyOwnerSwaggerDto {
 
   @ApiProperty({ description: 'ID del apartamento', type: Number })
   apartmentId: number;
-} 
+}

@@ -9,15 +9,11 @@ export class UpdatesController {
 
   @Sse('users')
   userEvents(): Observable<MessageEvent> {
-    return this.updatesService.getUserEvents().pipe(
-      map(event => ({ data: event }))
-    );
+    return this.updatesService.getUserEvents().pipe(map((event) => ({ data: event })));
   }
 
   @Sse('vehicles')
   vehicleEvents(): Observable<MessageEvent> {
-    return this.updatesService.getVehicleEvents().pipe(
-      map(event => ({ data: event }))
-    );
+    return this.updatesService.getVehicleEvents().pipe(map((event) => ({ data: event })));
   }
-} 
+}

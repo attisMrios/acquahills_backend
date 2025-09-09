@@ -3,31 +3,31 @@ import { ApiProperty } from '@nestjs/swagger';
 export class VehicleInfoDto {
   @ApiProperty({
     description: 'Código/placa del vehículo',
-    example: 'ABC123'
+    example: 'ABC123',
   })
   code: string;
 
   @ApiProperty({
     description: 'Marca del vehículo',
-    example: 'Toyota'
+    example: 'Toyota',
   })
   brand: string;
 
   @ApiProperty({
     description: 'Modelo del vehículo',
-    example: 'Corolla'
+    example: 'Corolla',
   })
   model: string;
 
   @ApiProperty({
     description: 'Color del vehículo',
-    example: 'Blanco'
+    example: 'Blanco',
   })
   color: string;
 
   @ApiProperty({
     description: 'Tipo de vehículo',
-    example: 'CARRO'
+    example: 'CARRO',
   })
   vehicleType: string;
 }
@@ -35,13 +35,13 @@ export class VehicleInfoDto {
 export class OwnerInfoDto {
   @ApiProperty({
     description: 'ID del usuario propietario',
-    example: 'clx1234567890abcdef'
+    example: 'clx1234567890abcdef',
   })
   id: string;
 
   @ApiProperty({
     description: 'Nombre completo del propietario',
-    example: 'Juan Pérez'
+    example: 'Juan Pérez',
   })
   fullName: string;
 }
@@ -49,13 +49,13 @@ export class OwnerInfoDto {
 export class VehicleOwnerResponseDto {
   @ApiProperty({
     description: 'Información del vehículo',
-    type: VehicleInfoDto
+    type: VehicleInfoDto,
   })
   vehicle: VehicleInfoDto;
 
   @ApiProperty({
     description: 'Información del propietario',
-    type: OwnerInfoDto
+    type: OwnerInfoDto,
   })
   owner: OwnerInfoDto;
 }
