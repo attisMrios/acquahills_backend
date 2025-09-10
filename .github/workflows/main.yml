@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Verificar valor de SERVER_HOST
         run: |
-          echo "SERVER_HOST es: $SERVER_HOST"
+          echo "SERVER_HOST es: ${{ vars.SERVER_HOST }}"
 
       - name: Checkout del repositorio
         uses: actions/checkout@v3
