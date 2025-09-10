@@ -1,4 +1,4 @@
-name: Despliegue XX
+name: Despliegue blindado
 
 on:
   workflow_dispatch:
@@ -38,25 +38,27 @@ jobs:
 
       - name: Ejecutar script de despliegue en el servidor
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }} bash -s <<EOF
-            export DB_PASSRORD="${{ secrets.DB_PASSRORD }}"
-            export WABA_VERIFY_TOKEN="${{ secrets.WABA_VERIFY_TOKEN }}"
+          CLIENTE="${{ vars.CLIENT_NAME }}"
+          DB_NAME="${{ vars.DB_NAME }}"
+          PORT="${{ vars.PORT }}"
+          DB_PASSRORD="${{ secrets.DB_PASSRORD }}"
+          WABA_VERIFY_TOKEN="${{ secrets.WABA_VERIFY_TOKEN }}"
+          SUBDOMINIO="${CLIENTE}.g360co.com"
 
-            CLIENTE="${{ vars.CLIENT_NAME }}"
-            DB_NAME="${{ vars.DB_NAME }}"
-            PORT="${{ vars.PORT }}"
-            SUBDOMINIO="${CLIENTE}.g360co.com"
+          ssh -i ~/.ssh/id_rsa ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }} bash -s <<EOF
+            export DB_PASSRORD="${DB_PASSRORD}"
+            export WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
 
             BACKEND_PATH="/var/www/${CLIENTE}/backend"
             echo "Creando carpeta en: \$BACKEND_PATH"
             sudo mkdir -p "\$BACKEND_PATH"
 
             sudo tee "\$BACKEND_PATH/.env" > /dev/null <<EOV
-                                                          DATABASE_URL="postgresql://postgres:\${DB_PASSRORD}@localhost:5432/\${DB_NAME}?schema=public"
-                                                          PORT=\${PORT}
+                                                          DATABASE_URL="postgresql://postgres:\${DB_PASSRORD}@localhost:5432/${DB_NAME}?schema=public"
+                                                          PORT=${PORT}
                                                           GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
                                                           WABA_VERIFY_TOKEN="\${WABA_VERIFY_TOKEN}"
                                                         EOV
 
-            sudo /usr/local/bin/G360co_deploy "\$CLIENTE" "\$DB_NAME" "\$SUBDOMINIO" "\$PORT"
+            sudo /usr/local/bin/G360co_deploy "${CLIENTE}" "${DB_NAME}" "${SUBDOMINIO}" "${PORT}"
           EOF
