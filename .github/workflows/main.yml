@@ -35,21 +35,21 @@ jobs:
       - name: Ejecutar script de despliegue en el servidor
         run: |
           ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST bash -s << EOF
-            CLIENTE="${CLIENT_NAME}"
-            DB_NAME="${DB_NAME}"
-            PORT="${PORT}"
-            DB_PASSWORD="${DB_PASSWORD}"
-            WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
+            CLIENTE="${vars.CLIENT_NAME}"
+            DB_NAME="${vars.DB_NAME}"
+            PORT="${vars.PORT}"
+            DB_PASSWORD="${secrets.DB_PASSWORD}"
+            WABA_VERIFY_TOKEN="${secrets.WABA_VERIFY_TOKEN}"
 
-            BACKEND_PATH="/var/www/${CLIENT_NAME}/backend"
+            BACKEND_PATH="/var/www/${vars.CLIENT_NAME}/backend"
             mkdir -p "$BACKEND_PATH"
 
             cat > "$BACKEND_PATH/.env" <<EOV
-                                          DATABASE_URL="postgresql://postgres:${DB_PASSWORD}@localhost:5432/${DB_NAME}?schema=public"
-                                          PORT=${PORT}
+                                          DATABASE_URL="postgresql://postgres:${secrets.DB_PASSWORD}@localhost:5432/${vars.DB_NAME}?schema=public"
+                                          PORT=${vars.PORT}
                                           GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
-                                          WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
+                                          WABA_VERIFY_TOKEN="${secrets.WABA_VERIFY_TOKEN}"
                                         EOV
 
-            /usr/local/bin/G360co_deploy "${CLIENT_NAME}" "$DB_NAME" "${CLIENT_NAME}.g360co.com" "$PORT"
+            /usr/local/bin/G360co_deploy "${vars.CLIENT_NAME}" "${vars.DB_NAME}" "${vars.CLIENT_NAME}.g360co.com" "$PORT"
           EOF
