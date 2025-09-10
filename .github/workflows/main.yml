@@ -42,7 +42,7 @@ jobs:
             WABA_VERIFY_TOKEN="${secrets.WABA_VERIFY_TOKEN}"
 
             BACKEND_PATH="/var/www/${vars.CLIENT_NAME}/backend"
-            mkdir -p "$BACKEND_PATH"
+            mkdir -p "/var/www/${vars.CLIENT_NAME}/backend"
 
             cat > "$BACKEND_PATH/.env" <<EOV
                                           DATABASE_URL="postgresql://postgres:${secrets.DB_PASSWORD}@localhost:5432/${vars.DB_NAME}?schema=public"
