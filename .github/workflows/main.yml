@@ -1,4 +1,4 @@
-name: 2 Despliegue Backend por Cliente
+name: 3 Despliegue Backend por Cliente
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Verificar valor de SERVER_HOST
         run: |
-          echo "SERVER_HOST es: ${{ vars.SERVER_HOST }} juan"
+          echo "SERVER_HOST es: ${{ vars.SERVER_HOST }} - ${{ secrets.DB_PASSRORD }} juan"
 
       - name: Checkout del repositorio
         uses: actions/checkout@v3
