@@ -1,4 +1,4 @@
-name: Despliegue Automatizado con build
+name: Despliegue Automatizado
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: secrets
+    environment: BACKEND_SECRETS
 
     steps:
       - name: Checkout del repositorio
