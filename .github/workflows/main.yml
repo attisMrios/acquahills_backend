@@ -1,4 +1,4 @@
-name: 3333 Deploy Backend por Cliente
+name: EOF Despliegue Backend por Cliente
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ jobs:
     environment: BACKEND_SECRETS
 
     env:
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PASSRORD: ${{ secrets.DB_PASSRORD }}
       WABA_VERIFY_TOKEN: ${{ secrets.WABA_VERIFY_TOKEN }}
       CLIENT_NAME: ${{ vars.CLIENT_NAME }}
       DB_NAME: ${{ vars.DB_NAME }}
@@ -20,9 +20,7 @@ jobs:
     steps:
       - name: Verificar valor de SERVER_HOST
         run: |
-          echo "::group::Validación de variables"
-          echo "SERVER_HOST: $SERVER_HOST"
-          echo "::endgroup::"
+          echo "SERVER_HOST es: ${{ vars.SERVER_HOST }} - ${{ secrets.DB_PASSRORD }} juan"
 
       - name: Checkout del repositorio
         uses: actions/checkout@v3
@@ -37,18 +35,21 @@ jobs:
       - name: Ejecutar script de despliegue en el servidor
         run: |
           ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST bash -s << EOF
-            set -e
-            DB_PASSWORD="${DB_PASSWORD}"
+            CLIENTE="${CLIENT_NAME}"
+            DB_NAME="${DB_NAME}"
+            PORT="${PORT}"
+            DB_PASSRORD="${DB_PASSRORD}"
             WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
-            BACKEND_PATH="/var/www/${CLIENT_NAME}/backend"
+
+            BACKEND_PATH="/var/www/${CLIENTE}/backend"
             mkdir -p "$BACKEND_PATH"
 
             cat > "$BACKEND_PATH/.env" <<EOV
-DATABASE_URL="postgresql://postgres:${DB_PASSWORD}@localhost:5432/${DB_NAME}?schema=public"
-PORT=${PORT}
-GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
-WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
-EOV
+                                          DATABASE_URL="postgresql://postgres:${DB_PASSRORD}@localhost:5432/${DB_NAME}?schema=public"
+                                          PORT=${PORT}
+                                          GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
+                                          WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
+                                        EOV
 
-            /usr/local/bin/G360co_deploy "${CLIENT_NAME}" "${DB_NAME}" "${CLIENT_NAME}.g360co.com" "${PORT}"
-EOF
+            /usr/local/bin/G360co_deploy "$CLIENTE" "$DB_NAME" "$CLIENTE.g360co.com" "$PORT"
+          EOF
