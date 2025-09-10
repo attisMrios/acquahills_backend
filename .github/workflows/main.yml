@@ -1,4 +1,4 @@
-name: Despliegue werwrewer
+name: Despliegue ??
 
 on:
   workflow_dispatch:
@@ -8,23 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     environment: BACKEND_SECRETS
 
-    env:
-      CLIENT_NAME: ${{ vars.CLIENT_NAME }}
-      DB_NAME: ${{ vars.DB_NAME }}
-      PORT: ${{ vars.PORT }}
-      SERVER_HOST: ${{ vars.SERVER_HOST }}
-      SERVER_USER: ${{ vars.SERVER_USER }}
-
     steps:
-      - name: Verificar valores cargados
+      - name: Definir variables en el runner
         run: |
-          echo "CLIENT_NAME: ${{ vars.CLIENT_NAME }}"
-          echo "DB_NAME: ${{ vars.DB_NAME }}"
-          echo "PORT: ${{ vars.PORT }}"
-          echo "SERVER_HOST: ${{ vars.SERVER_HOST }}"
-          echo "SERVER_USER: ${{ vars.SERVER_USER }}"
-          echo "DB_PASSRORD: ${{ secrets.DB_PASSRORD }}"
-          echo "WABA_VERIFY_TOKEN: ${{ secrets.WABA_VERIFY_TOKEN }}"
+          echo "CLIENT_NAME=${{ vars.CLIENT_NAME }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ vars.DB_NAME }}" >> $GITHUB_ENV
+          echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
+          echo "SERVER_HOST=${{ vars.SERVER_HOST }}" >> $GITHUB_ENV
+          echo "SERVER_USER=${{ vars.SERVER_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSRORD=${{ secrets.DB_PASSRORD }}" >> $GITHUB_ENV
+          echo "WABA_VERIFY_TOKEN=${{ secrets.WABA_VERIFY_TOKEN }}" >> $GITHUB_ENV
+          echo "SUBDOMINIO=${{ vars.CLIENT_NAME }}.g360co.com" >> $GITHUB_ENV
 
       - name: Checkout del repositorio
         uses: actions/checkout@v3
@@ -34,19 +28,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "${{ vars.SERVER_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan "$SERVER_HOST" >> ~/.ssh/known_hosts
 
       - name: Ejecutar script de despliegue en el servidor
         run: |
-          CLIENTE="${{ vars.CLIENT_NAME }}"
-          DB_NAME="${{ vars.DB_NAME }}"
-          PORT="${{ vars.PORT }}"
-          DB_PASSRORD="${{ secrets.DB_PASSRORD }}"
-          WABA_VERIFY_TOKEN="${{ secrets.WABA_VERIFY_TOKEN }}"
-          SUBDOMINIO="${CLIENTE}.g360co.com"
-
-          ssh -i ~/.ssh/id_rsa ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }} bash -s <<EOF
-            BACKEND_PATH="/var/www/${CLIENTE}/backend"
+          ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST bash -s <<EOF
+            BACKEND_PATH="/var/www/${CLIENT_NAME}/backend"
             echo "Creando carpeta en: \$BACKEND_PATH"
             sudo mkdir -p "\$BACKEND_PATH"
 
@@ -57,5 +44,5 @@ jobs:
                                                           WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
                                                         EOV
 
-            sudo /usr/local/bin/G360co_deploy "${CLIENTE}" "${DB_NAME}" "${SUBDOMINIO}" "${PORT}"
+            sudo /usr/local/bin/G360co_deploy "${CLIENT_NAME}" "${DB_NAME}" "${SUBDOMINIO}" "${PORT}"
           EOF
