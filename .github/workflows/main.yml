@@ -1,4 +1,4 @@
-name: CLIENT_NAME EOF Despliegue Backend por Cliente
+name: vars EOF Despliegue 
 
 on:
   workflow_dispatch:
