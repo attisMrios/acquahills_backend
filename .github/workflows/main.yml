@@ -1,35 +1,51 @@
-name: Despliegue Automatizado gemini
+name: Despliegue Automatizado con build
 
 on:
   workflow_dispatch:
-
+    inputs:
+      cliente:
+        description: 'Nombre del cliente (ej. mathias)'
+        required: true
+      db_name:
+        description: 'Nombre de la base de datos'
+        required: true
+      url:
+        description: 'URL completa del sitio (ej. sitio.ejemplo.com)'
+        required: true
+      port:
+        description: 'Puerto del backend'
+        required: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: BACKEND_SECRETS
+    environment: secrets
 
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v3
 
-      - name: Definir variables en el runner
-        run: |
-          echo "CLIENT_NAME=${{ vars.CLIENT_NAME }}" >> $GITHUB_ENV
-          echo "DB_NAME=${{ vars.DB_NAME }}" >> $GITHUB_ENV
-          echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
-          echo "SERVER_HOST=${{ vars.SERVER_HOST }}" >> $GITHUB_ENV
-          echo "SERVER_USER=${{ vars.SERVER_USER }}" >> $GITHUB_ENV
-          echo "DB_PASSRORD=${{ secrets.DB_PASSRORD }}" >> $GITHUB_ENV
-          echo "WABA_VERIFY_TOKEN=${{ secrets.WABA_VERIFY_TOKEN }}" >> $GITHUB_ENV
-          echo "URL=${{ vars.URL }}" >> $GITHUB_ENV
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del backend
+        run: npm install
+
+      - name: Compilar el backend
+        run: npm run build
 
       - name: Configurar clave SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "$SERVER_HOST" >> ~/.ssh/known_hosts
-          
+          ssh-keyscan ${{ vars.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Transferir archivos al servidor
+        run: |
+          scp -i ~/.ssh/id_rsa -r ./dist/* ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }}:/var/www/${{ github.event.inputs.cliente }}/backend/
+
       - name: Ejecutar script de despliegue en el servidor
         run: |
-          ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST "sudo /usr/local/bin/G360co_deploy '${{ env.CLIENT_NAME }}' '${{ env.DB_NAME }}' '${{ env.URL }}' '${{ env.PORT }}' '${{ env.DB_PASSRORD }}' '${{ env.WABA_VERIFY_TOKEN }}'"
+          ssh -i ~/.ssh/id_rsa ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }} 'sudo /usr/local/bin/G360co_deploy "${{ github.event.inputs.cliente }}" "${{ github.event.inputs.db_name }}" "${{ github.event.inputs.url }}" "${{ github.event.inputs.port }}" "${{ secrets.DB_PASSRORD }}" "${{ secrets.WABA_VERIFY_TOKEN }}"'
