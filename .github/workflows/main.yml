@@ -6,6 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environtment: BACKEND_SECRETS
 
     env:
       DB_PASSRORD: ${{ secrets.DB_PASSRORD }}
