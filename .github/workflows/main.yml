@@ -1,4 +1,4 @@
-name: Despliegue Automatizado
+name: Despliegue Automatizado corrección backend_secrets
 
 on:
   workflow_dispatch:
