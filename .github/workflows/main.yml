@@ -13,7 +13,7 @@ jobs:
       CLIENT_NAME: ${{ vars.CLIENT_NAME }}
       DB_NAME: ${{ vars.DB_NAME }}
       PORT: ${{ vars.PORT }}
-      SERVER_HOST: ${{ SERVER_HOST }}
+      SERVER_HOST: ${{ $SERVER_HOST }}
       SERVER_USER: ${{ vars.SERVER_USER }}
 
     steps:
