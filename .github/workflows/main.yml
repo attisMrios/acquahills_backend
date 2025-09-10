@@ -1,4 +1,4 @@
-name: vars EOF Despliegue 
+name: backend path 
 
 on:
   workflow_dispatch:
