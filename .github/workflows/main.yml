@@ -1,4 +1,4 @@
-name: 2 EOF Despliegue Backend por Cliente
+name: Deploy App
 
 on:
   workflow_dispatch:
@@ -9,47 +9,50 @@ jobs:
     environment: BACKEND_SECRETS
 
     env:
-      DB_PASSRORD: ${{ secrets.DB_PASSRORD }}
-      WABA_VERIFY_TOKEN: ${{ secrets.WABA_VERIFY_TOKEN }}
       CLIENT_NAME: ${{ vars.CLIENT_NAME }}
-      DB_NAME: ${{ vars.DB_NAME }}
-      PORT: ${{ vars.PORT }}
       SERVER_HOST: ${{ vars.SERVER_HOST }}
       SERVER_USER: ${{ vars.SERVER_USER }}
+      BACKEND_PATH: ${{ vars.BACKEND_PATH }}
+      DB_HOST: ${{ vars.DB_HOST }}
+      DB_PORT: ${{ vars.DB_PORT }}
+      DB_NAME: ${{ vars.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
     steps:
-      - name: Verificar valor de SERVER_HOST
-        run: |
-          echo "SERVER_HOST es: ${{ vars.SERVER_HOST }} - ${{ secrets.DB_PASSRORD }} juan"
-
-      - name: Checkout del repositorio
+      - name: Checkout código
         uses: actions/checkout@v3
+
+      - name: Validar variables
+        run: |
+          echo "::group::Validación de variables"
+          echo "CLIENT_NAME: $CLIENT_NAME"
+          echo "SERVER_HOST: $SERVER_HOST"
+          echo "::endgroup::"
 
       - name: Configurar clave SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "$SERVER_HOST" >> ~/.ssh/known_hosts
 
-      - name: Ejecutar script de despliegue en el servidor
+      - name: Desplegar en servidor remoto
         run: |
-          ssh -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST bash -s << 'EOF'
-            CLIENTE="${CLIENT_NAME}"
-            DB_NAME="${DB_NAME}"
-            PORT="${PORT}"
-            DB_PASSRORD="${DB_PASSRORD}"
-            WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
-
-            BACKEND_PATH="/var/www/${CLIENTE}/backend"
-            mkdir -p "$BACKEND_PATH"
-
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_HOST bash -s << EOF
+            set -e
+            echo "::group::Generando archivo .env"
             cat > "$BACKEND_PATH/.env" <<EOV
-                                          DATABASE_URL="postgresql://postgres:${DB_PASSRORD}@localhost:5432/${DB_NAME}?schema=public"
-                                          PORT=${PORT}
-                                          GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
-                                          WABA_VERIFY_TOKEN="${WABA_VERIFY_TOKEN}"
-                                        EOV
+CLIENT_NAME=$CLIENT_NAME
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
+DB_PASSWORD=$DB_PASSWORD
+EOV
+            echo "::endgroup::"
 
-            /usr/local/bin/G360co_deploy "$CLIENTE" "$DB_NAME" "$CLIENTE.g360co.com" "$PORT"
-          EOF
+            echo "::group::Ejecutando script de despliegue"
+            cd $BACKEND_PATH
+            ./G360co_deploy
+            echo "::endgroup::"
+EOF
