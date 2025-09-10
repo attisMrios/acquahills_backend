@@ -1,4 +1,4 @@
-name: 3 Despliegue Backend por Cliente
+name: EOF Despliegue Backend por Cliente
 
 on:
   workflow_dispatch:
@@ -52,4 +52,4 @@ jobs:
                                         EOV
 
             /usr/local/bin/G360co_deploy "$CLIENTE" "$DB_NAME" "$CLIENTE.g360co.com" "$PORT"
-            EOF
+EOF
