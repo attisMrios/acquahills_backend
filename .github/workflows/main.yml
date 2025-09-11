@@ -1,4 +1,4 @@
-name: Despliegue Automatizado corrección backend_secrets
+name: Despliegue Automatizado package.json
 
 on:
   workflow_dispatch:
@@ -44,6 +44,7 @@ jobs:
 
       - name: Transferir archivos al servidor
         run: |
+          scp -i ~/.ssh/id_rsa ./package.json ./package-lock.json ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:/var/www/${{ env.CLIENT_NAME }}/backend/
           scp -i ~/.ssh/id_rsa -r ./dist/* ${{ vars.SERVER_USER }}@${{ vars.SERVER_HOST }}:/var/www/${{ github.event.inputs.cliente }}/backend/
 
       - name: Ejecutar script de despliegue en el servidor
