@@ -1,4 +1,4 @@
-name: Despliegue CI/CD
+name: Prisma Despliegue CI/CD
 
 on:
   workflow_dispatch:
@@ -30,6 +30,9 @@ jobs:
 
       - name: Instalar dependencias del backend
         run: npm install
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
 
       - name: Compilar el backend
         run: npm run build
