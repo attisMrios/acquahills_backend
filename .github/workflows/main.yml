@@ -1,4 +1,4 @@
-name: Prisma Despliegue CI/CD
+name: Despliegue CI/CD carpeta prisma
 
 on:
   workflow_dispatch:
@@ -31,9 +31,6 @@ jobs:
       - name: Instalar dependencias del backend
         run: npm install
 
-      - name: Generar cliente de Prisma
-        run: npx prisma generate
-
       - name: Compilar el backend
         run: npm run build
 
@@ -50,7 +47,7 @@ jobs:
 
       - name: Transferir archivos del backend
         run: |
-          scp -i ~/.ssh/id_rsa -r ./dist/* ./package.json ./package-lock.json "$SERVER_USER@$SERVER_HOST:/var/www/$CLIENT_NAME/backend/"
+          scp -i ~/.ssh/id_rsa -r ./dist/* ./package.json ./package-lock.json ./prisma/ "$SERVER_USER@$SERVER_HOST:/var/www/$CLIENT_NAME/backend/"
 
       - name: Ejecutar script de despliegue en el servidor
         run: |
